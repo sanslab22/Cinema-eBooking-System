@@ -1,0 +1,19 @@
+.movie-card {
+    margin: 0px auto;
+    border: solid 2px #000000;
+    padding: 10px
+}
+
+.movie-card:hover {
+    box-shadow: 0 4px 8px silver;
+}
+
+.movie-img {
+    width: 70%;
+    margin: 10px;
+}
+
+.movie-title {
+    text-align: center;
+    margin-top: 10px;
+}
