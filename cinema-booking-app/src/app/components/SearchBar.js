@@ -11,17 +11,19 @@ const SearchBar = (prop) => {
     prop.setVal(val);
   });
   return (
-    <TextField
-      id="search-bar"
-      variant="outlined"
-      placeholder="Search..."
-      size="medium"
-      value={val}
-      onChange={(event) => {
-        setVal(event.target.value);
-        prop.setVal(val);
-      }}
-    />
+    <div className="search">
+      <TextField
+        id="search-bar"
+        variant="outlined"
+        placeholder="Search..."
+        size="medium"
+        value={val}
+        onChange={(event) => {
+          setVal(event.target.value);
+          prop.setVal(val);
+        }}
+      />
+    </div>
   );
 };
 
