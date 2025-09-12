@@ -1,0 +1,9 @@
+.genres {
+    display: flex;
+    gap: 10px;
+    margin: 30px;
+}
+
+Button {
+    border-radius: 20px;
+}

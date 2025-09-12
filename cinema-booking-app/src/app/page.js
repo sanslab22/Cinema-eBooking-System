@@ -2,6 +2,7 @@
 import Navbar from "./components/Navbar";
 import MovieList from "./components/MovieList";
 import SearchBar from "./components/SearchBar";
+import Genres from "./components/Genres";
 import { useState } from "react";
 import "./globals.css";
 
@@ -30,6 +31,7 @@ var movies = [
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [genreSelected, setGenreSelected] = useState([]);
   return (
     <div className="page">
       <Navbar />
@@ -39,6 +41,7 @@ export default function Home() {
 
         <div className="search-bar">
           <SearchBar query={query} setVal={setQuery} />
+          <Genres genreSelected={genreSelected} setList={setGenreSelected} />
         </div>
 
         <h2 className="header">Currently Running</h2>
