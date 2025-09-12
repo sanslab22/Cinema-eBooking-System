@@ -50,11 +50,12 @@ export default function Home() {
             )}
           />
         ) : (
-          <MovieList movies={movies} />
+          <div>
+            <MovieList movies={movies} />
+            <h2 className="header">Coming Soon</h2>
+            <MovieList movies={movies} />
+          </div>
         )}
-
-        <h2 className="header">Coming Soon</h2>
-        <MovieList movies={movies} />
       </div>
     </div>
   );
