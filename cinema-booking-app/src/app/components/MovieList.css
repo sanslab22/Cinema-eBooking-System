@@ -1,9 +1,10 @@
 .movie-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    display: flex;
+    justify-content: start;
     gap: 20px;
+    overflow-x: auto;
 }
 
-#view-more {
-    margin: auto;
+.movie-list::-webkit-scrollbar {
+    display: none;
 }

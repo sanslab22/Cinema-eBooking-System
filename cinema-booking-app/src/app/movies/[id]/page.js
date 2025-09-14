@@ -22,6 +22,26 @@ const testMovies = {
         description: "This is a test description for Movie 2.",
         showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
         trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ"
+      },
+
+    3: {
+        id: 3,
+        title: "Movie 3",
+        img: "/film.jpg",
+        rating: "PG",
+        description: "This is a test description for Movie 3.",
+        showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
+        trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ"
+      },
+
+      4: {
+        id: 3,
+        title: "Movie 4",
+        img: "/film.jpg",
+        rating: "PG",
+        description: "This is a test description for Movie 4.",
+        showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
+        trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ"
       }
 }
 
