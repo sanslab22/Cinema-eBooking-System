@@ -4,7 +4,7 @@ import Image from "next/image";
 import "./MovieInfo.css";
 import { useParams } from "next/navigation"; 
 
-const MovieInfo = ({ movie }) => {
+const MovieInfo = ({movie}) => {
     
     return (
         <div className="movie-info">
@@ -17,8 +17,8 @@ const MovieInfo = ({ movie }) => {
 
                 <h3>Available Showtimes</h3>
                 <ul>
-                    {movie.showtimes.map((time, idx) => (
-                        <li key={idx}>{time}</li>
+                    {movie.showtimes.map((time, id) => (
+                        <li key={id}>{time}</li>
                     ))}
                 </ul>
 

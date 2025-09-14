@@ -4,8 +4,8 @@ import "./MovieList.css";
 const MovieList = (prop) => {
   return (
     <div className="movie-list">
-      {prop.movies.map((movie, idx) => (
-        <MovieCard key={idx} movie={movie} />
+      {prop.movies.map((movie, id) => (
+        <MovieCard key={id} movie={movie} />
       ))}
     </div>
   );
