@@ -1,7 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import "./MovieInfo.css";
+import { useParams } from "next/navigation"; 
 
 const MovieInfo = ({ movie }) => {
+    
     return (
         <div className="movie-info">
             <Image src={movie.img} alt={movie.title} width={300} height={450} className="movie-poster" />

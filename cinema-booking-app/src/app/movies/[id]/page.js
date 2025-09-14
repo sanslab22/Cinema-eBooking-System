@@ -33,7 +33,7 @@ export default async function MovieDetails({ params }) {
         <div className="movie-details-page">
             <Navbar />
             <BackButton />
-            <MovieInfo movie={movie} />
+            <MovieInfo movie={movie}  />
         </div>
     );
 }
