@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import "./MovieInfo.css";
-import { useParams } from "next/navigation"; 
 
 const MovieInfo = ({ movie }) => {
     
@@ -16,11 +16,16 @@ const MovieInfo = ({ movie }) => {
                 <p>{movie.description}</p>
 
                 <h3>Available Showtimes</h3>
-                <ul>
+                <div className="showtimes-buttons">
                     {movie.showtimes.map((time, idx) => (
-                        <li key={idx}>{time}</li>
+                        <Link
+                            key={idx}
+                            href={`/movies/${movie.id}/booking?time=${encodeURIComponent(time)}`}
+                        >
+                            <button className="showtime-btn">{time}</button>
+                        </Link>
                     ))}
-                </ul>
+                </div>
 
                 <h3>Trailer</h3>
                 <div className="trailer-container">
