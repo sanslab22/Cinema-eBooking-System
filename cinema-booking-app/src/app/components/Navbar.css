@@ -1,4 +1,11 @@
 .navbar {
     background-color: #D84040;
     padding: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
 }
