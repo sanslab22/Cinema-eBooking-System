@@ -3,7 +3,7 @@
 1. Start PostgreSQL and pgAdmin
 ```npm run docker:up```
 
-2. Check if containers are running**
+2. Check if containers are running
 ```docker ps```
 
 3. Generate Prisma client
