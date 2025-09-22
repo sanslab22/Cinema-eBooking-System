@@ -11,10 +11,11 @@
 
 4. Push the schema to the database (for development)
 ```npm run db:push```
+
    Or use migrations (recommended for production)
 ```npm run db:migrate```
 
-5. Seed the database with sample data
+6. Seed the database with sample data
 ```npm run db:seed```
 
 # Helpful Commands
