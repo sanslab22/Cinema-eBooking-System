@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movies {
+  movie_id     Int      @id @default(autoincrement())
+  title        String   @db.VarChar(255)
+  description  String?  @db.Text
+  duration     Int      // Duration in minutes
+  genre        String   @db.VarChar(100)
+  movie_rating String   @db.VarChar(10)
+  language     String   @db.VarChar(50)
+  isActive     Boolean  @default(true) // true = Playing Now, false = Coming Soon
+  trailer      String?  @db.VarChar(500)
+  movieImage   String?  @db.VarChar(500)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships - FK
+  showTimings ShowTimings[]
+
+  @@map("movies")
+}
+
+model ShowTimings {
+  show_id   Int      @default(autoincrement())
+  showDate  DateTime @db.Date
+  room_id   Int
+  startTime DateTime
+  endTime   DateTime
+  movie_id  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  movie Movies       @relation(fields: [movie_id], references: [movie_id], onDelete: Cascade)
+  room  TheaterRooms @relation(fields: [room_id], references: [room_id], onDelete: Restrict)
+
+  // Composite primary key
+  @@id([show_id, showDate, room_id])
+  @@map("show_timings")
+}
+
+model TheaterRooms {
+  room_id      Int     @id @default(autoincrement())
+  seatCapacity Int
+  isAvailable  Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  showTimings ShowTimings[]
+
+  @@map("theater_rooms")
+}
