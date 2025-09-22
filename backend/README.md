@@ -4,29 +4,29 @@
 ```npm run docker:up```
 
 2. Check if containers are running**
-docker ps
+```docker ps```
 
 3. Generate Prisma client
-npm run db:generate
+```npm run db:generate```
 
 4. Push the schema to the database (for development)
-npm run db:push
+```npm run db:push```
    Or use migrations (recommended for production)
-npm run db:migrate
+```npm run db:migrate```
 
 5. Seed the database with sample data
-npm run db:seed
+```npm run db:seed```
 
 # Helpful Commands
 
 ## Database operations
-npx prisma studio                # Open database GUI
-npx prisma migrate dev --name init  # Create and apply migration
-npx prisma db seed              # Run seed script
-npx prisma generate             # Regenerate Prisma client
+```npx prisma studio```                     # Open database GUI
+```npx prisma migrate dev --name init```    # Create and apply migration
+```npx prisma db seed```                    # Run seed script
+```npx prisma generate```                   # Regenerate Prisma client
 
 ## Docker operations
-docker-compose up -d            # Start services in background
-docker-compose down             # Stop and remove containers
-docker-compose logs -f postgres # View PostgreSQL logs
-docker-compose exec postgres psql -U cinema_user -d cinema_booking  # Connect to DB
+```docker-compose up -d```               # Start services in background
+```docker-compose down```                # Stop and remove containers
+```docker-compose logs -f postgres```    # View PostgreSQL logs
+```docker-compose exec postgres psql -U cinema-e-booking -d cinema-e-booking```  # Connect to DB
