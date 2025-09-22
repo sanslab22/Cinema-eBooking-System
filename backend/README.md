@@ -1,15 +1,17 @@
 # Backend Setup
 
-1. Start PostgreSQL and pgAdmin
+1. Create a ```.env``` file in ```./backend``` and customize it.
+
+2. Start PostgreSQL and pgAdmin
 ```npm run docker:up```
 
-2. Check if containers are running
+3. Check if containers are running
 ```docker ps```
 
-3. Generate Prisma client
+4. Generate Prisma client
 ```npm run db:generate```
 
-4. Push the schema to the database (for development)
+5. Push the schema to the database (for development)
 ```npm run db:push```
 
    Or use migrations (recommended for production)
