@@ -1,21 +1,20 @@
-#Backend Setup
+# Backend Setup
 
-### Start PostgreSQL and pgAdmin
-npm run docker:up
+1. Start PostgreSQL and pgAdmin
+```npm run docker:up```
 
-### Check if containers are running
+2. Check if containers are running**
 docker ps
 
-### Generate Prisma client
+3. Generate Prisma client
 npm run db:generate
 
-### Push the schema to the database (for development)
+4. Push the schema to the database (for development)
 npm run db:push
-
-### Or use migrations (recommended for production)
+   Or use migrations (recommended for production)
 npm run db:migrate
 
-### Seed the database with sample data
+5. Seed the database with sample data
 npm run db:seed
 
 # Helpful Commands
