@@ -19,7 +19,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=NmzuHjWmXOc",
-      movieImage: "shawshank.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMDAyY2FhYjctNDc5OS00MDNlLThiMGUtY2UxYWVkNGY2ZjljXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Godfather",
@@ -30,7 +30,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=sY1S34973zA",
-      movieImage: "godfather.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BNGEwYjgwOGQtYjg5ZS00Njc1LTk2ZGEtM2QwZWQ2NjdhZTE5XkEyXkFqcGc@._V1_.jpg",
     },
     {
       title: "The Dark Knight",
@@ -41,7 +41,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=EXeTwQWrcwY",
-      movieImage: "darkknight.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Godfather Part II",
@@ -52,7 +52,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=9O1Iy9od7-A",
-      movieImage: "godfather2.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMDIxMzBlZDktZjMxNy00ZGI4LTgxNDEtYWRlNzRjMjJmOGQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "12 Angry Men",
@@ -63,7 +63,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=_13J_9B5jEk",
-      movieImage: "12angrymen.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BYjE4NzdmOTYtYjc5Yi00YzBiLWEzNDEtNTgxZGQ2MWVkN2NiXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "Schindler’s List",
@@ -74,7 +74,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=gG22XNhtnoY",
-      movieImage: "schindlerslist.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BNjM1ZDQxYWUtMzQyZS00MTE1LWJmZGYtNGUyNTdlYjM3ZmVmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Lord of the Rings: The Return of the King",
@@ -85,7 +85,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=r5X-hFf6Bwo",
-      movieImage: "lotr_return.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMTZkMjBjNWMtZGI5OC00MGU0LTk4ZTItODg2NWM3NTVmNWQ4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "Pulp Fiction",
@@ -96,7 +96,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=s7EdQ4FqbhY",
-      movieImage: "pulpfiction.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BYTViYTE3ZGQtNDBlMC00ZTAyLTkyODMtZGRiZDg0MjA2YThkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Lord of the Rings: The Fellowship of the Ring",
@@ -107,7 +107,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=V75dMMIW2B4",
-      movieImage: "lotr_fellowship.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BNzIxMDQ2YTctNDY4MC00ZTRhLTk4ODQtMTVlOWY4NTdiYmMwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Lord of the Rings: The Two Towers",
@@ -118,7 +118,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=LbfMDwc4azU",
-      movieImage: "lotr_two_towers.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMGQxMDdiOWUtYjc1Ni00YzM1LWE2NjMtZTg3Y2JkMjEzMTJjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Good, the Bad and the Ugly",
@@ -129,7 +129,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=WCN5JJY_wiA",
-      movieImage: "goodbadugly.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMWM5ZjQxM2YtNDlmYi00ZDNhLWI4MWUtN2VkYjBlMTY1ZTkwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "Fight Club",
@@ -140,7 +140,7 @@ module.exports = {
       language: "English",
       isActive: true,
       trailer: "https://www.youtube.com/watch?v=SUXWAEX2jlg",
-      movieImage: "fightclub.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BOTgyOGQ1NDItNGU3Ny00MjU3LTg2YWEtNmEyYjBiMjI1Y2M5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "Forrest Gump",
@@ -151,7 +151,7 @@ module.exports = {
       language: "English",
       isActive: false, // coming soon
       trailer: "https://www.youtube.com/watch?v=bLvqoHBptjg",
-      movieImage: "forrestgump.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMGRhODhiMTAtNDUxMy00NTY1LTgyYmUtMTgwNzE2MGFlMWJmXkEyXkFqcGc@._V1_.jpg",
     },
     {
       title: "Inception",
@@ -162,7 +162,7 @@ module.exports = {
       language: "English",
       isActive: false,
       trailer: "https://www.youtube.com/watch?v=YoHD9XEInc0",
-      movieImage: "inception.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Empire Strikes Back",
@@ -173,7 +173,7 @@ module.exports = {
       language: "English",
       isActive: false,
       trailer: "https://www.youtube.com/watch?v=JNwNXF9Y6kY",
-      movieImage: "empirestrikesback.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BMTkxNGFlNDktZmJkNC00MDdhLTg0MTEtZjZiYWI3MGE5NWIwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
     },
     {
       title: "The Silence of the Lambs",
@@ -184,7 +184,7 @@ module.exports = {
       language: "English",
       isActive: false,
       trailer: "https://www.youtube.com/watch?v=W6Mm8Sbe__o",
-      movieImage: "silenceofthelambs.jpg",
+      movieImage: "https://m.media-amazon.com/images/M/MV5BNDdhOGJhYzctYzYwZC00YmI2LWI0MjctYjg4ODdlMDExYjBlXkEyXkFqcGc@._V1_.jpg",
     },
     {
       title: "Saving Private Ryan",
@@ -194,9 +194,11 @@ module.exports = {
       movie_rating: "R",
       language: "English",
       isActive: false,
+
       trailer: "https://www.youtube.com/watch?v=zwhP5b4tD6g",
       movieImage: "savingprivateryan.jpg",
     }, // "https://www.youtube.com/embed/2TejxhWkXpI
+
     {
       title: "Spirited Away",
       description: "During her family’s move to the suburbs, a sullen 10-year-old girl … enters a world ruled by gods, witches, and spirits …",
@@ -208,6 +210,7 @@ module.exports = {
       trailer: "https://www.youtube.com/watch?v=ByXuk9QqQkk",
       movieImage: "spiritedaway.jpg",
     }, // https://www.youtube.com/embed/ByXuk9QqQk
+
     {
       title: "The Green Mile",
       description: "The lives of guards on Death Row are affected by one of their charges …",
@@ -216,6 +219,7 @@ module.exports = {
       movie_rating: "R",
       language: "English",
       isActive: false,
+
       trailer: "https://www.youtube.com/watch?v=Ki4haFrqSrw",
       movieImage: "greenmile.jpg",
     },
