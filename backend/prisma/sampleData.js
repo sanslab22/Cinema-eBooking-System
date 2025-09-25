@@ -194,9 +194,11 @@ module.exports = {
       movie_rating: "R",
       language: "English",
       isActive: false,
-      trailer: "https://www.youtube.com/watch?v=2TejxhWkXpI",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BZGZhZGQ1ZWUtZTZjYS00MDJhLWFkYjctN2ZlYjE5NWYwZDM2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
+
+      trailer: "https://www.youtube.com/watch?v=zwhP5b4tD6g",
+      movieImage: "savingprivateryan.jpg",
+    }, // "https://www.youtube.com/embed/2TejxhWkXpI
+
     {
       title: "Spirited Away",
       description: "During her family’s move to the suburbs, a sullen 10-year-old girl … enters a world ruled by gods, witches, and spirits …",
@@ -205,9 +207,10 @@ module.exports = {
       movie_rating: "PG",
       language: "Japanese",
       isActive: false,
-      trailer: "https://www.youtube.com/watch?v=ByXuk9QqQk",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BNTEyNmEwOWUtYzkyOC00ZTQ4LTllZmUtMjk0Y2YwOGUzYjRiXkEyXkFqcGc@._V1_.jpg",
-    },
+      trailer: "https://www.youtube.com/watch?v=ByXuk9QqQkk",
+      movieImage: "spiritedaway.jpg",
+    }, // https://www.youtube.com/embed/ByXuk9QqQk
+
     {
       title: "The Green Mile",
       description: "The lives of guards on Death Row are affected by one of their charges …",
@@ -216,8 +219,9 @@ module.exports = {
       movie_rating: "R",
       language: "English",
       isActive: false,
-      trailer: "https://www.youtube.com/watch?v=Ki4haFrqzmk",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMTUxMzQyNjA5MF5BMl5BanBnXkFtZTYwOTU2NTY3._V1_FMjpg_UX1000_.jpg",
+
+      trailer: "https://www.youtube.com/watch?v=Ki4haFrqSrw",
+      movieImage: "greenmile.jpg",
     },
   ],
   showTimings: [

@@ -11,6 +11,9 @@ useEffect(() => {
   prop.setVal(val);
 }, [val]); // only run when val changes
 
+
+
+
   return (
     <div className="search">
       <TextField
@@ -18,10 +21,16 @@ useEffect(() => {
         variant="outlined"
         placeholder="Search..."
         value={val}
-        fullWidth
+        
         onChange={(event) => {
           setVal(event.target.value);
           prop.setVal(val);
+        }}
+        fullWidth
+        sx={{
+          width: "1300px",        // expands to parent width // optional, controls how wide it can get
+          margin: "0 auto",     // centers if maxWidth is set
+          display: "block",
         }}
       />
     </div>
