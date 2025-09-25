@@ -13,15 +13,16 @@ export default function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
   const [uniqueGenres, setUniqueGenres] = useState([]);
-  const [query, setQuery] = useState("");
+  
   const [genreSelected, setGenreSelected] = useState([]);
+  // State to hold the current search query from the SearchBar
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch data from the API when the component loads
   useEffect(() => {
     fetch('http://localhost:3000/api/movies')
       .then(response => response.json())
       .then(data => {
-        console.log('API Data Received:', data); // Debugging log
         setAllMovies(data.items);
 
         // Calculate unique genres from the fetched data
@@ -31,12 +32,17 @@ export default function Home() {
         );
         const unique = [...new Set(allIndividualGenres)];
         setUniqueGenres(unique.sort());
+
+        
       })
       .catch(error => console.error('Error fetching movies:', error));
   }, []); // Empty array means this effect runs only once
 
+  
+
   // Filter movies based on selected genres and search query
   const filteredMovies = allMovies.filter(movie => {
+    const titleMatchesSearch = movie.title.toLowerCase().includes(searchQuery.toLowerCase());
     // Genre filtering
     if (genreSelected.length > 0) {
       const movieGenres = movie.genre.split(', ').map(g => g.trim());
@@ -44,29 +50,25 @@ export default function Home() {
       if (!matchesGenre) return false;
     }
     // Search filtering
-    if (query.length > 0) {
-      return movie.title.toLowerCase().includes(query.toLowerCase());
+    if (searchQuery.length > 0 && !titleMatchesSearch) {
+      return false;
     }
     return true; // No filters applied, include all
   });
+
 
   //  Derive "Playing Now" and "Coming Soon" from the live data
   const moviesPlayingNow = filteredMovies.filter(movie => movie.isActive);
   const moviesComingSoon = filteredMovies.filter(movie => !movie.isActive);
 
 
-  // Genre filtering logic here as well
-  // For now, search will work on all movies
-  const searchResults = allMovies.filter((movie) =>
-    movie.title.toLowerCase().includes(query.toLowerCase())
-  );
 
   return (
     <div className="page">
       <div className="container">
 
         <div className="search-bar">
-          <SearchBar query={query} setVal={setQuery} />
+          <SearchBar query={searchQuery} setVal={setSearchQuery} />
         </div>
         <Genres 
           genres={uniqueGenres} 
@@ -74,14 +76,14 @@ export default function Home() {
           setList={setGenreSelected} 
         />
 
-        {query.length > 0 ? (
+        {searchQuery.length > 0 ? (
           <h2 className="header">Search Results</h2>
         ) : (
           <h2 className="header">Currently Running</h2>
         )}
 
-        {query.length > 0 ? (
-          <MovieList movies={searchResults} />
+        {searchQuery.length > 0 ? (
+          <MovieList movies={filteredMovies} />
         ) : (
           <div>
             <MovieList movies={moviesPlayingNow} />
