@@ -1,10 +1,12 @@
 // src/server.js (CommonJS)
 const express = require('express');
+const cors = require('cors'); // <-- 1. IMPORT CORS
 const { PrismaClient } = require('@prisma/client');   // ✅ import Prisma
 const app = express();
 const prisma = new PrismaClient();                    // ✅ instantiate
 
 app.use(express.json());
+app.use(cors()); // <-- 2. USE CORS
 
 // Health
 app.get('/', (_req, res) => res.json({ status: 'ok' }));

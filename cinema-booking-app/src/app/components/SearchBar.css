@@ -1,0 +1,5 @@
+.search {
+  width: 100%;   /* make the container full width */
+  padding: 0 16px; /* optional, to add side spacing */
+  box-sizing: border-box; /* include padding in width calculation */
+}

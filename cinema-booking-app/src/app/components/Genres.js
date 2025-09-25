@@ -1,32 +1,26 @@
 import { Button } from "@mui/material";
 import "./Genres.css";
 
-const genres = [
-  "Comedy",
-  "Action",
-  "Romance",
-  "Youth",
-  "Thriller",
-  "Horror",
-  "Drama",
-  "Fantasy",
-  "Animation",
-  "Documentary",
-];
+
 
 const Genres = (prop) => {
+   // We'll destructure the props to make it cleaner
+  const { genres, genreSelected, setList } = prop;
+
+  
   return (
     <div className="genres">
       <p>Filter by Genre:</p>
+
       {genres.map((genre, index) => {
-        if (prop.genreSelected.includes(genre)) {
+        if (genreSelected.includes(genre)) {
           return (
             <Button
               key={index}
               color="primary"
               variant="contained"
               onClick={() => {
-                prop.setList(prop.genreSelected.filter((g) => g != genre));
+                setList(genreSelected.filter((g) => g !== genre));
               }}
             >
               {genre}
@@ -38,7 +32,7 @@ const Genres = (prop) => {
               key={index}
               variant="outlined"
               onClick={() => {
-                prop.setList([...prop.genreSelected, genre]);
+                setList([...genreSelected, genre]);
               }}
             >
               {genre}
