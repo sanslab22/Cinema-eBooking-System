@@ -26,7 +26,7 @@ export default async function MovieDetails({ params }) {
         <div className="movie-details-page">
             <BackButton />
             <MovieInfo movie={movie}  />
-            <ShowtimesWrapper movie={movie} movieId={id} /> 
+            {/* <ShowtimesWrapper movie={movie} movieId={id} /> */}
         </div>
     );
 }

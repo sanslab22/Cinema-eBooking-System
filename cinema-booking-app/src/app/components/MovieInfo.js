@@ -3,11 +3,12 @@
 import Image from "next/image";
 import "./MovieInfo.css";
 import React, { useState, useEffect } from 'react'; 
-
-
+import { Button, Stack } from "@mui/material";
+import { useRouter } from "next/navigation"; 
 
 const MovieInfo = ({movie, children}) => {
 
+    const router = useRouter();
     // Determine the correct image source
     // If movieImage is a full URL or starts with "/", use it directly; otherwise, prepend the images path
 
@@ -28,6 +29,8 @@ const MovieInfo = ({movie, children}) => {
 
     const trailerUrl = getEmbedUrl(movie.trailer);
 
+    const times = ["12:00 pm", "5:00 pm", "10:00 pm"];
+
     console.log("Generated embed URL:", trailerUrl);
 
     return (
@@ -41,7 +44,25 @@ const MovieInfo = ({movie, children}) => {
                 <p>Genre: {movie.genre}</p>
                 <p>Duration: {movie.duration} minutes</p>
                 
-                
+                <p>Available Showtimes for today</p>
+                <Stack direction="row" spacing={2}>
+                    {times.map((time, idx) => (
+                        <Button
+                        key={idx}
+                        variant="outlined"
+                        color="error"
+                        onClick={() => {
+                            if (time === "5:00 pm") {
+                            router.push("/booking"); // ✅ go to Booking.js
+                            } else {
+                            console.log(`Clicked ${time}, no action set yet`);
+                            }
+                        }}
+                        >
+                        {time}
+                        </Button>
+                    ))}
+                </Stack>
 
                 
                 <h3>Trailer</h3>
