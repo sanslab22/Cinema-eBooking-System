@@ -1,9 +1,48 @@
 .genres {
-    display: flex;
-    gap: 10px;
-    margin: 30px;
+  display: flex;
+  flex-wrap: wrap; /* allows wrapping to new lines */
+  gap: 12px;
+  margin: 20px;
+  justify-content: center; /* keeps buttons centered */
 }
 
-Button {
-    border-radius: 20px;
+/* Base style for all MUI outlined buttons */
+.genre-btn.MuiButton-outlined {
+  border: 2px solid #e53935 !important;  /* force red border */
+  color: #000000 !important;
+  border-radius: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Hover when outlined */
+.genre-btn.MuiButton-outlined:hover {
+  background-color: rgba(255, 181, 180, 0.1) !important;
+}
+
+/* Selected = contained */
+.genre-btn.MuiButton-contained {
+  background-color: #e53935 !important;
+  color: white !important;
+  border-radius: 15px;
+  font-weight: 600;
+  border: 2px solid #e53935 !important;
+}
+
+/* Hover when contained */
+.genre-btn.MuiButton-contained:hover {
+  background-color: #c62828 !important;
+}
+
+
+.genres-section {
+  margin: 30px 0;
+  text-align: center; /* center title + buttons */
+}
+
+.genres-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #222;
 }

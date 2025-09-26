@@ -1,51 +1,31 @@
 import { Button } from "@mui/material";
 import "./Genres.css";
 
-const genres = [
-  "Comedy",
-  "Action",
-  "Romance",
-  "Youth",
-  "Thriller",
-  "Horror",
-  "Drama",
-  "Fantasy",
-  "Animation",
-  "Documentary",
-];
-
-const Genres = (prop) => {
+const Genres = ({ genres, genreSelected, setList }) => {
   return (
-    <div className="genres">
-      <p>Filter by Genre:</p>
-      {genres.map((genre, index) => {
-        if (prop.genreSelected.includes(genre)) {
+    <div className="genres-section">
+      <h2 className="genres-title">Filter by Genre</h2>
+
+      <div className="genres">
+        {genres.map((genre, index) => {
+          const isSelected = genreSelected.includes(genre);
+
           return (
             <Button
               key={index}
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                prop.setList(prop.genreSelected.filter((g) => g != genre));
-              }}
+              variant={isSelected ? "contained" : "outlined"} // 🔴 this is key
+              className={`genre-btn ${isSelected ? "selected" : ""}`}
+              onClick={() =>
+                isSelected
+                  ? setList(genreSelected.filter((g) => g !== genre))
+                  : setList([...genreSelected, genre])
+              }
             >
               {genre}
             </Button>
           );
-        } else {
-          return (
-            <Button
-              key={index}
-              variant="outlined"
-              onClick={() => {
-                prop.setList([...prop.genreSelected, genre]);
-              }}
-            >
-              {genre}
-            </Button>
-          );
-        }
-      })}
+        })}
+      </div>
     </div>
   );
 };

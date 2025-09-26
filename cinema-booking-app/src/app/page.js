@@ -3,141 +3,87 @@ import Navbar from "./components/Navbar";
 import MovieList from "./components/MovieList";
 import SearchBar from "./components/SearchBar";
 import Genres from "./components/Genres";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./globals.css";
 
-var moviesPlayingNow = [
-  {
-    id: 1,
-    title: "Movie 1",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 2,
-    title: "Movie 2",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 3,
-    title: "Movie 3",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 4,
-    title: "Movie 4",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 5,
-    title: "Movie 5",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 6,
-    title: "Movie 6",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 7,
-    title: "Movie 7",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-];
 
-var moviesComingSoon = [
-  {
-    id: 8,
-    title: "Movie 8",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 9,
-    title: "Movie 9",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-  {
-    id: 10,
-    title: "Movie 10",
-    img: "/film.jpg",
-    img: "/film.jpg",
-    rating: "PG",
-    description: "This is a test description for Movie 4.",
-    showtimes: ["1:00 PM", "4:00 PM", "7:00 PM"],
-    trailer: "https://www.youtube.com/embed/aqz-KE-bpKQ",
-  },
-];
 
 export default function Home() {
-  const [query, setQuery] = useState("");
+
+  // Set up state to hold all movies, genres, etc.
+  const [allMovies, setAllMovies] = useState([]);
+  const [uniqueGenres, setUniqueGenres] = useState([]);
+  
   const [genreSelected, setGenreSelected] = useState([]);
-  var combined = moviesComingSoon.concat(moviesPlayingNow);
+  // State to hold the current search query from the SearchBar
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch data from the API when the component loads
+  useEffect(() => {
+    fetch('http://localhost:3000/api/movies')
+      .then(response => response.json())
+      .then(data => {
+        setAllMovies(data.items);
+
+        // Calculate unique genres from the fetched data
+        const allGenreStrings = data.items.map(movie => movie.genre);
+        const allIndividualGenres = allGenreStrings.flatMap(genreString => 
+          genreString.split(', ').map(g => g.trim())
+        );
+        const unique = [...new Set(allIndividualGenres)];
+        setUniqueGenres(unique.sort());
+
+        
+      })
+      .catch(error => console.error('Error fetching movies:', error));
+  }, []); // Empty array means this effect runs only once
+
+  
+
+  // Filter movies based on selected genres and search query
+  const filteredMovies = allMovies.filter(movie => {
+    const titleMatchesSearch = movie.title.toLowerCase().includes(searchQuery.toLowerCase());
+    // Genre filtering
+    if (genreSelected.length > 0) {
+      const movieGenres = movie.genre.split(', ').map(g => g.trim());
+      const matchesGenre = genreSelected.some(selected => movieGenres.includes(selected));
+      if (!matchesGenre) return false;
+    }
+    // Search filtering
+    if (searchQuery.length > 0 && !titleMatchesSearch) {
+      return false;
+    }
+    return true; // No filters applied, include all
+  });
+
+
+  //  Derive "Playing Now" and "Coming Soon" from the live data
+  const moviesPlayingNow = filteredMovies.filter(movie => movie.isActive);
+  const moviesComingSoon = filteredMovies.filter(movie => !movie.isActive);
+
+
+
   return (
     <div className="page">
       <div className="container">
-        <h1 className="title">Cinema E-Booking App</h1>
 
         <div className="search-bar">
-          <SearchBar query={query} setVal={setQuery} />
+          <SearchBar query={searchQuery} setVal={setSearchQuery} />
         </div>
-        <Genres genreSelected={genreSelected} setList={setGenreSelected} />
+        <Genres 
+          genres={uniqueGenres} 
+          genreSelected={genreSelected} 
+          setList={setGenreSelected} 
+        />
 
-        {query.length > 0 ? (
+        {searchQuery.length > 0 ? (
           <h2 className="header">Search Results</h2>
         ) : (
           <h2 className="header">Currently Running</h2>
         )}
 
-        {query.length > 0 ? (
-          <MovieList
-            movies={combined.filter((movie) =>
-              movie.title.toLowerCase().includes(query.toLowerCase())
-            )}
-          />
+        {searchQuery.length > 0 ? (
+          <MovieList movies={filteredMovies} />
         ) : (
           <div>
             <MovieList movies={moviesPlayingNow} />
