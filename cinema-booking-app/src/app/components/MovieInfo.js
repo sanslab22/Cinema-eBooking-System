@@ -2,9 +2,15 @@
 
 import Image from "next/image";
 import "./MovieInfo.css";
+import React, { useState, useEffect } from 'react'; 
 
 
-const MovieInfo = ({movie}) => {
+
+const MovieInfo = ({movie, children}) => {
+
+    // Determine the correct image source
+    // If movieImage is a full URL or starts with "/", use it directly; otherwise, prepend the images path
+
     const imageSrc = movie.movieImage?.startsWith("/")
     ? movie.movieImage
     : `/images/movies/${movie.movieImage}`;
@@ -26,20 +32,16 @@ const MovieInfo = ({movie}) => {
 
     return (
         <div className="movie-info">
-            <Image src={imageSrc} alt={movie.title} width={300} height={450} className="movie-poster" />
+            <Image src={imageSrc} alt={movie.title} width={200} height={300} className="movie-poster" />
 
             <div className="movie-details">
                 <h1>{movie.title}</h1>
                 <p>Rating: {movie.movie_rating} </p>
                 <p>{movie.description}</p>
                 <p>Genre: {movie.genre}</p>
-
-                <h3>Available Showtimes</h3>
-                <ul>
-                    {Array.isArray(movie.showtimes) && movie.showtimes.map((time, id) => (
-                        <li key={id}>{time}</li>
-                    ))}
-                </ul>
+                <p>Duration: {movie.duration} minutes</p>
+                
+                
 
                 
                 <h3>Trailer</h3>

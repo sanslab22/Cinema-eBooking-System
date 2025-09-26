@@ -44,6 +44,43 @@ app.get('/api/movies/:id', async (req, res, next) => {
   }
 });
 
+// retrieve show times based on movieID and exact showDate
+app.get('/api/movies/:id/showtimes', async (req, res, next) => {
+  try {
+    const movieId = Number(req.params.id);
+    if (Number.isNaN(movieId)) {
+      return res.status(400).json({ error: 'Invalid movie id' });
+    }
+
+    const showdate = req.query.showdate || req.query.date;
+    if (!showdate) {
+      return res.status(400).json({ error: 'Missing showdate query param (YYYY-MM-DD)' });
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(showdate)) { // check for param format
+      return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
+    }
+
+    const showtimes = await prisma.ShowTimings.findMany({
+      where: {
+        movie_id: movieId,
+        showDate: new Date(showdate),
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    res.json({
+      movieId,
+      showdate,
+      count: showtimes.length,
+      showtimes,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+
 // Global error handler
 app.use((err, _req, res, _next) => {
   console.error(err);
