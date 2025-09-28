@@ -4,41 +4,43 @@ import Link from "next/link";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 
-const MovieCard = ({ movie }) => {
+const MovieCard = (prop) => {
   // Ensure the path always starts with /
-  const imageSrc = movie.movieImage?.startsWith("/")
-    ? movie.movieImage
-    : `/images/movies/${movie.movieImage}`;
+  const imageSrc = prop.movie.movieImage?.startsWith("/")
+    ? prop.movie.movieImage
+    : `/images/movies/${prop.movie.movieImage}`;
   const router = useRouter();
 
   return (
     <div className="movie-card">
       <Image
         src={imageSrc}
-        alt={movie.title}
+        alt={prop.movie.title}
         width={200}
         height={300}
         className="movie-img"
       />
-      <h3 className="movie-title">{movie.title}</h3>
+      <h3 className="movie-title">{prop.movie.title}</h3>
 
       <div className="button-group">
-        <Button
-          className="card-button"
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            router.push(`/booking`);
-          }}
-        >
-          Book Now
-        </Button>
+        {prop.showButton ? (
+          <Button
+            className="card-button"
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              router.push(`/booking`);
+            }}
+          >
+            Book Now
+          </Button>
+        ) : null}
         <Button
           className="card-button"
           variant="contained"
           color="secondary"
           onClick={() => {
-            router.push(`/movies/${movie.movie_id}`);
+            router.push(`/movies/${prop.movie.movie_id}`);
           }}
         >
           View Details

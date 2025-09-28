@@ -86,9 +86,9 @@ export default function Home() {
           <MovieList movies={filteredMovies} />
         ) : (
           <div>
-            <MovieList movies={moviesPlayingNow} />
+            <MovieList movies={moviesPlayingNow} showButton={true} />
             <h2 className="header">Coming Soon</h2>
-            <MovieList movies={moviesComingSoon} />
+            <MovieList movies={moviesComingSoon} showButton={false} />
           </div>
         )}
       </div>
