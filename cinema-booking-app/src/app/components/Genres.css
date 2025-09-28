@@ -8,7 +8,7 @@
 
 /* Base style for all MUI outlined buttons */
 .genre-btn.MuiButton-outlined {
-  border: 2px solid #e53935 !important;  /* force red border */
+  border: 2px solid #D84040 !important;  /* force red border */
   color: #000000 !important;
   border-radius: 15px;
   font-weight: 600;
@@ -22,16 +22,16 @@
 
 /* Selected = contained */
 .genre-btn.MuiButton-contained {
-  background-color: #e53935 !important;
+  background-color: #D84040 !important;
   color: white !important;
   border-radius: 15px;
   font-weight: 600;
-  border: 2px solid #e53935 !important;
+  border: 2px solid #D84040 !important;
 }
 
 /* Hover when contained */
 .genre-btn.MuiButton-contained:hover {
-  background-color: #c62828 !important;
+  background-color: #D84040 !important;
 }
 
 

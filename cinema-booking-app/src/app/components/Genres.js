@@ -13,7 +13,7 @@ const Genres = ({ genres, genreSelected, setList }) => {
           return (
             <Button
               key={index}
-              variant={isSelected ? "contained" : "outlined"} // 🔴 this is key
+              variant={isSelected ? "contained" : "outlined"}
               className={`genre-btn ${isSelected ? "selected" : ""}`}
               onClick={() =>
                 isSelected
