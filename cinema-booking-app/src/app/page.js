@@ -88,7 +88,7 @@ export default function Home() {
           <div>
             <h2 className="header">Currently Running</h2>
 
-            <MovieList movies={moviesPlayingNow} showButton={true} />
+            <MovieList movies={moviesPlayingNow} showButton={false} />
             <h2 className="header">Coming Soon</h2>
             <MovieList movies={moviesComingSoon} showButton={false} />
           </div>
