@@ -1,8 +1,6 @@
 .movie-list {
     display: flex;
-    justify-content: start;
     overflow-x: auto;
-    
 }
 
 .movie-list::-webkit-scrollbar {

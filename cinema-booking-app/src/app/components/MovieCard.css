@@ -1,13 +1,10 @@
 .movie-card {
-    margin: 0px 10px 20px 10px;
+    margin: 10px;
     border: solid 2px #000000;
     padding: 10px;
     border-radius: 10px;
-    display: grid;
-    grid-template-rows: 4fr 1fr 1fr;
     align-content: center;
     justify-content: center;
-    width: 300px;
 }
 
 .movie-link {
@@ -26,7 +23,8 @@
 
 .movie-title {
     text-align: center;
-    margin-top: 10px;
+    margin: 10px;
+    width: 300px;
 }
 
 .card-button {
