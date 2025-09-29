@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import "./Booking.css";
+import { Button } from "@mui/material";
 
 export default function Booking(prop) {
   return (
@@ -10,6 +11,12 @@ export default function Booking(prop) {
       <p>{prop.movieTitle}</p>
       <h2>Time</h2>
       <p>{prop.time}</p>
+
+      <br />
+      
+      <Button className="card-button" variant="contained" color="primary">
+        Book Now
+      </Button>
     </div>
   );
 }
