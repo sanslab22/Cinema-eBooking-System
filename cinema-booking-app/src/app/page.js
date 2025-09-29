@@ -75,7 +75,7 @@ export default function Home() {
 
             {filteredMovies.filter((movie) => movie.isActive).length > 0 ? <MovieList
               movies={filteredMovies.filter((movie) => movie.isActive)}
-              showButton={true}
+              showButton={false}
             />: <p>No movies matching search</p>  }
             <h2 className="header">Coming Soon</h2>
             {filteredMovies.filter((movie) => !movie.isActive).length > 0 ? (
