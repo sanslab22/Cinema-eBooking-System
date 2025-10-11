@@ -1,0 +1,46 @@
+.title {
+    display: block;
+    margin: 10px auto;
+    text-align: center;
+}
+
+form {
+    background-color: brown;
+    margin: 20px auto;
+    width: 50%;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: white;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.cardNum {
+    color: white;
+    font-weight: bold;
+}
+
+.card-info {
+    display: flex;
+    justify-content: space-between;
+
+}

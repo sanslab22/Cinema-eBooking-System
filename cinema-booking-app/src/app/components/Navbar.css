@@ -17,3 +17,18 @@
     grid-template-columns: 1fr 1fr;
     align-items: center;
 }
+
+.link {
+    text-decoration: none;
+    color: #fff; 
+}
+
+.link:hover {
+    font-weight: 600;
+        text-decoration: none;
+
+}
+
+.link:visited {
+    text-decoration: none;
+}
