@@ -44,3 +44,26 @@ input[type="password"] {
     justify-content: space-between;
 
 }
+
+.checkbox-container {
+    display: flex;
+    align-items: center; 
+    gap: 10px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    height: auto;
+    min-width: 18px;
+    min-height: 18px;
+    accent-color: #fff;
+    margin: auto;
+}
+
+.checkbox-text {
+    flex: 1 1 auto;
+    line-height: 1.2;
+    font-size: 0.95rem;
+}

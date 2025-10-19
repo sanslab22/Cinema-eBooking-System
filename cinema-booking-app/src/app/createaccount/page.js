@@ -75,6 +75,15 @@ const CreateAccount = () => {
             <input type="text" name="expDate" />
           </label>
         </div>
+
+        <hr />
+
+        <div className="checkbox-container">
+          <p>Would you like to subscribe for promotions</p>
+          <div>
+            <input type="checkbox" name="subscribe" />
+          </div>
+        </div>
         <div className="button-container">
           <Button variant="contained" color="primary">
             Create Account

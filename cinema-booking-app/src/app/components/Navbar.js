@@ -11,7 +11,7 @@ const Navbar = () => {
         <div className="navbar">
             <h1>Cinema E-Booking App</h1>  
             <div className="nav-buttons">
-                <Link href="/createaccount">
+                <Link href="/createaccount" style={{textDecoration:"none"}}>
                 <p className="link">
                     Register
                 </p>
