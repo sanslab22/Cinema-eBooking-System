@@ -18,6 +18,12 @@
     align-items: center;
 }
 
+.nav-buttons-loggedin {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+}
+
 .link {
     text-decoration: none;
     color: #fff; 
