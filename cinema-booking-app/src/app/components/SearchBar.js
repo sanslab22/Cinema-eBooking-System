@@ -28,7 +28,7 @@ useEffect(() => {
         }}
         fullWidth
         sx={{
-          width: "1300px",        // expands to parent width // optional, controls how wide it can get
+          width: "100%",        // expands to parent width // optional, controls how wide it can get
           margin: "0 auto",     // centers if maxWidth is set
           display: "block",
         }}

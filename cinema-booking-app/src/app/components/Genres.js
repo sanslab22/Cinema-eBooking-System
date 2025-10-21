@@ -1,45 +1,31 @@
 import { Button } from "@mui/material";
 import "./Genres.css";
 
-
-
-const Genres = (prop) => {
-   // We'll destructure the props to make it cleaner
-  const { genres, genreSelected, setList } = prop;
-
-  
+const Genres = ({ genres, genreSelected, setList }) => {
   return (
-    <div className="genres">
-      <p>Filter by Genre:</p>
+    <div className="genres-section">
+      <h2 className="genres-title">Filter by Genre</h2>
 
-      {genres.map((genre, index) => {
-        if (genreSelected.includes(genre)) {
+      <div className="genres">
+        {genres.map((genre, index) => {
+          const isSelected = genreSelected.includes(genre);
+
           return (
             <Button
               key={index}
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                setList(genreSelected.filter((g) => g !== genre));
-              }}
+              variant={isSelected ? "contained" : "outlined"}
+              className={`genre-btn ${isSelected ? "selected" : ""}`}
+              onClick={() =>
+                isSelected
+                  ? setList(genreSelected.filter((g) => g !== genre))
+                  : setList([...genreSelected, genre])
+              }
             >
               {genre}
             </Button>
           );
-        } else {
-          return (
-            <Button
-              key={index}
-              variant="outlined"
-              onClick={() => {
-                setList([...genreSelected, genre]);
-              }}
-            >
-              {genre}
-            </Button>
-          );
-        }
-      })}
+        })}
+      </div>
     </div>
   );
 };

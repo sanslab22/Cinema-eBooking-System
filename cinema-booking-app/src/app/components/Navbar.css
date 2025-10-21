@@ -6,5 +6,35 @@
     right: 0;
     display: flex;
     align-items: center;
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.nav-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
+.nav-buttons-loggedin {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+}
+
+.link {
+    text-decoration: none;
+    color: #fff; 
+}
+
+.link:hover {
+    font-weight: 600;
+        text-decoration: none;
+
+}
+
+.link:visited {
+    text-decoration: none;
 }

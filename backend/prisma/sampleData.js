@@ -12,7 +12,7 @@ module.exports = {
     // 20 movies; mark 12 as now playing (isActive: true), 8 as coming soon (false)
     {
       title: "The Shawshank Redemption",
-      description: "Two imprisoned men bond over a number of years …",
+      description: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
       duration: 142, // in minutes
       genre: "Drama",
       movie_rating: "R",
@@ -23,7 +23,7 @@ module.exports = {
     },
     {
       title: "The Godfather",
-      description: "The aging patriarch of an organized crime dynasty …",
+      description: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
       duration: 175,
       genre: "Crime, Drama",
       movie_rating: "R",
@@ -34,7 +34,7 @@ module.exports = {
     },
     {
       title: "The Dark Knight",
-      description: "When the menace known as the Joker wreaks havoc …",
+      description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
       duration: 152,
       genre: "Action, Crime, Drama",
       movie_rating: "PG-13",
@@ -45,7 +45,7 @@ module.exports = {
     },
     {
       title: "The Godfather Part II",
-      description: "The early life and career of Vito Corleone …",
+      description: "The early life and career of Vito Corleone in 1920s New York is portrayed while his son, Michael, expands and tightens his grip on his crime syndicate stretching from Lake Tahoe, Nevada to pre-revolution 1958 Cuba.",
       duration: 202,
       genre: "Crime, Drama",
       movie_rating: "R",
@@ -56,7 +56,7 @@ module.exports = {
     },
     {
       title: "12 Angry Men",
-      description: "A jury holdout attempts to prevent a miscarriage of justice …",
+      description: "A jury holdout attempts to prevent a miscarriage of justice by forcing his colleagues to reconsider the evidence.",
       duration: 96,
       genre: "Drama",
       movie_rating: "Approved", 
@@ -67,7 +67,7 @@ module.exports = {
     },
     {
       title: "Schindler’s List",
-      description: "In German-occupied Poland during World War II …",
+      description: "In German-occupied Poland during World War II, Oskar Schindler gradually becomes concerned for his Jewish workforce after witnessing their persecution by the Nazis.",
       duration: 195,
       genre: "Biography, Drama, History",
       movie_rating: "R",
@@ -78,7 +78,7 @@ module.exports = {
     },
     {
       title: "The Lord of the Rings: The Return of the King",
-      description: "Gandalf and Aragorn lead the World of Men …",
+      description: "Gandalf and Aragorn lead the World of Men against Sauron's army to draw his gaze from Frodo and Sam as they approach Mount Doom with the One Ring.",
       duration: 201,
       genre: "Adventure, Drama, Fantasy",
       movie_rating: "PG-13",
@@ -89,7 +89,7 @@ module.exports = {
     },
     {
       title: "Pulp Fiction",
-      description: "The lives of two mob hitmen, a boxer, …",
+      description: "The lives of two mob hitmen, a boxer, a gangster's wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
       duration: 154,
       genre: "Crime, Drama",
       movie_rating: "R",
@@ -100,7 +100,7 @@ module.exports = {
     },
     {
       title: "The Lord of the Rings: The Fellowship of the Ring",
-      description: "A meek Hobbit from the Shire … sets out to the Dark Lord’s realm …",
+      description: "A meek Hobbit from the Shire sets out to the Dark Lord’s realm to destroy the One Ring.",
       duration: 178,
       genre: "Adventure, Drama, Fantasy",
       movie_rating: "PG-13",
@@ -111,7 +111,7 @@ module.exports = {
     },
     {
       title: "The Lord of the Rings: The Two Towers",
-      description: "While Frodo and Sam edge closer to Mordor …",
+      description: "While Frodo and Sam edge closer to Mordor, the divided fellowship makes a stand against Sauron's new ally, Saruman, and his hordes of Isengard.",
       duration: 179,
       genre: "Adventure, Drama, Fantasy",
       movie_rating: "PG-13",
@@ -122,7 +122,7 @@ module.exports = {
     },
     {
       title: "The Good, the Bad and the Ugly",
-      description: "A bounty hunting scam … during the American Civil War …",
+      description: "In the chaos of the American Civil War, three gunslingers—Blondie (the Good), Angel Eyes (the Bad), and Tuco (the Ugly)—compete and form uneasy alliances in pursuit of hidden Confederate gold.",
       duration: 178,
       genre: "Western",
       movie_rating: "R",
@@ -133,7 +133,7 @@ module.exports = {
     },
     {
       title: "Fight Club",
-      description: "An insomniac office worker … forms an underground fight club …",
+      description: "An insomniac office worker and a devil-may-care soap maker form an underground fight club that evolves into something much, much more.",
       duration: 139,
       genre: "Drama",
       movie_rating: "R",
@@ -144,7 +144,7 @@ module.exports = {
     },
     {
       title: "Forrest Gump",
-      description: "The presidencies of Kennedy and Johnson … through the eyes of an Alabama man …",
+      description: "Through the eyes of simple but kind-hearted Forrest, we witness decades of American history—from Vietnam to Watergate—while he unknowingly influences cultural moments, all while holding onto his love for Jenny.",
       duration: 142,
       genre: "Drama, Romance",
       movie_rating: "PG-13",
@@ -155,7 +155,7 @@ module.exports = {
     },
     {
       title: "Inception",
-      description: "A thief who steals corporate secrets … through dream-sharing technology …",
+      description: "A skilled thief, Dom Cobb, enters people’s dreams to steal corporate secrets. Tasked with an impossible mission of planting an idea (inception), Cobb and his team dive into layers of dreams while he battles his own grief and guilt.",
       duration: 148,
       genre: "Action, Adventure, Sci-Fi",
       movie_rating: "PG-13",
@@ -166,7 +166,7 @@ module.exports = {
     },
     {
       title: "The Empire Strikes Back",
-      description: "After the Rebels are brutally overpowered …",
+      description: "After a crushing defeat at the hands of the Empire, Luke Skywalker trains with Jedi Master Yoda while Han Solo, Leia, and their allies evade Darth Vader. The saga takes a dark turn with shocking revelations.",
       duration: 124,
       genre: "Action, Adventure, Sci-Fi",
       movie_rating: "PG",
@@ -188,7 +188,7 @@ module.exports = {
     },
     {
       title: "Saving Private Ryan",
-      description: "Following the Normandy Landings, …",
+      description: "Following the Normandy Landings, a group of U.S. soldiers go behind enemy lines to retrieve a paratrooper whose brothers have been killed in action.",
       duration: 169,
       genre: "Drama, War",
       movie_rating: "R",
@@ -201,7 +201,7 @@ module.exports = {
 
     {
       title: "Spirited Away",
-      description: "During her family’s move to the suburbs, a sullen 10-year-old girl … enters a world ruled by gods, witches, and spirits …",
+      description: "A 10-year-old girl, Chihiro, becomes trapped in a magical world ruled by spirits, witches, and monsters after her parents are transformed into pigs. She must summon her courage to save them and return to the human world.",
       duration: 125,
       genre: "Animation, Adventure, Family",
       movie_rating: "PG",
@@ -213,7 +213,7 @@ module.exports = {
 
     {
       title: "The Green Mile",
-      description: "The lives of guards on Death Row are affected by one of their charges …",
+      description: "On Death Row in the 1930s, prison guard Paul Edgecomb encounters John Coffey, a gentle giant convicted of a brutal crime. As Coffey reveals miraculous healing powers, the guards grapple with faith, justice, and compassion.",
       duration: 189,
       genre: "Crime, Drama, Fantasy",
       movie_rating: "R",

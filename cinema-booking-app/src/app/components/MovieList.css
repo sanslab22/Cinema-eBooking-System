@@ -1,7 +1,5 @@
 .movie-list {
     display: flex;
-    justify-content: start;
-    gap: 20px;
     overflow-x: auto;
 }
 
