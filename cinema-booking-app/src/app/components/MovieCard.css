@@ -1,7 +1,15 @@
 .movie-card {
-    margin: 0px 10px 20px 10px;
+    margin: 10px;
     border: solid 2px #000000;
-    padding: 10px
+    padding: 10px;
+    border-radius: 10px;
+    align-content: center;
+    justify-content: center;
+}
+
+.movie-link {
+    text-decoration: none;
+    color: inherit;
 }
 
 .movie-card:hover {
@@ -9,11 +17,21 @@
 }
 
 .movie-img {
-    width: 40%;
-    margin: 10px;
+    display: block;
+    margin: 10px auto;
 }
 
 .movie-title {
     text-align: center;
-    margin-top: 10px;
+    margin: 10px;
+    width: 300px;
+}
+
+.card-button {
+    width: 40%;
+}
+
+.button-group{
+    display: flex;
+    justify-content: space-around;
 }
