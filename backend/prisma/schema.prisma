@@ -10,54 +10,194 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Movies {
-  movie_id     Int      @id @default(autoincrement())
-  title        String   @db.VarChar(255)
-  description  String?  @db.Text
-  duration     Int      // Duration in minutes
-  genre        String   @db.VarChar(100)
-  movie_rating String   @db.VarChar(10)
-  language     String   @db.VarChar(50)
-  isActive     Boolean  @default(true) // true = Playing Now, false = Coming Soon
-  trailer      String?  @db.VarChar(500)
-  movieImage   String?  @db.VarChar(500)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
-  // Relationships - FK
-  showTimings ShowTimings[]
+model Movie {
+  id          Int      @id @default(autoincrement())
+  movieTitle  String   @unique @db.VarChar(255)
+  category    String   @db.VarChar(100)
+  cast        String   @db.Text
+  director    String   @db.VarChar(255)
+  producer    String   @db.VarChar(255)
+  synopsis    String?  @db.Text
+  trailerURL  String?  @db.VarChar(500)
+  filmRating  String   @db.VarChar(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@map("movies")
+  reviews     Review[]
+  movieShows  MovieShow[]
+
+  @@map("movie")
 }
 
-model ShowTimings {
-  show_id   Int      @default(autoincrement())
-  showDate  DateTime @db.Date
-  room_id   Int
-  startTime DateTime
-  endTime   DateTime
-  movie_id  Int
+model Review {
+  id          Int      @id @default(autoincrement())
+  reviewText  String   @db.Text
+  movieTitle  String   @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  movie       Movie    @relation(fields: [movieTitle], references: [movieTitle])
+
+  @@map("review")
+}
+
+model Theater {
+  id          Int      @id @default(autoincrement())
+  theaterName String   @unique @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditoriums Auditorium[]
+
+  @@map("theater")
+}
+
+model Auditorium {
+  id              Int         @id @default(autoincrement())
+  AuditoriumName  String      @db.VarChar(255)
+  noOfSeats       Int
+  theaterId       Int
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  theater         Theater     @relation(fields: [theaterId], references: [id])
+  seats           Seat[]
+  movieShows      MovieShow[]
+
+  @@unique([theaterId, AuditoriumName])
+  @@map("auditorium")
+}
+
+model Seat {
+  id            Int      @id @default(autoincrement())
+  auditoriumID  Int
+  rowNum        String   @db.VarChar(10)
+  colNum        Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  auditorium    Auditorium @relation(fields: [auditoriumID], references: [id])
+  showSeats     ShowSeats[]
+
+  @@unique([auditoriumID, rowNum, colNum])
+  @@map("seat")
+}
+
+model MovieShow {
+  id                    Int        @id @default(autoincrement())
+  showID                Int
+  movieID               Int
+  auditoriumID          Int
+  showStartTime         DateTime
+  noAvailabileSeats     Int
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  movie                 Movie      @relation(fields: [movieID], references: [id])
+  auditorium            Auditorium @relation(fields: [auditoriumID], references: [id])
+  showSeats             ShowSeats[]
+
+  @@unique([showID, movieID, auditoriumID, showStartTime])
+  @@map("movie_show")
+}
+
+model ShowSeats {
+  seatID    Int
+  showID    Int
+  status    String   @db.VarChar(50)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relationships
-  movie Movies       @relation(fields: [movie_id], references: [movie_id], onDelete: Cascade)
-  room  TheaterRooms @relation(fields: [room_id], references: [room_id], onDelete: Restrict)
+  seat      Seat      @relation(fields: [seatID], references: [id])
+  movieShow MovieShow @relation(fields: [showID], references: [id])
 
-  // Composite primary key
-  @@id([show_id, showDate, room_id])
-  @@map("show_timings")
+  @@id([seatID, showID])
+  @@map("show_seats")
 }
 
-model TheaterRooms {
-  room_id      Int     @id @default(autoincrement())
-  seatCapacity Int
-  isAvailable  Boolean @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
-  // Relationships
-  showTimings ShowTimings[]
+// UserType -> id 1 is Admin, id 2 -> customer
+model UserType {
+  id    Int    @id
+  name  String @unique @db.VarChar(50)
 
-  @@map("theater_rooms")
+  users User[]
+
+  @@map("user_type")
+}
+
+// UserStatus -> id 1 is Active, id 2 is Inactive, id 3 is Suspended
+model UserStatus {
+  id    Int    @id
+  name  String @unique @db.VarChar(50)
+
+  users User[]
+
+  @@map("user_status")
+}
+
+model User {
+  id                   Int      @id @default(autoincrement())
+  firstName            String   @db.VarChar(100)
+  lastName             String   @db.VarChar(100)
+  email                String   @unique @db.VarChar(255)
+  passwordHash         String   @db.VarChar(255) // Stores the bcrypt hash
+  refreshTokenId       String?  @unique @db.VarChar(255) // Stores the unique ID/hash of the active refresh token for revocation
+  phoneNumber          String?  @db.VarChar(20)
+  EnrollforPromotions  Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  userTypeId           Int
+  userStatusId         Int
+
+  userType             UserType      @relation(fields: [userTypeId], references: [id])
+  userStatus           UserStatus    @relation(fields: [userStatusId], references: [id])
+  addresses            Address[]
+  paymentCards         PaymentCard[]
+
+  @@map("user")
+}
+
+// AddressType -> 1 is Home, 2 is Billing
+model AddressType {
+  id    Int    @id
+  name  String @unique @db.VarChar(50)
+
+  addresses Address[]
+
+  @@map("address_type")
+}
+
+model Address {
+  id            Int      @id @default(autoincrement())
+  street        String   @db.VarChar(255)
+  city          String   @db.VarChar(100)
+  state         String   @db.VarChar(100)
+  zipCode       String   @db.VarChar(20)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  addressTypeId Int
+  userID        Int
+
+  addressType   AddressType @relation(fields: [addressTypeId], references: [id])
+  user          User        @relation(fields: [userID], references: [id])
+
+  @@map("address")
+}
+
+model PaymentCard {
+  id             Int      @id @default(autoincrement())
+  cardNo         String   @db.VarChar(255) // Should be securely tokenized/encrypted in practice
+  expirationDate String   @db.VarChar(10) // MM/YY or similar format
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userID         Int
+
+  user           User     @relation(fields: [userID], references: [id])
+
+  @@map("payment_card")
 }
