@@ -211,7 +211,7 @@ async function main() {
     // console.log('Seeded Show Seats.');
 
 
-    console.log('\n✅ Seeding Complete.');
+    console.log('\nSeeding Complete.');
 }
 
 main()
