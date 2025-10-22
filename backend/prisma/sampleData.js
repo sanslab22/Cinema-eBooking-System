@@ -1,327 +1,237 @@
 // sampleData.js
 
+const mockDate = new Date().toISOString();
+
 module.exports = {
-  rooms: [
-    { seatCapacity: 100, isAvailable: true },
-    { seatCapacity: 80, isAvailable: true },
-    { seatCapacity: 120, isAvailable: true },
-    { seatCapacity: 60, isAvailable: true },
-    { seatCapacity: 150, isAvailable: false }, // maybe one room under maintenance
+  // --- 1. Reference Data (No dependencies, must be seeded first) ---
+  
+  userTypes: [
+    { id: 1, name: 'Admin' },
+    { id: 2, name: 'Customer' },
   ],
+  
+  userStatuses: [
+    { id: 1, name: 'Active' },
+    { id: 2, name: 'Inactive' },
+    { id: 3, name: 'Suspended' },
+  ],
+  
+  addressTypes: [
+    { id: 1, name: 'Home' },
+    { id: 2, name: 'Billing' },
+  ],
+  
+  // --- 2. Core Entities (Independent) ---
+  
+  theaters: [
+    { id: 1, theaterName: 'Grand Cinema City' },
+    { id: 2, theaterName: 'Silver Screen Palace' },
+  ],
+  
   movies: [
-    // 20 movies; mark 12 as now playing (isActive: true), 8 as coming soon (false)
     {
-      title: "The Shawshank Redemption",
-      description: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
-      duration: 142, // in minutes
-      genre: "Drama",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=NmzuHjWmXOc",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMDAyY2FhYjctNDc5OS00MDNlLThiMGUtY2UxYWVkNGY2ZjljXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+      id: 1,
+      movieTitle: 'The Shawshank Redemption',
+      category: 'Drama',
+      cast: 'Tim Robbins, Morgan Freeman',
+      director: 'Frank Darabont',
+      producer: 'Niki Marvin',
+      synopsis: 'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',
+      trailerURL: 'https://www.youtube.com/watch?v=NmzuHjWmXOc',
+      filmRating: 'R',
     },
     {
-      title: "The Godfather",
-      description: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
-      duration: 175,
-      genre: "Crime, Drama",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=sY1S34973zA",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BNGEwYjgwOGQtYjg5ZS00Njc1LTk2ZGEtM2QwZWQ2NjdhZTE5XkEyXkFqcGc@._V1_.jpg",
+      id: 2,
+      movieTitle: 'The Godfather',
+      category: 'Crime, Drama',
+      cast: 'Marlon Brando, Al Pacino',
+      director: 'Francis Ford Coppola',
+      producer: 'Albert S. Ruddy',
+      synopsis: 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.',
+      trailerURL: 'https://www.youtube.com/watch?v=sY1S34973zA',
+      filmRating: 'R',
     },
     {
-      title: "The Dark Knight",
-      description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
-      duration: 152,
-      genre: "Action, Crime, Drama",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=EXeTwQWrcwY",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_FMjpg_UX1000_.jpg",
+      id: 3,
+      movieTitle: 'Inception',
+      category: 'Action, Sci-Fi',
+      cast: 'Leonardo DiCaprio, Elliot Page',
+      director: 'Christopher Nolan',
+      producer: 'Christopher Nolan, Emma Thomas',
+      synopsis: 'A skilled thief, Dom Cobb, enters people’s dreams to steal corporate secrets...',
+      trailerURL: 'https://www.youtube.com/watch?v=YoHD9XEInc0',
+      filmRating: 'PG-13',
     },
     {
-      title: "The Godfather Part II",
-      description: "The early life and career of Vito Corleone in 1920s New York is portrayed while his son, Michael, expands and tightens his grip on his crime syndicate stretching from Lake Tahoe, Nevada to pre-revolution 1958 Cuba.",
-      duration: 202,
-      genre: "Crime, Drama",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=9O1Iy9od7-A",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMDIxMzBlZDktZjMxNy00ZGI4LTgxNDEtYWRlNzRjMjJmOGQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "12 Angry Men",
-      description: "A jury holdout attempts to prevent a miscarriage of justice by forcing his colleagues to reconsider the evidence.",
-      duration: 96,
-      genre: "Drama",
-      movie_rating: "Approved", 
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=_13J_9B5jEk",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BYjE4NzdmOTYtYjc5Yi00YzBiLWEzNDEtNTgxZGQ2MWVkN2NiXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "Schindler’s List",
-      description: "In German-occupied Poland during World War II, Oskar Schindler gradually becomes concerned for his Jewish workforce after witnessing their persecution by the Nazis.",
-      duration: 195,
-      genre: "Biography, Drama, History",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=gG22XNhtnoY",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BNjM1ZDQxYWUtMzQyZS00MTE1LWJmZGYtNGUyNTdlYjM3ZmVmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Lord of the Rings: The Return of the King",
-      description: "Gandalf and Aragorn lead the World of Men against Sauron's army to draw his gaze from Frodo and Sam as they approach Mount Doom with the One Ring.",
-      duration: 201,
-      genre: "Adventure, Drama, Fantasy",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=r5X-hFf6Bwo",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMTZkMjBjNWMtZGI5OC00MGU0LTk4ZTItODg2NWM3NTVmNWQ4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "Pulp Fiction",
-      description: "The lives of two mob hitmen, a boxer, a gangster's wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
-      duration: 154,
-      genre: "Crime, Drama",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=s7EdQ4FqbhY",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BYTViYTE3ZGQtNDBlMC00ZTAyLTkyODMtZGRiZDg0MjA2YThkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Lord of the Rings: The Fellowship of the Ring",
-      description: "A meek Hobbit from the Shire sets out to the Dark Lord’s realm to destroy the One Ring.",
-      duration: 178,
-      genre: "Adventure, Drama, Fantasy",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=V75dMMIW2B4",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BNzIxMDQ2YTctNDY4MC00ZTRhLTk4ODQtMTVlOWY4NTdiYmMwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Lord of the Rings: The Two Towers",
-      description: "While Frodo and Sam edge closer to Mordor, the divided fellowship makes a stand against Sauron's new ally, Saruman, and his hordes of Isengard.",
-      duration: 179,
-      genre: "Adventure, Drama, Fantasy",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=LbfMDwc4azU",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMGQxMDdiOWUtYjc1Ni00YzM1LWE2NjMtZTg3Y2JkMjEzMTJjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Good, the Bad and the Ugly",
-      description: "In the chaos of the American Civil War, three gunslingers—Blondie (the Good), Angel Eyes (the Bad), and Tuco (the Ugly)—compete and form uneasy alliances in pursuit of hidden Confederate gold.",
-      duration: 178,
-      genre: "Western",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=WCN5JJY_wiA",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMWM5ZjQxM2YtNDlmYi00ZDNhLWI4MWUtN2VkYjBlMTY1ZTkwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "Fight Club",
-      description: "An insomniac office worker and a devil-may-care soap maker form an underground fight club that evolves into something much, much more.",
-      duration: 139,
-      genre: "Drama",
-      movie_rating: "R",
-      language: "English",
-      isActive: true,
-      trailer: "https://www.youtube.com/watch?v=SUXWAEX2jlg",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BOTgyOGQ1NDItNGU3Ny00MjU3LTg2YWEtNmEyYjBiMjI1Y2M5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "Forrest Gump",
-      description: "Through the eyes of simple but kind-hearted Forrest, we witness decades of American history—from Vietnam to Watergate—while he unknowingly influences cultural moments, all while holding onto his love for Jenny.",
-      duration: 142,
-      genre: "Drama, Romance",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: false, // coming soon
-      trailer: "https://www.youtube.com/watch?v=bLvqoHBptjg",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMGRhODhiMTAtNDUxMy00NTY1LTgyYmUtMTgwNzE2MGFlMWJmXkEyXkFqcGc@._V1_.jpg",
-    },
-    {
-      title: "Inception",
-      description: "A skilled thief, Dom Cobb, enters people’s dreams to steal corporate secrets. Tasked with an impossible mission of planting an idea (inception), Cobb and his team dive into layers of dreams while he battles his own grief and guilt.",
-      duration: 148,
-      genre: "Action, Adventure, Sci-Fi",
-      movie_rating: "PG-13",
-      language: "English",
-      isActive: false,
-      trailer: "https://www.youtube.com/watch?v=YoHD9XEInc0",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Empire Strikes Back",
-      description: "After a crushing defeat at the hands of the Empire, Luke Skywalker trains with Jedi Master Yoda while Han Solo, Leia, and their allies evade Darth Vader. The saga takes a dark turn with shocking revelations.",
-      duration: 124,
-      genre: "Action, Adventure, Sci-Fi",
-      movie_rating: "PG",
-      language: "English",
-      isActive: false,
-      trailer: "https://www.youtube.com/watch?v=JNwNXF9Y6kY",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BMTkxNGFlNDktZmJkNC00MDdhLTg0MTEtZjZiYWI3MGE5NWIwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-    },
-    {
-      title: "The Silence of the Lambs",
-      description: "A young FBI cadet … seeks the help … with an incarcerated cannibal …",
-      duration: 118,
-      genre: "Crime, Drama, Thriller",
-      movie_rating: "R",
-      language: "English",
-      isActive: false,
-      trailer: "https://www.youtube.com/watch?v=W6Mm8Sbe__o",
-      movieImage: "https://m.media-amazon.com/images/M/MV5BNDdhOGJhYzctYzYwZC00YmI2LWI0MjctYjg4ODdlMDExYjBlXkEyXkFqcGc@._V1_.jpg",
-    },
-    {
-      title: "Saving Private Ryan",
-      description: "Following the Normandy Landings, a group of U.S. soldiers go behind enemy lines to retrieve a paratrooper whose brothers have been killed in action.",
-      duration: 169,
-      genre: "Drama, War",
-      movie_rating: "R",
-      language: "English",
-      isActive: false,
-
-      trailer: "https://www.youtube.com/watch?v=zwhP5b4tD6g",
-      movieImage: "savingprivateryan.jpg",
-    }, // "https://www.youtube.com/embed/2TejxhWkXpI
-
-    {
-      title: "Spirited Away",
-      description: "A 10-year-old girl, Chihiro, becomes trapped in a magical world ruled by spirits, witches, and monsters after her parents are transformed into pigs. She must summon her courage to save them and return to the human world.",
-      duration: 125,
-      genre: "Animation, Adventure, Family",
-      movie_rating: "PG",
-      language: "Japanese",
-      isActive: false,
-      trailer: "https://www.youtube.com/watch?v=ByXuk9QqQkk",
-      movieImage: "spiritedaway.jpg",
-    }, // https://www.youtube.com/embed/ByXuk9QqQk
-
-    {
-      title: "The Green Mile",
-      description: "On Death Row in the 1930s, prison guard Paul Edgecomb encounters John Coffey, a gentle giant convicted of a brutal crime. As Coffey reveals miraculous healing powers, the guards grapple with faith, justice, and compassion.",
-      duration: 189,
-      genre: "Crime, Drama, Fantasy",
-      movie_rating: "R",
-      language: "English",
-      isActive: false,
-
-      trailer: "https://www.youtube.com/watch?v=Ki4haFrqSrw",
-      movieImage: "greenmile.jpg",
+      id: 4,
+      movieTitle: 'Spirited Away',
+      category: 'Animation, Fantasy',
+      cast: 'Rumi Hiiragi, Miyu Irino',
+      director: 'Hayao Miyazaki',
+      producer: 'Toshio Suzuki',
+      synopsis: 'A 10-year-old girl, Chihiro, becomes trapped in a magical world ruled by spirits, witches, and monsters...',
+      trailerURL: 'https://www.youtube.com/watch?v=ByXuk9QqQkk',
+      filmRating: 'PG',
     },
   ],
-  showTimings: [
-  {
-    movieTitle: "The Shawshank Redemption",
-    roomIndex: 1,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T14:00:00.000Z",
-    endTime: "2025-09-22T16:22:00.000Z"
-  },
-  {
-    movieTitle: "The Shawshank Redemption",
-    roomIndex: 2,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T18:00:00.000Z",
-    endTime: "2025-09-22T20:22:00.000Z"
-  },
-  {
-    movieTitle: "The Godfather",
-    roomIndex: 1,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T15:00:00.000Z",
-    endTime: "2025-09-22T17:55:00.000Z"
-  },
-  {
-    movieTitle: "The Dark Knight",
-    roomIndex: 3,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T20:00:00.000Z",
-    endTime: "2025-09-22T22:32:00.000Z"
-  },
-  {
-    movieTitle: "The Godfather Part II",
-    roomIndex: 2,
-    showDate: "2025-09-23T00:00:00.000Z",
-    startTime: "2025-09-23T13:00:00.000Z",
-    endTime: "2025-09-23T16:23:00.000Z"
-  },
-  {
-    movieTitle: "12 Angry Men",
-    roomIndex: 4,
-    showDate: "2025-09-23T00:00:00.000Z",
-    startTime: "2025-09-23T18:00:00.000Z",
-    endTime: "2025-09-23T19:36:00.000Z"
-  },
-  {
-    movieTitle: "Schindler’s List",
-    roomIndex: 5,
-    showDate: "2025-09-23T00:00:00.000Z",
-    startTime: "2025-09-23T20:00:00.000Z",
-    endTime: "2025-09-23T23:15:00.000Z"
-  },
-  {
-    movieTitle: "The Lord of the Rings: The Return of the King",
-    roomIndex: 1,
-    showDate: "2025-09-24T00:00:00.000Z",
-    startTime: "2025-09-24T12:00:00.000Z",
-    endTime: "2025-09-24T15:21:00.000Z"
-  },
-  {
-    movieTitle: "Pulp Fiction",
-    roomIndex: 2,
-    showDate: "2025-09-24T00:00:00.000Z",
-    startTime: "2025-09-24T16:00:00.000Z",
-    endTime: "2025-09-24T18:34:00.000Z"
-  },
-  {
-    movieTitle: "The Lord of the Rings: The Fellowship of the Ring",
-    roomIndex: 3,
-    showDate: "2025-09-24T00:00:00.000Z",
-    startTime: "2025-09-24T19:00:00.000Z",
-    endTime: "2025-09-24T22:58:00.000Z"
-  },
-  {
-    movieTitle: "The Lord of the Rings: The Two Towers",
-    roomIndex: 4,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T13:00:00.000Z",
-    endTime: "2025-09-22T15:59:00.000Z"
-  },
-  {
-    movieTitle: "The Good, the Bad and the Ugly",
-    roomIndex: 5,
-    showDate: "2025-09-22T00:00:00.000Z",
-    startTime: "2025-09-22T17:00:00.000Z",
-    endTime: "2025-09-22T19:58:00.000Z"
-  },
-  {
-    movieTitle: "Fight Club",
-    roomIndex: 1,
-    showDate: "2025-09-23T00:00:00.000Z",
-    startTime: "2025-09-23T14:00:00.000Z",
-    endTime: "2025-09-23T16:19:00.000Z"
-  },
-  {
-    movieTitle: "Fight Club",
-    roomIndex: 2,
-    showDate: "2025-09-24T00:00:00.000Z",
-    startTime: "2025-09-24T20:00:00.000Z",
-    endTime: "2025-09-24T22:19:00.000Z"
-  },
-],
+  
+  // --- 3. Relational Entities (Ties to UserTypes, UserStatuses, Theaters) ---
+  
+  users: [
+    {
+      id: 1,
+      firstName: 'Site',
+      lastName: 'Admin',
+      email: 'admin@cinema.com',
+      passwordHash: '04e139f15b8aa969c74a4b1a298acfed9773d817307f980de39d8a5929dc4128', // Aaa1234
+      phoneNumber: '555-123-4567',
+      EnrollforPromotions: true,
+      userTypeId: 1, // Admin
+      userStatusId: 1, // Active
+    },
+    {
+      id: 2,
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane.doe@example.com',
+      passwordHash: 'a1c37aa17b24e901b1e9d646d2d21628253d5cd61ba637d92b20b03b2d68064a', // Aaa1234! 
+      phoneNumber: '555-987-6543',
+      EnrollforPromotions: true,
+      userTypeId: 2, // Customer
+      userStatusId: 2, // Active
+    },
+    {
+      id: 3,
+      firstName: 'John',
+      lastName: 'Smith',
+      email: 'john.smith@example.com',
+      passwordHash: '77aae185203edc6357676db95caa25d0f398d402c1723e6a7b42cfe8d2967f2e', // Qwerty123
+      phoneNumber: null,
+      EnrollforPromotions: false,
+      userTypeId: 2, // Customer
+      userStatusId: 2, // Inactive
+    },
+  ],
+
+  // --- 4. Relational Entities (Ties to Theaters, Movies, Users, AddressTypes) ---
+
+  auditoriums: [
+    // Theater 1
+    { id: 1, AuditoriumName: 'Screen A', noOfSeats: 100, theaterId: 1 },
+    { id: 2, AuditoriumName: 'Screen B', noOfSeats: 80, theaterId: 1 },
+    // Theater 2
+    { id: 3, AuditoriumName: 'Grand Hall', noOfSeats: 120, theaterId: 2 },
+  ],
+
+  seats: [
+    // Auditorium 1 (100 seats, A1-A10, B1-B10, ..., J1-J10) - just a few samples
+    { id: 1, auditoriumID: 1, rowNum: 'A', colNum: 1 },
+    { id: 2, auditoriumID: 1, rowNum: 'A', colNum: 2 },
+    { id: 3, auditoriumID: 1, rowNum: 'B', colNum: 5 },
+    // Auditorium 3 (120 seats)
+    { id: 4, auditoriumID: 3, rowNum: 'F', colNum: 10 },
+    { id: 5, auditoriumID: 3, rowNum: 'F', colNum: 11 },
+  ],
+
+  reviews: [
+    { 
+      id: 1,
+      reviewText: 'An absolute masterpiece of hope and friendship. A must-watch.',
+      movieTitle: 'The Shawshank Redemption',
+    },
+    {
+      id: 2,
+      reviewText: 'The ending still leaves me wondering. A true Sci-Fi epic.',
+      movieTitle: 'Inception',
+    },
+  ],
+
+  addresses: [
+    {
+      id: 1,
+      street: '123 Main St',
+      city: 'Atlanta',
+      state: 'GA',
+      zipCode: '30303',
+      addressTypeId: 1, // Home
+      userID: 2, // Jane Doe
+    },
+    {
+      id: 2,
+      street: '456 Billing Ave',
+      city: 'Atlanta',
+      state: 'GA',
+      zipCode: '30303',
+      addressTypeId: 2, // Billing
+      userID: 2, // Jane Doe
+    },
+  ],
+
+  paymentCards: [
+    {
+      id: 1,
+      cardNo: 'XXXXXXXXXXXXXXXX1234', // Tokenized/Encrypted representation
+      expirationDate: '12/26',
+      userID: 2, // Jane Doe
+    },
+  ],
+
+  // --- 5. Show and Booking Data (Ties to Movies, Auditoriums, Seats) ---
+  
+  movieShows: [
+    {
+      id: 1,
+      showID: 101, // Unique ID for this specific show
+      movieID: 1, // The Shawshank Redemption
+      auditoriumID: 1, // Screen A
+      showStartTime: '2025-11-23T18:00:00Z',
+      noAvailabileSeats: 98, // 100 total - 2 booked
+    },
+    {
+      id: 2,
+      showID: 201, // Another show ID, unique per show/movie/auditorium/time combination
+      movieID: 3, // Inception
+      auditoriumID: 3, // Grand Hall
+      showStartTime: '2025-11-23T21:00:00Z',
+      noAvailabileSeats: 120, // All available
+    },
+    {
+      id: 3,
+      showID: 301,
+      movieID: 4, // Spirited Away
+      auditoriumID: 2, // Screen B
+      showStartTime: '2025-11-24T14:30:00Z',
+      noAvailabileSeats: 80, // All available
+    },
+  ],
+
+  // showSeats: [
+  //   // For MovieShow ID 1 (Shawshank, Screen A)
+  //   { 
+  //     seatID: 1, // Seat A1
+  //     showID: 1,
+  //     status: 'Booked' 
+  //   },
+  //   { 
+  //     seatID: 2, // Seat A2
+  //     showID: 1,
+  //     status: 'Booked' 
+  //   },
+  //   { 
+  //     seatID: 3, // Seat B5
+  //     showID: 1,
+  //     status: 'Available' 
+  //   },
+  //   // For MovieShow ID 2 (Inception, Grand Hall)
+  //   { 
+  //     seatID: 4, // Seat F10
+  //     showID: 2,
+  //     status: 'Available' 
+  //   },
+  //   { 
+  //     seatID: 5, // Seat F11
+  //     showID: 2,
+  //     status: 'Available' 
+  //   },
+  // ],
 };
