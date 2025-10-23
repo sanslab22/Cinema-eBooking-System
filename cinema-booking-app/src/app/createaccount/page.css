@@ -32,6 +32,8 @@ input[type="password"] {
 .button-container {
     display: flex;
     justify-content: center;
+    margin-top: 20px;
+    gap: 10px;
 }
 
 .cardNum {
@@ -43,6 +45,18 @@ input[type="password"] {
     display: flex;
     justify-content: space-between;
 
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -10px; /* Adjust to pull the fields closer */
+}
+
+.add-card-container {
+    text-align: center;
+    margin: 20px 0;
 }
 
 .checkbox-container {
@@ -76,4 +90,14 @@ input[type="checkbox"] {
     margin: 10px 0px;
     text-align: center;
 ;
+}
+
+h2 {
+    color: white;
+    text-align: center;
+}
+
+p {
+    color: white;
+    text-align: center;
 }
