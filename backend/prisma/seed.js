@@ -1,10 +1,10 @@
 // seed.js
+import { PrismaClient } from "@prisma/client";
+import * as sampleData from './sampleData.js';
 
-const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
 
-// Ensure your sampleData.js file is in the same directory or adjust the path
-const sampleData = require('./sampleData');
 
 async function main() {
     console.log('Starting database seeding...');
@@ -147,16 +147,18 @@ async function main() {
 
     // Payment Cards (Requires User ID)
     await Promise.all(
-        sampleData.paymentCards.map(c => {
-            const { id, userID, ...data } = c;
+        sampleData.paymentCards.map((c) => {
+            const { id, userID, billingAddressID, ...data } = c;
             return prisma.paymentCard.create({
-                data: {
-                    ...data,
-                    user: { connect: { id: userID } }
-                }
+            data: {
+                ...data,
+                user: { connect: { id: userID } },
+                billingAddress: { connect: { id: billingAddressID } }, // connect to billing address by correct field
+            },
             });
         })
     );
+
     console.log('Seeded Payment Cards.');
     
     // ----------------------------------------------------

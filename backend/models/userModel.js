@@ -8,7 +8,7 @@ export const createUser = async (data) => {
     }
 
     // Log the data
-    // console.log("🟦 Creating user with data:", {
+    // console.log("Creating user with data:", {
     //   ...data,
     //   passwordHash: "HIDDEN_FOR_SECURITY"
     // });

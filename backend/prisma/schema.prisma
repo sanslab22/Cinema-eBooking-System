@@ -185,19 +185,23 @@ model Address {
   addressType   AddressType @relation(fields: [addressTypeId], references: [id])
   user          User        @relation(fields: [userID], references: [id])
 
+  paymentCards  PaymentCard[]
+
   @@map("address")
 }
 
 model PaymentCard {
-  id             Int      @id @default(autoincrement())
-  cardNo         String   @db.VarChar(255) // Should be securely tokenized/encrypted in practice
-  expirationDate String   @db.VarChar(10) // MM/YY or similar format
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  cardNo           String   @db.VarChar(255)
+  expirationDate   String   @db.VarChar(10) // MM/YY
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  userID         Int
+  userID           Int
+  billingAddressId Int
 
-  user           User     @relation(fields: [userID], references: [id])
+  user             User    @relation(fields: [userID], references: [id])
+  billingAddress   Address @relation(fields: [billingAddressId], references: [id])
 
   @@map("payment_card")
 }
