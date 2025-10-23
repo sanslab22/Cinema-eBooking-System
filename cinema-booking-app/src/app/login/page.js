@@ -3,6 +3,7 @@ import { Button } from "@mui/material";
 import "./page.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import BackButton from "../components/BackButton";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -21,6 +22,7 @@ const Login = () => {
 
   return (
     <div>
+      <BackButton route="/" />
       <h1 className="title">Login</h1>
       <form>
         {error ? displayMessage(errorMessage) : null}

@@ -3,6 +3,7 @@ import { Button } from "@mui/material";
 import "./page.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import BackButton from "../components/BackButton";
 
 const CreateAccount = () => {
   const [formData, setFormData] = useState({
@@ -63,6 +64,7 @@ const CreateAccount = () => {
 
   return (
     <div>
+      <BackButton route="/" />
       <h1 className="title">Create Account</h1>
       <form>
         {error ? displayMessage(errorMessage) : null}
