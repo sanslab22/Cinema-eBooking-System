@@ -4,7 +4,7 @@ import { createUser, findUserByEmail } from "../models/userModel.js";
 import prisma from "../prismaClient.js";
 
 
-const JWT_SECRET = process.env.JWT_SECRET || "cinema-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 export const register = async (req, res) => {
