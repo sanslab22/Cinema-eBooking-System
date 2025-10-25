@@ -4,8 +4,12 @@ import "./page.css";
 import { useState } from "react";
 import BackButton from "../components/BackButton";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 const CreateAccount = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -18,11 +22,13 @@ const CreateAccount = () => {
     zipCode: "",
     paymentCards: [{ cardNumber: "", securityCode: "", expDate: "" }],
     subscribe: false,
+    code: "",
   });
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [randomCode, setRandomCode] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,7 +66,7 @@ const CreateAccount = () => {
   const validateStep = () => {
     setError(false);
     setErrorMessage("");
-    const { username, password, confirmPassword, fullName } = formData;
+    const { username, email, password, confirmPassword, fullName } = formData;
 
     switch (step) {
       case 1:
@@ -126,9 +132,35 @@ const CreateAccount = () => {
     setErrorMessage("");
   };
 
-  const handleSubmit = () => {
-    if (validateStep()) {
-      console.log("Account created with data:", formData);
+  const handleSubmit = async () => {
+    handleNext();
+    const generatedCode = Math.floor(100000 + Math.random() * 900000);
+    setRandomCode(generatedCode);
+    try {
+      const docRef = await addDoc(collection(db, "mail"), {
+        to: [formData.email],
+        message: {
+          subject: `Cinema E-Booking: One-Time Code to Verify Account`,
+          html: `
+          <p>Dear Customer,</p>
+          <p>Here is your one-time password to verify your account:</p>
+          <p><b>${generatedCode}</b></p>
+          <p>If you did not create an account, please ignore this email.</p>
+        `,
+        },
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
+
+  const verifyAccount = () => {
+    if (formData.code === randomCode.toString()) {
+      router.push("/login");
+    } else {
+      setError(true);
+      setErrorMessage("Invalid code");
     }
   };
 
@@ -358,6 +390,33 @@ const CreateAccount = () => {
                 onClick={handleSubmit}
               >
                 Create Account
+              </Button>
+            </div>
+          </>
+        )}
+
+        {step === 5 && (
+          <>
+            <h2>Account Verification</h2>
+              <p>We sent you a verification code to your email: {formData.email}. Enter the code:</p>
+              <br />
+              <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+                <input
+                  type="text"
+                  name="code"
+                  value={formData.code}
+                  onChange={handleChange}
+                  required
+                  style={{width: "50%", textAlign: "center", margin: "0 auto"}}
+                />
+            </div>
+            <div className="button-container">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={verifyAccount}
+              >
+                Verify
               </Button>
             </div>
           </>
