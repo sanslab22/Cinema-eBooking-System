@@ -15,12 +15,12 @@ const MovieCard = (prop) => {
     <div className="movie-card">
       <Image
         src={imageSrc}
-        alt={prop.movie.title}
+        alt={prop.movie.movieTitle}
         width={200}
         height={300}
         className="movie-img"
       />
-      <h3 className="movie-title">{prop.movie.title}</h3>
+      <h3 className="movie-title">{prop.movie.movieTitle}</h3>
 
       <div className="button-group">
         {prop.showButton ? (
