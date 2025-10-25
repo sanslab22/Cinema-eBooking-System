@@ -15,45 +15,33 @@ const Navbar = () => {
         <h1>Cinema E-Booking App</h1>{" "}
       </Link>
 
-      {notLoggedIn ? (
-        <div className="nav-buttons">
-          <Link href="/createaccount" style={{ textDecoration: "none" }}>
-            <p className="link">Register</p>
-          </Link>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => router.push("/login")}
-          >
-            Login
-          </Button>
-        </div>
-      ) : !isAdmin ? (
-        <div className="nav-buttons-loggedin">
-          <p>Orders</p>
-          <p>Profile</p>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => router.push("/login")}
-          >
-            Logout
-          </Button>
-        </div>
-      ) : (
-        <div className="nav-buttons-loggedin-admin">
-          <p>Movies</p>
-          <p>Promotions</p>
-          <p>Users</p>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => router.push("/login")}
-          >
-            Logout
-          </Button>
-        </div>
-      )}
+      {notLoggedIn?
+      <div className="nav-buttons">
+        <Link href="/createaccount" style={{ textDecoration: "none" }}>
+          <p className="link">Register</p>
+        </Link>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => router.push("/login")}
+        >
+          Login
+        </Button>
+      </div>
+      :<div className="nav-buttons-loggedin">
+        <p>Orders</p>
+        
+        <Button variant="contained"
+          color="secondary"
+          onClick={() => router.push("/profile")}
+          className="profile-button"
+        >Profile</Button>
+
+        <Button variant="contained"
+          color="secondary"
+          onClick={() => router.push("/login")}>Logout</Button>
+        </div>}
+      
     </div>
   );
 };
