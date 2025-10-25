@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-  const notLoggedIn = false;
-  const isAdmin = true;
+  const notLoggedIn = true;
+  const isAdmin = false;
 
   return (
     <div className="navbar">

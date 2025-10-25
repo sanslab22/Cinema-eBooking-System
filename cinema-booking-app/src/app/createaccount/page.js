@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { Button } from "@mui/material";
 import "./page.css";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import Link from "next/link";
 const CreateAccount = () => {
   const [formData, setFormData] = useState({
     username: "",
+    email: "",
     password: "",
     confirmPassword: "",
     fullName: "",
@@ -15,9 +16,7 @@ const CreateAccount = () => {
     city: "",
     state: "",
     zipCode: "",
-    paymentCards: [
-      { cardNumber: "", securityCode: "", expDate: "" },
-    ],
+    paymentCards: [{ cardNumber: "", securityCode: "", expDate: "" }],
     subscribe: false,
   });
 
@@ -44,18 +43,18 @@ const CreateAccount = () => {
     if (formData.paymentCards.length < 3) {
       setFormData((prev) => ({
         ...prev,
-        paymentCards: [...prev.paymentCards, { cardNumber: "", securityCode: "", expDate: "" }],
+        paymentCards: [
+          ...prev.paymentCards,
+          { cardNumber: "", securityCode: "", expDate: "" },
+        ],
       }));
     }
   };
 
   const removeCard = (index) => {
     const cards = [...formData.paymentCards];
-    // Don't allow removing the last card if it's the only one
-    if (cards.length > 1) {
-      cards.splice(index, 1);
-      setFormData((prev) => ({ ...prev, paymentCards: cards }));
-    }
+    cards.splice(index, 1);
+    setFormData((prev) => ({ ...prev, paymentCards: cards }));
   };
 
   const validateStep = () => {
@@ -70,14 +69,27 @@ const CreateAccount = () => {
           setErrorMessage("Please enter a username");
           return false;
         }
+        if (!email || !/\S+@\S+\.\S+/.test(email)) {
+          setError(true);
+          setErrorMessage("Please enter a valid email");
+          return false;
+        }
         if (!password) {
           setError(true);
           setErrorMessage("Please enter a password");
           return false;
         }
-        if (password.length < 8 || password.length > 16 || !/\d/.test(password) || !/[a-zA-Z]/.test(password) || !/[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]/.test(password)){
+        if (
+          password.length < 8 ||
+          password.length > 16 ||
+          !/\d/.test(password) ||
+          !/[a-zA-Z]/.test(password) ||
+          !/[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]/.test(password)
+        ) {
           setError(true);
-          setErrorMessage("Password must be 8-16 characters and include a number, a letter, and a special character.");
+          setErrorMessage(
+            "Password must be 8-16 characters and include a number, a letter, and a special character."
+          );
           return false;
         }
         if (password !== confirmPassword) {
@@ -132,19 +144,53 @@ const CreateAccount = () => {
             <h2>Personal Information</h2>
             <label>
               Username:
-              <input type="text" name="username" required value={formData.username} onChange={handleChange}/>
+              <input
+                type="text"
+                name="username"
+                required
+                value={formData.username}
+                onChange={handleChange}
+              />
             </label>
             <label>
               Full Name:
-              <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange}/>
+              <input
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              Email:
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+              />
             </label>
             <label>
               Password:
-              <input type="password" name="password" required value={formData.password} onChange={handleChange}/>
+              <input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+              />
             </label>
             <label>
               Confirm Password:
-              <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange}/>
+              <input
+                type="password"
+                name="confirmPassword"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
             </label>
             <div className="button-container">
               <Button variant="contained" color="primary" onClick={handleNext}>
@@ -159,24 +205,48 @@ const CreateAccount = () => {
             <h2>Home Address</h2>
             <label>
               Street
-              <input type="text" name="address" value={formData.address} onChange={handleChange}/>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+              />
               <div>
                 <label>
                   City
-                  <input type="text" name="city" value={formData.city} onChange={handleChange}/>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                  />
                 </label>
                 <label>
                   State
-                  <input type="text" name="state" value={formData.state} onChange={handleChange}/>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                  />
                 </label>
                 <label>
                   Zip Code
-                  <input type="text" name="zipCode" value={formData.zipCode} onChange={handleChange}/>
+                  <input
+                    type="text"
+                    name="zipCode"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                  />
                 </label>
               </div>
             </label>
             <div className="button-container">
-              <Button variant="contained" color="secondary" onClick={handleBack}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleBack}
+              >
                 Back
               </Button>
               <Button variant="contained" color="primary" onClick={handleNext}>
@@ -196,36 +266,61 @@ const CreateAccount = () => {
                 <div className="card-header">
                   <h2 className="cardNum">Payment Card #{index + 1}</h2>
                   {formData.paymentCards.length > 1 && (
-                     <Button variant="text" color="secondary" onClick={() => removeCard(index)}>
-                       Remove
-                     </Button>
+                    <Button
+                      variant="text"
+                      color="secondary"
+                      onClick={() => removeCard(index)}
+                    >
+                      Remove
+                    </Button>
                   )}
                 </div>
                 <br />
                 <label>
                   Card Number:
-                  <input type="text" name="cardNumber" value={card.cardNumber} onChange={(e) => handleCardChange(index, e)} />
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    value={card.cardNumber}
+                    onChange={(e) => handleCardChange(index, e)}
+                  />
                 </label>
                 <div className="card-info">
                   <label>
                     Security Code:
-                    <input type="text" name="securityCode" value={card.securityCode} onChange={(e) => handleCardChange(index, e)} />
+                    <input
+                      type="text"
+                      name="securityCode"
+                      value={card.securityCode}
+                      onChange={(e) => handleCardChange(index, e)}
+                    />
                   </label>
                   <label>
                     Expiration Date:
-                    <input type="text" name="expDate" value={card.expDate} onChange={(e) => handleCardChange(index, e)} />
+                    <input
+                      type="text"
+                      name="expDate"
+                      value={card.expDate}
+                      onChange={(e) => handleCardChange(index, e)}
+                    />
                   </label>
                 </div>
               </div>
             ))}
             {formData.paymentCards.length < 3 && (
               <div className="add-card-container">
-                <Button variant="contained" onClick={addCard}>+ Add another card</Button>
+                <Button variant="contained" onClick={addCard}>
+                  + Add another card
+                </Button>
               </div>
             )}
 
             <div className="button-container">
-              <Button variant="contained" color="secondary" onClick={handleBack}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleBack}
+              >
                 Back
               </Button>
               <Button variant="contained" color="primary" onClick={handleNext}>
@@ -241,14 +336,27 @@ const CreateAccount = () => {
             <div className="checkbox-container">
               <p>Would you like to subscribe for promotions?</p>
               <div>
-                <input type="checkbox" name="subscribe" checked={formData.subscribe} onChange={handleChange} />
+                <input
+                  type="checkbox"
+                  name="subscribe"
+                  checked={formData.subscribe}
+                  onChange={handleChange}
+                />
               </div>
             </div>
             <div className="button-container">
-              <Button variant="contained" color="secondary" onClick={handleBack}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleBack}
+              >
                 Back
               </Button>
-              <Button variant="contained" color="primary" onClick={handleSubmit}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+              >
                 Create Account
               </Button>
             </div>
@@ -258,8 +366,8 @@ const CreateAccount = () => {
         <br />
 
         <Link href="/login" style={{ textDecoration: "none" }}>
-          <p>Have an account? Log in</p>
-          </Link>
+          <p className="links">Have an account? Log in</p>
+        </Link>
       </form>
     </div>
   );
