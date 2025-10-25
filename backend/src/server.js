@@ -8,6 +8,7 @@ const prisma = new PrismaClient();                    // ✅ instantiate
 app.use(express.json());
 app.use(cors()); // <-- 2. USE CORS
 
+
 // Health
 app.get('/', (_req, res) => res.json({ status: 'ok' }));
 

@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-  const notLoggedIn  = true;
+  const notLoggedIn = true;
+  const isAdmin = false;
 
   return (
     <div className="navbar">
       <Link href="/" style={{ textDecoration: "none", color: "white" }}>
         <h1>Cinema E-Booking App</h1>{" "}
-
       </Link>
 
       {notLoggedIn?

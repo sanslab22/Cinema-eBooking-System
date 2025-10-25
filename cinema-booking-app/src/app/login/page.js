@@ -45,7 +45,7 @@ const Login = () => {
           <Link href="/createaccount" style={{ textDecoration: "none" }}>
             <p className="links"> New user? Create an Account</p>{" "}
           </Link>
-          <Link href="/" style={{ textDecoration: "none" }}>
+          <Link href="/forgot-password" style={{ textDecoration: "none" }}>
             <p className="links">Forgot Password?</p>
           </Link>
         </div>

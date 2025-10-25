@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/Navbar";
 import Providers from "./providers.js";
+import { app, db } from './firebase.js';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
