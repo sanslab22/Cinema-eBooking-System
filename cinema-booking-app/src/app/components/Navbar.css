@@ -22,14 +22,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
-    text-align: center;
-}
-
-.nav-buttons-loggedin-admin {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    align-items: center;
-    text-align: center;
+    gap: 12px;
 }
 
 .link {
@@ -46,3 +39,4 @@
 .link:visited {
     text-decoration: none;
 }
+

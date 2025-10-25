@@ -7,4 +7,5 @@ export default function Page({params}) {
   console.log(params.movieTitle);
 
   return <Booking movieTitle={movieTitle} time={time} />;
+
 }
