@@ -7,6 +7,10 @@ const prisma = new PrismaClient();
 
 router.use(express.json());
 router.use(cors());
+// router.use(cors({
+//   origin: "http://localhost:3000",
+//   credentials: true
+// }));
 
 // Health
 router.get('/', (_req, res) => res.json({ status: 'ok' }));
@@ -18,12 +22,12 @@ router.get('/movies', async (req, res, next) => {
     const offset = parseInt(req.query.offset ?? '0', 10);
 
     const [items, total] = await Promise.all([
-      prisma.movies.findMany({
+      prisma.movie.findMany({
         skip: offset,
         take: limit,
-        orderBy: { movie_id: 'asc' },
+        orderBy: { id: 'asc' },
       }),
-      prisma.movies.count(),
+      prisma.movie.count(),
     ]);
 
     res.json({ total, limit, offset, items });
@@ -36,7 +40,9 @@ router.get('/movies', async (req, res, next) => {
 router.get('/movies/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const movie = await prisma.movies.findUnique({ where: { movie_id: id } });
+    const movie = await prisma.movie.findUnique({
+      where: { id: id }
+    });
     if (!movie) return res.status(404).json({ error: 'Not found' });
     res.json(movie);
   } catch (e) {
@@ -57,17 +63,24 @@ router.get('/movies/:id/showtimes', async (req, res, next) => {
       return res.status(400).json({ error: 'Missing showdate query param (YYYY-MM-DD)' });
     }
 
-    // showdate format
+    // showdate format validation
     if (!/^\d{4}-\d{2}-\d{2}$/.test(showdate)) {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
     }
 
-    const showtimes = await prisma.ShowTimings.findMany({
+    const start = new Date(`${showdate}T00:00:00.000Z`);
+    const end = new Date(`${showdate}T23:59:59.999Z`);
+
+    // uses MovieShow, filters by movieID and showStartTime within the day's range
+    const showtimes = await prisma.movieShow.findMany({
       where: {
-        movie_id: movieId,
-        showDate: new Date(showdate),
+        movieID: movieId,
+        showStartTime: {
+          gte: start,
+          lte: end
+        }
       },
-      orderBy: { startTime: 'asc' },
+      orderBy: { showStartTime: 'asc' },
     });
 
     res.json({
@@ -80,6 +93,7 @@ router.get('/movies/:id/showtimes', async (req, res, next) => {
     next(e);
   }
 });
+
 
 // Global error handler
 router.use((err, _req, res, _next) => {
