@@ -17,13 +17,13 @@ export default function Home() {
 
   // Fetch data from the API when the component loads
   useEffect(() => {
-    fetch("http://localhost:3000/api/movies")
+    fetch("http://localhost:3001/api/movies")
       .then((response) => response.json())
       .then((data) => {
         setAllMovies(data.items);
 
         // Calculate unique genres from the fetched data
-        const allGenreStrings = data.items.map((movie) => movie.genre);
+        const allGenreStrings = data.items.map((movie) => movie.category);
         const allIndividualGenres = allGenreStrings.flatMap((genreString) =>
           genreString.split(", ").map((g) => g.trim())
         );
@@ -35,7 +35,7 @@ export default function Home() {
 
   // Filter movies based on selected genres and search query
   const filteredMovies = allMovies.filter((movie) => {
-    const titleMatchesSearch = movie.title
+    const titleMatchesSearch = movie.movieTitle
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     // Genre filtering

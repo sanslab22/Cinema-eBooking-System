@@ -28,12 +28,12 @@ const MovieInfo = ({ movie }) => {
   return (
     <div className="movie-info">
       <div>
-        <h1>{movie.title}</h1>
+        <h1>{movie.movieTitle}</h1>
         <br />
 
         <Image
           src={imageSrc}
-          alt={movie.title}
+          alt={movie.movieTitle}
           width={200}
           height={300}
           className="movie-poster"

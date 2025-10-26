@@ -23,7 +23,7 @@ export default function Home() {
         setAllMovies(data.items);
 
         // Calculate unique genres from the fetched data
-        const allGenreStrings = data.items.map((movie) => movie.genre);
+        const allGenreStrings = data.items.map((movie) => movie.category);
         const allIndividualGenres = allGenreStrings.flatMap((genreString) =>
           genreString.split(", ").map((g) => g.trim())
         );
@@ -35,12 +35,12 @@ export default function Home() {
 
   // Filter movies based on selected genres and search query
   const filteredMovies = allMovies.filter((movie) => {
-    const titleMatchesSearch = movie.title
+    const titleMatchesSearch = movie.movieTitle
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     // Genre filtering
     if (genreSelected.length > 0) {
-      const movieGenres = movie.genre.split(", ").map((g) => g.trim());
+      const movieGenres = movie.category.split(", ").map((g) => g.trim());
       const matchesGenre = genreSelected.some((selected) =>
         movieGenres.includes(selected)
       );
