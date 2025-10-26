@@ -47,3 +47,8 @@
 
 To have real time logs:
 ```docker logs -f backend-app-1``
+
+
+## Seed docker
+1. ```docker-compose exec app npx prisma migrate dev```
+2. ```docker-compose exec app npm run db:seed```
