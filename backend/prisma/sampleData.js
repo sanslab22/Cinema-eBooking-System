@@ -38,6 +38,7 @@ export const movies = [
     synopsis: 'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',
     trailerURL: 'https://www.youtube.com/watch?v=NmzuHjWmXOc',
     filmRating: 'R',
+    imagePoster: 'shawshank.jpg',
   },
   {
     id: 2,
@@ -49,6 +50,7 @@ export const movies = [
     synopsis: 'The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.',
     trailerURL: 'https://www.youtube.com/watch?v=sY1S34973zA',
     filmRating: 'R',
+    imagePoster: 'godfather.jpg',
   },
   {
     id: 3,
@@ -60,6 +62,7 @@ export const movies = [
     synopsis: 'A skilled thief, Dom Cobb, enters people’s dreams to steal corporate secrets...',
     trailerURL: 'https://www.youtube.com/watch?v=YoHD9XEInc0',
     filmRating: 'PG-13',
+    imagePoster: 'inception.jpg',
   },
   {
     id: 4,
@@ -71,6 +74,7 @@ export const movies = [
     synopsis: 'A 10-year-old girl, Chihiro, becomes trapped in a magical world ruled by spirits, witches, and monsters...',
     trailerURL: 'https://www.youtube.com/watch?v=ByXuk9QqQkk',
     filmRating: 'PG',
+    imagePoster: 'spiritedaway.jpg',
   },
 ];
 
