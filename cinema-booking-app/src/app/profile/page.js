@@ -1,28 +1,71 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./page.css";
 
 export default function EditProfile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [promotions, setPromotions] = useState(true);
+  const [promotions, setPromotions] = useState(false); // Will be set by fetch
+  const [user, setUser] = useState(null); // Start with null
 
-  // Sample user data
-  const [user, setUser] = useState({
-    firstName: "Jenna",
-    lastName: "Martin",
-    email: "jenna@example.com",
-    billingAddress: {
-      street: "123 Main St",
-      apt: "Apt 4B",
-      city: "Atlanta",
-      state: "GA",
-      zip: "30301",
-    },
-    password: "********",
-    paymentCards: [
-      { cardNumber: "**** **** **** 1234", name: "Jenna Martin", expiry: "05/26", cvv: "***", zip: "30301" },
-    ],
-  });
+  // States for loading, errors, and cancellation
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [originalUser, setOriginalUser] = useState(null);
+  const [originalPromotions, setOriginalPromotions] = useState(false);
+
+
+  useEffect(() => {
+    // Don't fetch if we don't know who the user is
+    if (!authUser) {
+      setLoading(false);
+      setError("You must be logged in to view this page.");
+      return; 
+    }
+
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // HERE IS THE DYNAMIC URL:
+        const response = await fetch(`http://localhost:3001/api/users/${authUser.id}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        
+        const backendData = await response.json();
+
+        // Transform backend data to fit frontend state
+        const billingAddress = backendData.addresses[0] || {
+          street: "", apt: "", city: "", state: "", zip: "",
+        };
+        const frontendUser = {
+          firstName: backendData.firstName,
+          lastName: backendData.lastName,
+          email: backendData.email,
+          billingAddress: billingAddress,
+          password: "", // Never fetch/store the real password
+          paymentCards: backendData.paymentCards || [],
+        };
+
+        // Set the state
+        setUser(frontendUser);
+        setPromotions(backendData.EnrollforPromotions || false);
+        
+        // Store original state for "Cancel" button
+        setOriginalUser(JSON.parse(JSON.stringify(frontendUser))); // Deep copy
+        setOriginalPromotions(backendData.EnrollforPromotions || false);
+
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [authUser]); // Re-run this if the logged-in user changes
 
   const handleInputChange = (e, field, subfield, index) => {
     if (subfield) {
@@ -56,6 +99,92 @@ export default function EditProfile() {
     setUser({ ...user, paymentCards: updated });
   };
 
+  // 4. ADD HANDLERS FOR EDIT/SAVE/CANCEL
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelClick = () => {
+    // Revert changes from the stored original state
+    setUser(originalUser);
+    setPromotions(originalPromotions);
+    setIsEditing(false);
+  };
+
+  const handleSaveClick = async () => {
+    if (!authUser) { 
+      alert("No user logged in.");
+      return;
+    }
+    try {
+      // Transform frontend state BACK to backend format
+      const backendPayload = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        EnrollforPromotions: promotions,
+        addresses: [user.billingAddress], // Put single address object into an array
+        paymentCards: user.paymentCards,
+      };
+
+      // Only send password if the user entered a new one
+      if (user.password && user.password !== "") {
+        backendPayload.password = user.password;
+      }
+
+      // HERE IS THE DYNAMIC SAVE URL:
+      const response = await fetch(`http://localhost:3001/api/users/${authUser.id}`, {
+        method: 'PUT', // Or 'PATCH'
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(backendPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save profile');
+      }
+      
+      const savedBackendData = await response.json();
+
+      // Re-transform the saved data to update our state
+      const billingAddress = savedBackendData.addresses[0] || { street: "", apt: "", city: "", state: "", zip: "" };
+      const savedFrontendUser = {
+        firstName: savedBackendData.firstName,
+        lastName: savedBackendData.lastName,
+        email: savedBackendData.email,
+        billingAddress: billingAddress,
+        password: "", // Always clear password field after save
+        paymentCards: savedBackendData.paymentCards || [],
+      };
+
+      setUser(savedFrontendUser);
+      setOriginalUser(JSON.parse(JSON.stringify(savedFrontendUser))); // Update original
+      setPromotions(savedBackendData.EnrollforPromotions);
+      setOriginalPromotions(savedBackendData.EnrollforPromotions);
+
+      setIsEditing(false);
+      alert("Profile saved successfully!");
+
+    } catch (err) {
+      alert(`Error saving: ${err.message}`);
+    }
+  };
+
+
+  // 5. ADD LOADING/ERROR HANDLING
+  if (loading) {
+    return <div className="profile-container">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="profile-container">Error: {error}</div>;
+  }
+
+  if (!user) {
+    // This will show if authUser was null or if fetch failed
+    return <div className="profile-container">Could not load user profile.</div>;
+  }
+  
   return (
     <div className="profile-container">
       <h1>My Profile</h1>

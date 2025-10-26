@@ -17,7 +17,7 @@ export default function Home() {
 
   // Fetch data from the API when the component loads
   useEffect(() => {
-    fetch("http://localhost:3000/api/movies")
+    fetch("http://localhost:3001/api/movies")
       .then((response) => response.json())
       .then((data) => {
         setAllMovies(data.items);
