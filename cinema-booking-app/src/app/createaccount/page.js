@@ -155,10 +155,88 @@ const CreateAccount = () => {
     }
   };
 
-  const verifyAccount = () => {
+  const verifyAccount = async () => {
+    // 1. Check if the verification code is correct
     if (formData.code === randomCode.toString()) {
-      router.push("/login");
+      try {
+        
+        // --- 2. Transform frontend data to match backend controller ---
+
+        // Split fullName into firstName and lastName
+        const nameParts = formData.fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        // Create the nested homeAddress object
+        const homeAddress = {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+        };
+
+        // --- IMPORTANT ASSUMPTION ---
+        // Your backend *requires* a billingAddress for each card,
+        // but your form only collects a homeAddress.
+        // The code below *assumes the billing address is the same as the home address*.
+        const paymentCards = formData.paymentCards
+          .filter(card => card.cardNumber && card.expDate) // Only send cards that have data
+          .map(card => ({
+            cardNo: card.cardNumber,         // 'cardNumber' -> 'cardNo'
+            expirationDate: card.expDate,  // 'expDate' -> 'expirationDate'
+            
+            // Re-using home address as billing address
+            billingAddress: { 
+              street: formData.address,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.zipCode,
+            },
+          }));
+
+        // Build the final payload for the API
+        const payload = {
+          email: formData.email,
+          firstName: firstName,
+          lastName: lastName,
+          password: formData.password,
+          homeAddress: homeAddress,
+          paymentCards: paymentCards,
+          // Note: 'username' and 'subscribe' from your form
+          // are not in your backend controller, so we don't send them.
+        };
+
+        // --- 3. Call your backend API endpoint ---
+        
+        // I am assuming your API route is '/api/auth/register'
+        // based on your file name (authController) and function (register).
+        // Change this URL if your route is different!
+        const response = await fetch('http://localhost:3001/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        // --- 4. Handle success or error from the server ---
+        if (response.ok) {
+          // Success! User was created. Now redirect to login.
+          router.push("/login");
+        } else {
+          // Handle errors (e.g., "User already exists.")
+          const errorData = await response.json();
+          setError(true);
+          setErrorMessage(errorData.message || "Failed to create account.");
+        }
+      } catch (error) {
+        // Handle network errors or other unexpected issues
+        console.error("Registration failed:", error);
+        setError(true);
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
     } else {
+      // Handle incorrect verification code
       setError(true);
       setErrorMessage("Invalid code");
     }

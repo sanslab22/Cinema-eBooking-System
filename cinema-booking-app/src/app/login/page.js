@@ -16,24 +16,24 @@ const Login = () => {
 
   // 4. Make handleLogin async and accept the event 'e'
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent form from reloading the page
+    e.preventDefault(); // Prevent default form submission
     setError(false);
     setErrorMessage("");
 
-    // 5. Check if states (not form fields) are empty
     if (!email || !password) {
       setError(true);
       setErrorMessage("Please enter an email and password");
-      return; // Stop execution
-          }
-    // 6. Add the fetch logic
+      return;
+    }
+
     try {
+      // Your fetch call is perfect.
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }), // Use state variables
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -43,16 +43,32 @@ const Login = () => {
       }
 
       if (!data.user || !data.user.id) {
-        throw new Error('Login successful, but no user ID was returned.');
+        throw new Error("Login response is missing token or user ID.");
       }
-      
-      // 7. Save the ID to localStorage
-      localStorage.setItem('userId', data.user.id);
-      
-      // 8. Redirect to profile page
-      router.push('/profile'); // Or your profile page route
 
-    } catch (err) {
+      // on successful login, you might want to store user data in the profile page but i wanna get it from the database
+      // Save *only* the token and ID
+      localStorage.setItem("userId", data.user.id.toString()); // Save as string
+
+      
+      // On successful login, redirect to home page
+      router.push('/'); // 5. Use router to navigate to home page
+
+
+
+      // You can now use the token and ID in subsequent API calls
+      // For example, fetch user profile data:
+      // const userResponse = await fetch('http://localhost:3001/api/user/profile', {
+      //   method: 'GET',
+      //   headers: {
+      //     'Authorization': `Bearer ${data.token}`,
+      //   },
+      // });
+
+
+
+    }
+    catch (err) {
       setError(true);
       setErrorMessage(err.message);
     }

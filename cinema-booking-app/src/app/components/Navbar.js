@@ -2,40 +2,83 @@
 import { Button } from "@mui/material";
 import "./Navbar.css";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// RIGHT: Get navigation hooks from next/navigation
+import { useRouter, usePathname } from "next/navigation";
+
+// RIGHT: Get React hooks from 'react'
+import React, { useState, useEffect } from "react";
 
 const Navbar = () => {
   const router = useRouter();
-  const notLoggedIn  = true;
-  const isAdmin = false;
 
+  // 2. Get the current URL path
+  const pathname = usePathname();
+
+  // 2. Use state to track login status. Default to 'false' (not logged in).
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // We can also add admin state later if needed
+  // const [isAdmin, setIsAdmin] = useState(false);
+
+  // 3. Update the useEffect hook
+  useEffect(() => {
+    // This effect will now re-run every time 'pathname' changes
+    const userId = localStorage.getItem("userId"); 
+    if (userId) {
+      setIsLoggedIn(true);
+    } else {
+      // 4. Add an 'else' block
+      // This ensures you are logged out when you click "Logout"
+      setIsLoggedIn(false);
+    }
+  }, [pathname]); // 5. Add 'pathname' as a dependency
+
+  // 4. Create a function to handle logging out
+  const handleLogout = () => {
+    // Clear only the "userId" from localStorage
+    localStorage.removeItem("userId");
+    
+    // Redirect to the login page
+    router.push("/login");
+  };
   return (
     <div className="navbar">
       <Link href="/" style={{ textDecoration: "none", color: "white" }}>
         <h1>Cinema E-Booking App</h1>{" "}
       </Link>
 
-      {notLoggedIn?
-      <div className="nav-buttons">
-        <Link href="/createaccount" style={{ textDecoration: "none" }}>
-          <p className="link">Register</p>
-        </Link>
-        <Button
-          variant="contained"
+      {/* 5. Check your state variable */}
+      {!isLoggedIn ? (
+        <div className="nav-buttons">
+          <Link href="/createaccount" style={{ textDecoration: "none" }}>
+            <p className="link">Register</p>
+          </Link>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => router.push("/login")}
+          >
+            Login
+          </Button>
+        </div>
+      ) : (
+        <div className="nav-buttons-loggedin">
+          <Link href="/orders" style={{ textDecoration: "none", color: "white" }}>
+             <p>Orders</p>
+          </Link>
+          <Button variant="contained"
           color="secondary"
-          onClick={() => router.push("/login")}
-        >
-          Login
-        </Button>
-      </div>
-      :<div className="nav-buttons-loggedin">
-        <p>Orders</p>
-        <p>Profile</p>
-        <Button variant="contained"
-          color="secondary"
-          onClick={() => router.push("/login")}>Logout</Button>
-        </div>}
-      
+          onClick={() => router.push("/profile")}
+          className="profile-button"
+        >Profile</Button>
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            onClick={handleLogout} // 6. Call handleLogout on click
+          >
+            Logout
+          </Button>
+        </div>
+      )} 
     </div>
   );
 };

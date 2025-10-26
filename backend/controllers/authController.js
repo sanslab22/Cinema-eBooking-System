@@ -59,10 +59,16 @@ export const register = async (req, res) => {
             },
           });
 
+          // 1. Get the string from the request (e.g., "12/25")
+          const [month, year] = card.expirationDate.split('/');
+
+          // 2. Create a Date object representing the last day of that month
+          const validExpDate = new Date(`20${year}-${month}-01`); // Day 0 gives last day of previous month
+
           await tx.paymentCard.create({
             data: {
               cardNo: card.cardNo,
-              expirationDate: card.expirationDate,
+              expirationDate: validExpDate,
               userID: createdUser.id,
               billingAddressId: billingAddress.id,
             },
@@ -133,6 +139,11 @@ export const login = async (req, res) => {
     const valid = await comparePasswords(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: "Invalid credentials." });
 
+    // --- 1. THIS IS THE LINE YOU NEED TO ADD ---
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
     // Find home address (addressTypeId == 1)
     const homeAddress = user.addresses.find(addr => addr.addressTypeId === 1);
 
@@ -151,6 +162,7 @@ export const login = async (req, res) => {
 
     res.json({
       message: "Login successful",
+      token: token, // --- 2. RETURN THE TOKEN ---
       user: {
         id: user.id,
         firstName: user.firstName,

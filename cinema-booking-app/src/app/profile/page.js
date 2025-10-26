@@ -15,10 +15,18 @@ export default function EditProfile() {
 
 
   useEffect(() => {
-    // Don't fetch if we don't know who the user is
-    if (!authUser) {
+
+    // 1. Get the userId and token from localStorage
+    const userId = localStorage.getItem('userId');
+    //const token = localStorage.getItem('authToken');
+
+
+    // 2. Check if they are logged in
+    if (!userId) {
       setLoading(false);
       setError("You must be logged in to view this page.");
+      // You should redirect here:
+      //router.push('/login');
       return; 
     }
 
@@ -27,9 +35,11 @@ export default function EditProfile() {
         setLoading(true);
         setError(null);
 
-        // HERE IS THE DYNAMIC URL:
-        const response = await fetch(`http://localhost:3001/api/users/${authUser.id}`);
-        
+        // 3. Use the 'userId' from localStorage in the fetch URL
+        // This will become "http://localhost:3001/api/users/4"
+        const response = await fetch(`http://localhost:3001/api/users/${userId}`);
+
+
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
         }
@@ -37,14 +47,17 @@ export default function EditProfile() {
         const backendData = await response.json();
 
         // Transform backend data to fit frontend state
-        const billingAddress = backendData.addresses[0] || {
+        // Use home address (addressTypeId: 1)
+        const homeAddress = backendData.addresses.find(addr => addr.addressTypeId === 1) || {
           street: "", apt: "", city: "", state: "", zip: "",
         };
+
         const frontendUser = {
           firstName: backendData.firstName,
           lastName: backendData.lastName,
           email: backendData.email,
-          billingAddress: billingAddress,
+          // Set billingAddress to be the homeAddress
+          billingAddress: homeAddress, 
           password: "", // Never fetch/store the real password
           paymentCards: backendData.paymentCards || [],
         };
@@ -65,7 +78,7 @@ export default function EditProfile() {
     };
 
     fetchUserData();
-  }, [authUser]); // Re-run this if the logged-in user changes
+  }, []); // 5. Set to [] to run only once when the page loads
 
   const handleInputChange = (e, field, subfield, index) => {
     if (subfield) {
@@ -84,8 +97,9 @@ export default function EditProfile() {
   const toggleEdit = () => setIsEditing(!isEditing);
 
   const handleAddCard = () => {
-    if (user.paymentCards.length >= 4) {
-      alert("You can only store up to 4 payment cards.");
+    // Note: Your backend supports 3, your frontend check says 4.
+    if (user.paymentCards.length >= 3) { 
+      alert("You can only store up to 3 payment cards.");
       return;
     }
     setUser({
@@ -99,11 +113,6 @@ export default function EditProfile() {
     setUser({ ...user, paymentCards: updated });
   };
 
-  // 4. ADD HANDLERS FOR EDIT/SAVE/CANCEL
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
   const handleCancelClick = () => {
     // Revert changes from the stored original state
     setUser(originalUser);
@@ -111,18 +120,24 @@ export default function EditProfile() {
     setIsEditing(false);
   };
 
+  // --- This handleSaveClick is now fixed (No Token) ---
   const handleSaveClick = async () => {
-    if (!authUser) { 
-      alert("No user logged in.");
+    // 1. Get ID from localStorage
+    const userId = localStorage.getItem('userId');
+
+    // 2. Check ONLY for userId
+    if (!userId) { 
+      alert("You must be logged in to save.");
       return;
     }
+
     try {
       // Transform frontend state BACK to backend format
       const backendPayload = {
         firstName: user.firstName,
         lastName: user.lastName,
         EnrollforPromotions: promotions,
-        addresses: [user.billingAddress], // Put single address object into an array
+        homeAddress: user.billingAddress, 
         paymentCards: user.paymentCards,
       };
 
@@ -131,11 +146,12 @@ export default function EditProfile() {
         backendPayload.password = user.password;
       }
 
-      // HERE IS THE DYNAMIC SAVE URL:
-      const response = await fetch(`http://localhost:3001/api/users/${authUser.id}`, {
-        method: 'PUT', // Or 'PATCH'
+      // 3. Send the PUT request WITHOUT the Authorization header
+      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          // No 'Authorization' line here
         },
         body: JSON.stringify(backendPayload),
       });
@@ -147,12 +163,12 @@ export default function EditProfile() {
       const savedBackendData = await response.json();
 
       // Re-transform the saved data to update our state
-      const billingAddress = savedBackendData.addresses[0] || { street: "", apt: "", city: "", state: "", zip: "" };
+      const homeAddress = savedBackendData.addresses.find(addr => addr.addressTypeId === 1) || { street: "", apt: "", city: "", state: "", zip: "" };
       const savedFrontendUser = {
         firstName: savedBackendData.firstName,
         lastName: savedBackendData.lastName,
         email: savedBackendData.email,
-        billingAddress: billingAddress,
+        billingAddress: homeAddress,
         password: "", // Always clear password field after save
         paymentCards: savedBackendData.paymentCards || [],
       };
@@ -171,7 +187,7 @@ export default function EditProfile() {
   };
 
 
-  // 5. ADD LOADING/ERROR HANDLING
+  // --- Render logic (no changes, but now it works) ---
   if (loading) {
     return <div className="profile-container">Loading profile...</div>;
   }
@@ -181,10 +197,9 @@ export default function EditProfile() {
   }
 
   if (!user) {
-    // This will show if authUser was null or if fetch failed
     return <div className="profile-container">Could not load user profile.</div>;
   }
-  
+
   return (
     <div className="profile-container">
       <h1>My Profile</h1>
@@ -256,11 +271,15 @@ export default function EditProfile() {
               Receive Promotions
             </label>
           </div>
-
           <div className="button-row">
-            <button onClick={toggleEdit}>Save</button>
+            <button onClick={handleSaveClick}>Save</button>
+            {/* Add this button */}
+            <button onClick={handleCancelClick} className="cancel-button">
+              Cancel
+            </button>
           </div>
         </div>
+        
       )}
     </div>
   );
