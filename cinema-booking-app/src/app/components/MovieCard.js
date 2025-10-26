@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 
 const MovieCard = (prop) => {
   // Ensure the path always starts with /
-  const imageSrc = prop.movie.movieImage?.startsWith("/")
-    ? prop.movie.movieImage
-    : `/images/movies/${prop.movie.movieImage}`;
+  const imageSrc = prop.movie.imagePoster?.startsWith("/")
+    ? prop.movie.imagePoster
+    : `/images/movies/${prop.movie.imagePoster}`;
   const router = useRouter();
 
   return (

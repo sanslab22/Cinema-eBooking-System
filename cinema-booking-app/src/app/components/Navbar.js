@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-  const notLoggedIn = true;
+  const notLoggedIn  = true;
   const isAdmin = false;
 
   return (
@@ -30,13 +30,7 @@ const Navbar = () => {
       </div>
       :<div className="nav-buttons-loggedin">
         <p>Orders</p>
-        
-        <Button variant="contained"
-          color="secondary"
-          onClick={() => router.push("/profile")}
-          className="profile-button"
-        >Profile</Button>
-
+        <p>Profile</p>
         <Button variant="contained"
           color="secondary"
           onClick={() => router.push("/login")}>Logout</Button>

@@ -40,7 +40,7 @@ export default function Home() {
       .includes(searchQuery.toLowerCase());
     // Genre filtering
     if (genreSelected.length > 0) {
-      const movieGenres = movie.genre.split(", ").map((g) => g.trim());
+      const movieGenres = movie.category.split(", ").map((g) => g.trim());
       const matchesGenre = genreSelected.some((selected) =>
         movieGenres.includes(selected)
       );
