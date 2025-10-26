@@ -39,6 +39,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=NmzuHjWmXOc',
     filmRating: 'R',
     imagePoster: 'shawshank.jpg',
+    isActive: true,
   },
   {
     id: 2,
@@ -51,6 +52,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=sY1S34973zA',
     filmRating: 'R',
     imagePoster: 'godfather.jpg',
+    isActive: true,
   },
   {
     id: 3,
@@ -63,6 +65,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=YoHD9XEInc0',
     filmRating: 'PG-13',
     imagePoster: 'inception.jpg',
+    isActive: false,
   },
   {
     id: 4,
@@ -75,6 +78,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=ByXuk9QqQkk',
     filmRating: 'PG',
     imagePoster: 'spiritedaway.jpg',
+    isActive: false,
   },
 ];
 
