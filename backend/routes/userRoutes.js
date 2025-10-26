@@ -3,6 +3,9 @@ import cors from "cors";
 import prisma from "../prismaClient.js";
 import { hashPassword } from "../utils/hashUtils.js";
 
+
+// PLEASE ONLY DEFINE THE ENDPOINTS HERE, LOGIC HANDLED IN CONTROLLER/UTILS
+
 const router = express.Router();
 
 router.use(express.json());

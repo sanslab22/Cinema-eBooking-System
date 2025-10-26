@@ -92,20 +92,79 @@ export const register = async (req, res) => {
 
 
 
+// export const login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await findUserByEmail(email);
+//     if (!user) return res.status(404).json({ message: "User not found." });
+
+//     const valid = await comparePasswords(password, user.passwordHash);
+//     if (!valid) return res.status(401).json({ message: "Invalid credentials." });
+
+//     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+//       expiresIn: "1d",
+//     });
+
+//     res.json({ message: "Login successful", token, user });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await findUserByEmail(email);
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        addresses: true, // all addresses (home, billing)
+        paymentCards: {
+          include: { billingAddress: true },
+        },
+        userType: true,
+        userStatus: true,
+      },
+    });
+
     if (!user) return res.status(404).json({ message: "User not found." });
 
     const valid = await comparePasswords(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: "Invalid credentials." });
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    // Find home address (addressTypeId == 1)
+    const homeAddress = user.addresses.find(addr => addr.addressTypeId === 1);
 
-    res.json({ message: "Login successful", token, user });
+    const paymentCards = user.paymentCards.map(card => ({
+      cardNumber: `**** **** **** ${card.cardNo.slice(-4)}`,
+      name: `${user.firstName} ${user.lastName}`,
+      expiry: card.expirationDate,
+      zip: card.billingAddress.zipCode,
+      billingAddress: {
+        street: card.billingAddress.street,
+        city: card.billingAddress.city,
+        state: card.billingAddress.state,
+        zip: card.billingAddress.zipCode,
+      },
+    }));
+
+    res.json({
+      message: "Login successful",
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        homeAddress: homeAddress ? {
+          street: homeAddress.street,
+          city: homeAddress.city,
+          state: homeAddress.state,
+          zip: homeAddress.zipCode,
+        } : null,
+        password: "********",
+        paymentCards,
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
