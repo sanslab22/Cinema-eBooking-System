@@ -39,7 +39,8 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=NmzuHjWmXOc',
     filmRating: 'R',
     imagePoster: 'shawshank.jpg',
-    isActive: true,
+    isActive: true
+
   },
   {
     id: 2,
@@ -52,7 +53,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=sY1S34973zA',
     filmRating: 'R',
     imagePoster: 'godfather.jpg',
-    isActive: true,
+    isActive: true
   },
   {
     id: 3,
@@ -65,7 +66,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=YoHD9XEInc0',
     filmRating: 'PG-13',
     imagePoster: 'inception.jpg',
-    isActive: false,
+    isActive: false
   },
   {
     id: 4,
@@ -78,7 +79,7 @@ export const movies = [
     trailerURL: 'https://www.youtube.com/watch?v=ByXuk9QqQkk',
     filmRating: 'PG',
     imagePoster: 'spiritedaway.jpg',
-    isActive: false,
+    isActive: false
   },
 ];
 
@@ -90,7 +91,7 @@ export const users = [
     firstName: 'Site',
     lastName: 'Admin',
     email: 'admin@cinema.com',
-    passwordHash: '04e139f15b8aa969c74a4b1a298acfed9773d817307f980de39d8a5929dc4128', // Aaa1234
+    passwordHash: '$2b$10$kB4h3OAdzFADEIpmiPPbqenzzF1P1i0q8oECopUJYg3R/YnmUUdoi', // Aaa1234
     phoneNumber: '555-123-4567',
     EnrollforPromotions: true,
     userTypeId: 1, // Admin
@@ -101,7 +102,7 @@ export const users = [
     firstName: 'Jane',
     lastName: 'Doe',
     email: 'jane.doe@example.com',
-    passwordHash: 'a1c37aa17b24e901b1e9d646d2d21628253d5cd61ba637d92b20b03b2d68064a', // Aaa1234! 
+    passwordHash: '$2b$10$jvUdIkYgameUo46UsY73o.lB0R3eGq37HEnhRR4fSSUrv9cOlEG7W', // Aaa1234! 
     phoneNumber: '555-987-6543',
     EnrollforPromotions: true,
     userTypeId: 2, // Customer
@@ -112,7 +113,7 @@ export const users = [
     firstName: 'John',
     lastName: 'Smith',
     email: 'john.smith@example.com',
-    passwordHash: '77aae185203edc6357676db95caa25d0f398d402c1723e6a7b42cfe8d2967f2e', // Qwerty123
+    passwordHash: '$2b$10$DMO071q6n0VzcPdsuWQLOee/r958476uGN.9m1nLwslmsbJPfToTG', // Qwerty123
     phoneNumber: null,
     EnrollforPromotions: false,
     userTypeId: 2, // Customer
