@@ -40,7 +40,7 @@ const MovieCard = (prop) => {
           variant="contained"
           color="secondary"
           onClick={() => {
-            router.push(`/movies/${prop.movie.movie_id}`);
+            router.push(`/movies/${prop.movie.id}`);
           }}
         >
           View Details

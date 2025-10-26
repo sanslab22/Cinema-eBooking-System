@@ -64,6 +64,8 @@ async function main() {
                     synopsis: data.synopsis,
                     trailerURL: data.trailerURL,
                     filmRating: data.filmRating,
+                    imagePoster: data.imagePoster,
+                    isActive: data.isActive,
                 }
             })
         })

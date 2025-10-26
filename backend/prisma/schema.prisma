@@ -21,8 +21,12 @@ model Movie {
   synopsis    String?  @db.Text
   trailerURL  String?  @db.VarChar(500)
   filmRating  String   @db.VarChar(10)
+  imagePoster String?  @db.VarChar(500)
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  
 
   reviews     Review[]
   movieShows  MovieShow[]

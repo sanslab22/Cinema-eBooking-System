@@ -9,9 +9,9 @@ import { useRouter } from "next/navigation";
 const MovieInfo = ({ movie }) => {
   const router = useRouter();
 
-  const imageSrc = movie.movieImage?.startsWith("/")
-    ? movie.movieImage
-    : `/images/movies/${movie.movieImage}`;
+  const imageSrc = movie.imagePoster?.startsWith("/")
+    ? movie.imagePoster
+    : `/images/movies/${movie.imagePoster}`;
 
   const getEmbedUrl = (url) => {
     if (!url) return null;

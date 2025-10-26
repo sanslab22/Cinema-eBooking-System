@@ -23,7 +23,7 @@ export default function Home() {
         setAllMovies(data.items);
 
         // Calculate unique genres from the fetched data
-        const allGenreStrings = data.items.map((movie) => movie.category);
+        const allGenreStrings = ((movie) => movie.category);
         const allIndividualGenres = allGenreStrings.flatMap((genreString) =>
           genreString.split(", ").map((g) => g.trim())
         );
