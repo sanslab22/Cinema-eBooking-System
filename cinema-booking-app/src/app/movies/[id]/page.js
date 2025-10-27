@@ -6,7 +6,7 @@ import ShowtimesWrapper from "@/app/components/ShowtimesWrapper";
 
 // Get the data from the api from server.js using the GET a single movie by id endpoint without prisma
 async function getMovie(id) {
-    const res = await fetch(`http://localhost:3001/api/movies/${id}`, { cache: 'no-store' });
+    const res = await fetch(`http://localhost:3002/api/movies/${id}`, { cache: 'no-store' });
 
     if (!res.ok) {
         return null;

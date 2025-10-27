@@ -220,7 +220,7 @@ const CreateAccount = () => {
         // I am assuming your API route is '/api/auth/register'
         // based on your file name (authController) and function (register).
         // Change this URL if your route is different!
-        const response = await fetch('http://localhost:3001/api/auth/register', {
+        const response = await fetch('http://localhost:3002/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

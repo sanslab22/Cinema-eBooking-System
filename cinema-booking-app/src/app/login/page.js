@@ -28,7 +28,7 @@ const Login = () => {
 
     try {
       // Your fetch call is perfect.
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await fetch('http://localhost:3002/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ const Login = () => {
 
       // You can now use the token and ID in subsequent API calls
       // For example, fetch user profile data:
-      // const userResponse = await fetch('http://localhost:3001/api/user/profile', {
+      // const userResponse = await fetch('http://localhost:3002/api/user/profile', {
       //   method: 'GET',
       //   headers: {
       //     'Authorization': `Bearer ${data.token}`,

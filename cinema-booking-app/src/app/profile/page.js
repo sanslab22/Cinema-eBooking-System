@@ -44,8 +44,8 @@ export default function EditProfile() {
         setError(null);
 
         // 3. Use the 'userId' from localStorage in the fetch URL
-        // This will become "http://localhost:3001/api/users/4"
-        const response = await fetch(`http://localhost:3001/api/users/${userId}`);
+        // This will become "http://localhost:3002/api/users/4"
+        const response = await fetch(`http://localhost:3002/api/users/${userId}`);
 
 
         if (!response.ok) {
@@ -178,9 +178,17 @@ export default function EditProfile() {
         firstName: user.firstName,
         lastName: user.lastName,
         EnrollforPromotions: promotions,
-        homeAddress: user.billingAddress, 
+        homeAddress: {
+          street: user.billingAddress.street,
+          city: user.billingAddress.city,
+          state: user.billingAddress.state,
+          zipCode: user.billingAddress.zip, // Rename 'zip' to 'zipCode'
+          // 'apt' is not in the backend Address model, so we don't send it.
+        },
         paymentCards: user.paymentCards,
       };
+
+      console.log(backendPayload)
 
       // --- UPDATED: Only send password if the user filled out the reset form ---
       if (
@@ -195,7 +203,7 @@ export default function EditProfile() {
       // --- END UPDATE ---
 
       // 3. Send the PUT request WITHOUT the Authorization header
-      const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
+      const response = await fetch(`http://localhost:3002/api/users/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

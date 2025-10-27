@@ -76,8 +76,9 @@ export async function updateUserById(req, res) {
       // Handle password change if both oldPassword & newPassword are provided
       // --- 2. Use 'comparePasswords' (plural) ---
       if (oldPassword && newPassword) {
-        // a. Verify their old password
-        const isMatch = await comparePasswords(oldPassword, user.passwordHash);
+        // a. Fetch the current user to verify their old password
+        const currentUser = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+        const isMatch = await comparePasswords(oldPassword, currentUser.passwordHash);
 
         if (!isMatch) {
           // b. If no match, throw a specific error
@@ -86,9 +87,6 @@ export async function updateUserById(req, res) {
         
         // c. If match, hash the new password
         data.passwordHash = await hashPassword(newPassword);
-
-      } else if (password) {
-        data.passwordHash = await hashPassword(password);
       }
 
       if (Object.keys(data).length > 0) {
