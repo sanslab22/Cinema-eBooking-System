@@ -42,6 +42,8 @@ const Navbar = () => {
     // Clear only the "userId" from localStorage
     localStorage.removeItem("userId");
     localStorage.removeItem("userType"); // <-- ADD THIS LINE
+    setIsLoggedIn(false);
+    setIsAdmin(false);
     
     // Redirect to the login page
     router.push("/login");
@@ -92,7 +94,7 @@ const Navbar = () => {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => router.push("/login")}
+            onClick={() => {router.push("/login"); handleLogout();}}
           >
             Logout
           </Button>
