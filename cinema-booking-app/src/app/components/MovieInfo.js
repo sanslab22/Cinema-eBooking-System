@@ -9,9 +9,9 @@ import { useRouter } from "next/navigation";
 const MovieInfo = ({ movie }) => {
   const router = useRouter();
 
-  const imageSrc = movie.movieImage?.startsWith("/")
-    ? movie.movieImage
-    : `/images/movies/${movie.movieImage}`;
+  const imageSrc = movie.imagePoster?.startsWith("/")
+    ? movie.imagePoster
+    : `/images/movies/${movie.imagePoster}`;
 
   const getEmbedUrl = (url) => {
     if (!url) return null;
@@ -21,19 +21,19 @@ const MovieInfo = ({ movie }) => {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
-  const trailerUrl = getEmbedUrl(movie.trailer);
+  const trailerUrl = getEmbedUrl(movie.trailerUrl);
 
   const times = ["12:00 pm", "5:00 pm", "10:00 pm"];
 
   return (
     <div className="movie-info">
       <div>
-        <h1>{movie.title}</h1>
+        <h1>{movie.movieTitle}</h1>
         <br />
 
         <Image
           src={imageSrc}
-          alt={movie.title}
+          alt={movie.movieTitle}
           width={200}
           height={300}
           className="movie-poster"
@@ -46,7 +46,7 @@ const MovieInfo = ({ movie }) => {
             width="560"
             height="315"
             src={trailerUrl}
-            title={`${movie.title} Trailer`}
+            title={`${movie.movieTitle} Trailer`}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -54,13 +54,13 @@ const MovieInfo = ({ movie }) => {
           ></iframe>
         </div>
         <h2>About</h2>
-        <p>{movie.description}</p>
+        <p>{movie.synopsis}</p>
         <p>
-          <b>Rating:</b> {movie.movie_rating}{" "}
+          <b>Rating:</b> {movie.filmRating}{" "}
         </p>
 
         <p>
-          <b>Genre:</b> {movie.genre}
+          <b>Genre:</b> {movie.category}
         </p>
         <p>
           <b>Duration:</b> {movie.duration} minutes
@@ -78,7 +78,7 @@ const MovieInfo = ({ movie }) => {
                   variant="outlined"
                   color="error"
                   onClick={() => {
-                    const encodedTitle = encodeURIComponent(movie.title);
+                    const encodedTitle = encodeURIComponent(movie.movieTitle);
                     const encodedTime = encodeURIComponent(time);
                     router.push(`/booking/${encodedTitle}/${encodedTime}`);
                   }}

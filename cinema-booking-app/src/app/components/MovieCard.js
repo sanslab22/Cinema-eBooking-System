@@ -6,21 +6,21 @@ import { useRouter } from "next/navigation";
 
 const MovieCard = (prop) => {
   // Ensure the path always starts with /
-  const imageSrc = prop.movie.movieImage?.startsWith("/")
-    ? prop.movie.movieImage
-    : `/images/movies/${prop.movie.movieImage}`;
+  const imageSrc = prop.movie.imagePoster?.startsWith("/")
+    ? prop.movie.imagePoster
+    : `/images/movies/${prop.movie.imagePoster}`;
   const router = useRouter();
 
   return (
     <div className="movie-card">
       <Image
         src={imageSrc}
-        alt={prop.movie.title}
+        alt={prop.movie.movieTitle}
         width={200}
         height={300}
         className="movie-img"
       />
-      <h3 className="movie-title">{prop.movie.title}</h3>
+      <h3 className="movie-title">{prop.movie.movieTitle}</h3>
 
       <div className="button-group">
         {prop.showButton ? (
@@ -40,7 +40,7 @@ const MovieCard = (prop) => {
           variant="contained"
           color="secondary"
           onClick={() => {
-            router.push(`/movies/${prop.movie.movie_id}`);
+            router.push(`/movies/${prop.movie.id}`);
           }}
         >
           View Details

@@ -39,3 +39,16 @@
 ```docker-compose logs -f postgres```    # View PostgreSQL logs
 
 ```docker-compose exec postgres psql -U cinema-e-booking -d cinema-e-booking```  # Connect to DB
+
+## Run latest changes when running through container
+1. ```docker-compose build app```
+2. ```docker-compose down```
+3. ```docker-compose up -d```
+
+To have real time logs:
+```docker logs -f backend-app-1``
+
+
+## Seed docker
+1. ```docker-compose exec app npx prisma migrate dev```
+2. ```docker-compose exec app npm run db:seed```
