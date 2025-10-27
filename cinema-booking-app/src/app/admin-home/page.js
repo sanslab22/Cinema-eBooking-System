@@ -1,12 +1,152 @@
 "use client";
-import Navbar from "../components/Navbar";
-import MovieList from "../components/MovieList";
-import SearchBar from "../components/SearchBar";
-import Genres from "../components/Genres";
 import { useState, useEffect } from "react";
 import "./page.css";
+import Link from "next/link";
 
-export default function Home() {
+// Helper components
+const StatCard = ({ title, value, icon }) => (
+  <div className="stat-card">
+    <div className="stat-icon">{icon}</div>
+    <div className="stat-content">
+      <div className="stat-title">{title}</div>
+      <div className="stat-value">{value.toLocaleString()}</div>
+    </div>
+  </div>
+);
+
+const QuickLink = ({ text, icon, onClick }) => (
+  <button className="quick-link" onClick={onClick}>
+    <div className="quick-link-icon">{icon}</div>
+    <div className="quick-link-text">{text}</div>
+  </button>
+);
+
+// Simulated API fetch
+const fetchAdminStats = async () => ({
+  totalBookings: 125,
+  registeredUsers: 1836,
+  runningMovies: 12,
+  upcomingMovies: 6,
+});
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    registeredUsers: 0,
+    runningMovies: 0,
+    upcomingMovies: 0,
+  });
+
+  const [allMovies, setAllMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsData = await fetchAdminStats();
+        setStats(statsData);
+
+        const response = await fetch("http://localhost:3000/api/movies");
+        const data = await response.json();
+        setAllMovies(data.items);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return <div>Loading Admin Dashboard...</div>;
+
+  
+  const IconBooking = "🎬";
+  const IconUsers = "👤";
+  const IconRunning = "🍿";
+  const IconUpcoming = "🕒";
+  const IconAddMovie = "+";
+  const IconTicketPrice = "$";
+  const IconPromotion = "📣";
+
+  const movieManagementList = allMovies.map((movie) => ({
+    title: movie.title,
+    category: movie.genre,
+    showtimes: "TBD", // Replace with showtimes logic
+    status: movie.isActive ? "Now Playing" : "Coming Soon",
+  }));
+
+  return (
+    <div className="admin-page">
+      {/* <header className="admin-header">
+        <h1>Cinema E-Booking Admin</h1>
+        <button className="log-out-btn">LOG OUT</button>
+      </header> */}
+
+      <div className="admin-tabs-container">
+        <div className="admin-tabs">
+          <Link href="/admin">Dashboard</Link>
+          <Link href="/admin/movies">Movies</Link>
+          <Link href="/admin/users">Users</Link>
+          <Link href="/admin/tickets">Tickets</Link>
+          <Link href="/admin/promotions">Promotions</Link>
+          <Link href="/admin/settings">Settings</Link>
+        </div>
+      </div>
+
+      <div className="admin-container">
+        {/* Stats */}
+        <div className="stats-row">
+          <StatCard title="Total Booking" value={stats.totalBookings} icon={IconBooking} />
+          <StatCard title="Registered Users" value={stats.registeredUsers} icon={IconUsers} />
+          <StatCard title="Running Movies" value={stats.runningMovies} icon={IconRunning} />
+          <StatCard title="Upcoming Movies" value={stats.upcomingMovies} icon={IconUpcoming} />
+        </div>
+
+        {/* Quick Links + Movie Table */}
+        <div className="main-content-row">
+          <div className="quick-links-panel">
+            <h2 className="panel-header">Quick Links</h2>
+            <QuickLink text="Add New Movie" icon={IconAddMovie} onClick={() => {}} />
+            <QuickLink text="Update Ticket Prices" icon={IconTicketPrice} onClick={() => {}} />
+            <QuickLink text="Create Promotion" icon={IconPromotion} onClick={() => {}} />
+          </div>
+
+          <div className="movie-management-panel">
+            <h2 className="panel-header">Movie Management</h2>
+            <table className="movie-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Showtimes</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {movieManagementList.map((movie, idx) => (
+                  <tr key={idx}>
+                    <td>{movie.title}</td>
+                    <td>{movie.category}</td>
+                    <td>{movie.showtimes}</td>
+                    <td>{movie.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+
+/* export default function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
   const [uniqueGenres, setUniqueGenres] = useState([]);
@@ -55,9 +195,10 @@ export default function Home() {
 
   //  Derive "Playing Now" and "Coming Soon" from the live data
   const moviesPlayingNow = filteredMovies.filter((movie) => movie.isActive);
-  const moviesComingSoon = filteredMovies.filter((movie) => !movie.isActive);
-
-  return (
+  const moviesComingSoon = filteredMovies.filter((movie) => !movie.isActive); */
+  
+  // add adminNavbar below 'page', but has to override Root Layout
+  /* return (
     <div className="page">
       <div className="container">
         {searchQuery.length > 0 ? (
@@ -95,3 +236,4 @@ export default function Home() {
     </div>
   );
 }
+ */
