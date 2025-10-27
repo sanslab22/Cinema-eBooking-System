@@ -63,16 +63,16 @@ const CreateAccount = () => {
     setFormData((prev) => ({ ...prev, paymentCards: cards }));
   };
 
-  const validateStep = async () => {
+  const validateStep = () => {
     setError(false);
     setErrorMessage("");
     const { username, email, password, confirmPassword, fullName } = formData;
 
     switch (step) {
       case 1:
-        if (!username) {
+        if (!username || !/\S+@\S+\.\S+/.test(username)) {
           setError(true);
-          setErrorMessage("Please enter a username");
+          setErrorMessage("Please enter a username (email only)");
           return false;
         }
         if (!email || !/\S+@\S+\.\S+/.test(email)) {
@@ -262,7 +262,7 @@ const CreateAccount = () => {
           <>
             <h2>Personal Information</h2>
             <label>
-              Username:
+              Username (Email Only):
               <input
                 type="text"
                 name="username"
