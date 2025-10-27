@@ -1,6 +1,6 @@
 // just write the logic portion here, e.g. export const editHomeAddress = ...// controllers/userController.js
 import prisma from "../prismaClient.js";
-import { hashPassword } from "../utils/hashUtils.js";
+import { hashPassword, comparePasswords } from "../utils/hashUtils.js";
 import {
   sanitizeFullUser,
   replaceHomeAddressIfProvided,
@@ -57,7 +57,8 @@ export async function updateUserById(req, res) {
     const {
       firstName,
       lastName,
-      password,                // optional → hash if present
+      oldPassword,                // optional → hash if present
+      newPassword,                // optional → hash if present
       phoneNumber,             // optional
       EnrollforPromotions,     // optional (boolean)
       homeAddress,             // optional → replace addressTypeId:1
@@ -71,7 +72,24 @@ export async function updateUserById(req, res) {
       if (lastName  !== undefined)           data.lastName = lastName;
       if (phoneNumber !== undefined)         data.phoneNumber = phoneNumber;
       if (EnrollforPromotions !== undefined) data.EnrollforPromotions = !!EnrollforPromotions;
-      if (password)                          data.passwordHash = await hashPassword(password);
+      
+      // Handle password change if both oldPassword & newPassword are provided
+      // --- 2. Use 'comparePasswords' (plural) ---
+      if (oldPassword && newPassword) {
+        // a. Verify their old password
+        const isMatch = await comparePasswords(oldPassword, user.passwordHash);
+
+        if (!isMatch) {
+          // b. If no match, throw a specific error
+          throw new Error("Incorrect old password");
+        }
+        
+        // c. If match, hash the new password
+        data.passwordHash = await hashPassword(newPassword);
+
+      } else if (password) {
+        data.passwordHash = await hashPassword(password);
+      }
 
       if (Object.keys(data).length > 0) {
         await tx.user.update({ where: { id: userId }, data });
@@ -99,6 +117,11 @@ export async function updateUserById(req, res) {
     return res.status(200).json(sanitizeFullUser(raw));
   } catch (err) {
     console.error("PATCH /users/:id error:", err);
+    if (err.message === "Incorrect old password") {
+      // This will be caught by your frontend's catch block
+      return res.status(400).json({ message: "Incorrect old password." });
+    }
+    
     if (err.code === "P2025") {
       return res.status(404).json({ error: "Not found" });
     }

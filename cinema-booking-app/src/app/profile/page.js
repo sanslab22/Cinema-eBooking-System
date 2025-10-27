@@ -13,6 +13,14 @@ export default function EditProfile() {
   const [originalUser, setOriginalUser] = useState(null);
   const [originalPromotions, setOriginalPromotions] = useState(false);
 
+  // --- NEW STATE for Password Reset ---
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [passwordFields, setPasswordFields] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  // --- END NEW STATE ---
 
   useEffect(() => {
 
@@ -94,6 +102,21 @@ export default function EditProfile() {
     }
   };
 
+  // --- NEW: Helper functions for password fields ---
+  const handlePasswordChange = (e, field) => {
+    setPasswordFields({
+      ...passwordFields,
+      [field]: e.target.value,
+    });
+  };
+
+  const handleCancelPasswordReset = () => {
+    setIsResettingPassword(false);
+    setPasswordFields({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  };
+  // --- END NEW ---
+
+
   const toggleEdit = () => setIsEditing(!isEditing);
 
   const handleAddCard = () => {
@@ -117,6 +140,7 @@ export default function EditProfile() {
     // Revert changes from the stored original state
     setUser(originalUser);
     setPromotions(originalPromotions);
+    handleCancelPasswordReset(); // Also reset password fields
     setIsEditing(false);
   };
 
@@ -131,6 +155,23 @@ export default function EditProfile() {
       return;
     }
 
+    // --- NEW: Password Validation ---
+    if (isResettingPassword) {
+      const { oldPassword, newPassword, confirmPassword } = passwordFields;
+      // Check if user started to fill fields but didn't complete
+      if (oldPassword || newPassword || confirmPassword) {
+        if (!oldPassword || !newPassword || !confirmPassword) {
+          alert("To reset your password, you must fill in all three password fields.");
+          return; // Stop the save
+        }
+        if (newPassword !== confirmPassword) {
+          alert("New password and confirm password do not match.");
+          return; // Stop the save
+        }
+      }
+    }
+    // --- END NEW VALIDATION ---
+
     try {
       // Transform frontend state BACK to backend format
       const backendPayload = {
@@ -141,10 +182,17 @@ export default function EditProfile() {
         paymentCards: user.paymentCards,
       };
 
-      // Only send password if the user entered a new one
-      if (user.password && user.password !== "") {
-        backendPayload.password = user.password;
+      // --- UPDATED: Only send password if the user filled out the reset form ---
+      if (
+        isResettingPassword &&
+        passwordFields.oldPassword &&
+        passwordFields.newPassword
+      ) {
+        // Assumes your backend expects 'oldPassword' and 'newPassword'
+        backendPayload.oldPassword = passwordFields.oldPassword;
+        backendPayload.newPassword = passwordFields.newPassword;
       }
+      // --- END UPDATE ---
 
       // 3. Send the PUT request WITHOUT the Authorization header
       const response = await fetch(`http://localhost:3001/api/users/${userId}`, {
@@ -169,7 +217,7 @@ export default function EditProfile() {
         lastName: savedBackendData.lastName,
         email: savedBackendData.email,
         billingAddress: homeAddress,
-        password: "", // Always clear password field after save
+        //password: "", // Always clear password field after save
         paymentCards: savedBackendData.paymentCards || [],
       };
 
@@ -178,6 +226,8 @@ export default function EditProfile() {
       setPromotions(savedBackendData.EnrollforPromotions);
       setOriginalPromotions(savedBackendData.EnrollforPromotions);
 
+      // --- UPDATED: Reset password fields on successful save ---
+      handleCancelPasswordReset();
       setIsEditing(false);
       alert("Profile saved successfully!");
 
@@ -232,10 +282,46 @@ export default function EditProfile() {
 
             <label>Email (cannot edit):</label>
             <input value={user.email} disabled />
-
-            <label>Password:</label>
-            <input type="password" value={user.password} onChange={(e) => handleInputChange(e, "password")} />
           </div>
+
+          {/* --- NEW: PASSWORD RESET SECTION --- */}
+          <div className="form-section">
+            <h3>Password</h3>
+            {!isResettingPassword ? (
+              <button onClick={() => setIsResettingPassword(true)}>
+                Reset Password
+              </button>
+            ) : (
+              <div className="password-reset-section">
+                <input
+                  type="password"
+                  placeholder="Old Password"
+                  value={passwordFields.oldPassword}
+                  onChange={(e) => handlePasswordChange(e, "oldPassword")}
+                />
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={passwordFields.newPassword}
+                  onChange={(e) => handlePasswordChange(e, "newPassword")}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={passwordFields.confirmPassword}
+                  onChange={(e) => handlePasswordChange(e, "confirmPassword")}
+                />
+                <button
+                  type="button"
+                  onClick={handleCancelPasswordReset}
+                  className="cancel-button-small"
+                >
+                  Cancel Reset
+                </button>
+              </div>
+            )}
+          </div>
+          {/* --- END NEW SECTION --- */}
 
           <div className="form-section">
             <h3>Billing Address</h3>

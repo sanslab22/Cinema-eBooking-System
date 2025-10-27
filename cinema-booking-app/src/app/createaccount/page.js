@@ -63,7 +63,7 @@ const CreateAccount = () => {
     setFormData((prev) => ({ ...prev, paymentCards: cards }));
   };
 
-  const validateStep = () => {
+  const validateStep = async () => {
     setError(false);
     setErrorMessage("");
     const { username, email, password, confirmPassword, fullName } = formData;
@@ -108,6 +108,7 @@ const CreateAccount = () => {
           setErrorMessage("Please enter your full name");
           return false;
         }
+
         return true;
       case 2:
         return true;
@@ -121,15 +122,23 @@ const CreateAccount = () => {
   };
 
   const handleNext = () => {
-    if (validateStep()) {
-      setStep((prevStep) => prevStep + 1);
-    }
+
+  if (validateStep()) {
+
+  setStep((prevStep) => prevStep + 1);
+
+  }
+
   };
 
-  const handleBack = () => {
+   const handleBack = () => {
+
     setStep((prevStep) => prevStep - 1);
+
     setError(false);
+
     setErrorMessage("");
+
   };
 
   const handleSubmit = async () => {

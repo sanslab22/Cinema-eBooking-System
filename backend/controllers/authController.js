@@ -4,6 +4,7 @@ import { createUser, findUserByEmail } from "../models/userModel.js";
 import prisma from "../prismaClient.js";
 
 
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
@@ -182,3 +183,4 @@ export const login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
