@@ -92,11 +92,21 @@ export default function EditProfile() {
     if (subfield) {
       const updated = { ...user };
       if (field === "billingAddress") {
-        updated.billingAddress[subfield] = e.target.value;
+        updated.billingAddress[subfield] = e.target.value; // This is for the main home address
       } else if (field === "paymentCards") {
-        updated.paymentCards[index][subfield] = e.target.value;
+        // Check if we are updating the card's billing address
+        if (subfield === 'street' || subfield === 'city' || subfield === 'state' || subfield === 'zipCode') {
+          if (!updated.paymentCards[index].billingAddress) {
+            updated.paymentCards[index].billingAddress = { street: "", city: "", state: "", zipCode: "" };
+          }
+          updated.paymentCards[index].billingAddress[subfield] = e.target.value;
+        } else {
+          // It's a direct property of the card
+          updated.paymentCards[index][subfield] = e.target.value;
+        }
       }
       setUser(updated);
+
     } else {
       setUser({ ...user, [field]: e.target.value });
     }
@@ -127,7 +137,12 @@ export default function EditProfile() {
     }
     setUser({
       ...user,
-      paymentCards: [...user.paymentCards, { cardNumber: "", name: "", expiry: "", cvv: "", zip: "" }],
+      paymentCards: [
+        ...user.paymentCards, 
+        { 
+          cardNo: "", expirationDate: "", 
+          billingAddress: { street: "", city: "", state: "", zipCode: "" } 
+        }],
     });
   };
 
@@ -332,7 +347,7 @@ export default function EditProfile() {
           {/* --- END NEW SECTION --- */}
 
           <div className="form-section">
-            <h3>Billing Address</h3>
+            <h3>Home Address</h3>
             <input placeholder="Street" value={user.billingAddress.street} onChange={(e) => handleInputChange(e, "billingAddress", "street")} />
             <input placeholder="Apt #" value={user.billingAddress.apt} onChange={(e) => handleInputChange(e, "billingAddress", "apt")} />
             <input placeholder="City" value={user.billingAddress.city} onChange={(e) => handleInputChange(e, "billingAddress", "city")} />
@@ -343,12 +358,14 @@ export default function EditProfile() {
           <div className="form-section">
             <h3>Payment Cards</h3>
             {user.paymentCards.map((card, i) => (
-              <div key={i} className="card-entry">
-                <input placeholder="Card Number" value={card.cardNumber} onChange={(e) => handleInputChange(e, "paymentCards", "cardNumber", i)} />
-                <input placeholder="Name on Card" value={card.name} onChange={(e) => handleInputChange(e, "paymentCards", "name", i)} />
-                <input placeholder="Expiry (MM/YY)" value={card.expiry} onChange={(e) => handleInputChange(e, "paymentCards", "expiry", i)} />
-                <input placeholder="CVV" value={card.cvv} onChange={(e) => handleInputChange(e, "paymentCards", "cvv", i)} />
-                <input placeholder="Zip Code" value={card.zip} onChange={(e) => handleInputChange(e, "paymentCards", "zip", i)} />
+              <div key={card.id || i} className="card-entry">
+                <h4>Card #{i + 1}</h4>
+                <input placeholder="Card Number" value={card.cardNo} onChange={(e) => handleInputChange(e, "paymentCards", "cardNo", i)} />
+                <input placeholder="Expiry (MM/YY)" value={card.expirationDate} onChange={(e) => handleInputChange(e, "paymentCards", "expirationDate", i)} />
+                <input placeholder="Billing Street" value={card.billingAddress?.street || ''} onChange={(e) => handleInputChange(e, "paymentCards", "street", i)} />
+                <input placeholder="Billing City" value={card.billingAddress?.city || ''} onChange={(e) => handleInputChange(e, "paymentCards", "city", i)} />
+                <input placeholder="Billing State" value={card.billingAddress?.state || ''} onChange={(e) => handleInputChange(e, "paymentCards", "state", i)} />
+                <input placeholder="Billing Zip Code" value={card.billingAddress?.zipCode || ''} onChange={(e) => handleInputChange(e, "paymentCards", "zipCode", i)} />
                 <button onClick={() => handleRemoveCard(i)}>Remove</button>
               </div>
             ))}
