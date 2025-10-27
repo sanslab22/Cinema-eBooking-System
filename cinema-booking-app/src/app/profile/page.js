@@ -57,14 +57,14 @@ export default function EditProfile() {
         // Transform backend data to fit frontend state
         // Use home address (addressTypeId: 1)
         const homeAddress = backendData.addresses.find(addr => addr.addressTypeId === 1) || {
-          street: "", apt: "", city: "", state: "", zip: "",
+          street: "", apt: "", city: "", state: "", zipCode: "",
         };
 
         const frontendUser = {
           firstName: backendData.firstName,
           lastName: backendData.lastName,
           email: backendData.email,
-          // Set billingAddress to be the homeAddress
+          // Set billingAddress to be the homeAddress, ensuring zipCode is used
           billingAddress: homeAddress, 
           password: "", // Never fetch/store the real password
           paymentCards: backendData.paymentCards || [],
@@ -182,7 +182,7 @@ export default function EditProfile() {
           street: user.billingAddress.street,
           city: user.billingAddress.city,
           state: user.billingAddress.state,
-          zipCode: user.billingAddress.zip, // Rename 'zip' to 'zipCode'
+          zipCode: user.billingAddress.zipCode,
           // 'apt' is not in the backend Address model, so we don't send it.
         },
         paymentCards: user.paymentCards,
@@ -219,7 +219,7 @@ export default function EditProfile() {
       const savedBackendData = await response.json();
 
       // Re-transform the saved data to update our state
-      const homeAddress = savedBackendData.addresses.find(addr => addr.addressTypeId === 1) || { street: "", apt: "", city: "", state: "", zip: "" };
+      const homeAddress = savedBackendData.addresses.find(addr => addr.addressTypeId === 1) || { street: "", apt: "", city: "", state: "", zipCode: "" };
       const savedFrontendUser = {
         firstName: savedBackendData.firstName,
         lastName: savedBackendData.lastName,
@@ -266,7 +266,7 @@ export default function EditProfile() {
         <div className="profile-view">
           <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
           <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Billing Address:</strong> {user.billingAddress.street}, {user.billingAddress.apt}, {user.billingAddress.city}, {user.billingAddress.state} {user.billingAddress.zip}</p>
+          <p><strong>Billing Address:</strong> {user.billingAddress.street}, {user.billingAddress.apt}, {user.billingAddress.city}, {user.billingAddress.state} {user.billingAddress.zipCode}</p>
           <p><strong>Password:</strong> {user.password}</p>
           <div>
             <strong>Payment Cards:</strong>
@@ -337,7 +337,7 @@ export default function EditProfile() {
             <input placeholder="Apt #" value={user.billingAddress.apt} onChange={(e) => handleInputChange(e, "billingAddress", "apt")} />
             <input placeholder="City" value={user.billingAddress.city} onChange={(e) => handleInputChange(e, "billingAddress", "city")} />
             <input placeholder="State" value={user.billingAddress.state} onChange={(e) => handleInputChange(e, "billingAddress", "state")} />
-            <input placeholder="Zip Code" value={user.billingAddress.zip} onChange={(e) => handleInputChange(e, "billingAddress", "zip")} />
+            <input placeholder="Zip Code" value={user.billingAddress.zipCode} onChange={(e) => handleInputChange(e, "billingAddress", "zipCode")} />
           </div>
 
           <div className="form-section">
