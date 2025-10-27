@@ -38,21 +38,40 @@ const Login = () => {
 
       const data = await response.json();
 
+      console.log(data);
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to login');
       }
 
       if (!data.user || !data.user.id) {
-        throw new Error("Login response is missing token or user ID.");
+        throw new Error("Login response is missing User Type or user ID.");
+      }
+
+      if (!data.user.userTypeId) {
+        throw new Error("Login response is missing User Type or user ID.");
       }
 
       // on successful login, you might want to store user data in the profile page but i wanna get it from the database
-      // Save *only* the token and ID
-      localStorage.setItem("userId", data.user.id.toString()); // Save as string
 
+      localStorage.setItem("userId", data.user.id.toString()); // Save as string
+      localStorage.setItem("userType", data.user.userTypeId.toString());
+
+
+      // --- This is the logic you asked for ---
+      // On successful login, redirect based on userTypeId
+      if (data.user.userTypeId === 1) {
+        // Replaced router.push('/admin') with window.location.href
+        // This will cause a full page refresh, but simulates the redirect.
+        alert("Admin login successful. Redirecting to /admin...");
+        window.location.href = '/admin-home';
+      } else {
+        // Replaced router.push('/') with window.location.href
+        alert("Login successful. Redirecting to home page...");
+        window.location.href = '/'; 
+      }
+      // --- End of logic ---
       
-      // On successful login, redirect to home page
-      router.push('/'); // 5. Use router to navigate to home page
 
 
 

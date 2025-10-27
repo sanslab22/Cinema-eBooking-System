@@ -23,55 +23,95 @@ export function sanitizeFullUser(raw) {
 }
 
 /** Replace the single home address (addressTypeId: 1) if provided */
+// if the home address does not exist, create one
+
 export async function replaceHomeAddressIfProvided(tx, userId, homeAddress) {
   if (!homeAddress) return;
 
-  await tx.address.deleteMany({ where: { userID: userId, addressTypeId: 1 } });
-  await tx.address.create({
-    data: {
-      street: homeAddress.street,
-      city: homeAddress.city,
-      state: homeAddress.state,
-      zipCode: homeAddress.zipCode,
-      addressTypeId: 1, // Home
+  // Look for an existing home address for the user
+  const existingHome = await tx.address.findFirst({
+    where: {
       userID: userId,
-    },
+      addressTypeId: 1
+    }
   });
+
+  if (existingHome) {
+    // Update the found home address
+    await tx.address.update({
+      where: { id: existingHome.id },
+      data: {
+        street: homeAddress.street,
+        city: homeAddress.city,
+        state: homeAddress.state,
+        zipCode: homeAddress.zipCode,
+        updatedAt: new Date()
+      }
+    });
+  } else {
+    // Create a new home address
+    await tx.address.create({
+      data: {
+        street: homeAddress.street,
+        city: homeAddress.city,
+        state: homeAddress.state,
+        zipCode: homeAddress.zipCode,
+        addressTypeId: 1, // Home
+        userID: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+  }
 }
 
 /** Replace all payment cards (max 3) if array provided, including their billing addresses */
+// 
 export async function replaceCardsIfProvided(tx, userId, paymentCards) {
-  if (!Array.isArray(paymentCards)) return;
-  if (paymentCards.length > 3) throw new Error("You can store at most 3 payment cards.");
+  if (!paymentCards) return;
 
-  const existing = await tx.paymentCard.findMany({ where: { userID: userId } });
-  if (existing.length) {
-    const billingIds = existing.map((c) => c.billingAddressId).filter(Boolean);
-    await tx.paymentCard.deleteMany({ where: { userID: userId } });
-    if (billingIds.length) {
-      await tx.address.deleteMany({ where: { id: { in: billingIds } } });
-    }
+  if (paymentCards.length > 3) {
+    throw new Error("You can have at most 3 payment cards");
   }
 
-  for (const card of paymentCards) {
-    const billingAddress = await tx.address.create({
-      data: {
-        street: card?.billingAddress?.street,
-        city: card?.billingAddress?.city,
-        state: card?.billingAddress?.state,
-        zipCode: card?.billingAddress?.zipCode,
-        addressTypeId: 2, // Billing
-        userID: userId,
-      },
-    });
+  // Delete all the user's current payment cards (will also orphan addresses, which is fine if not shared)
+  await tx.paymentCard.deleteMany({
+    where: { userID: userId }
+  });
 
+  for (const card of paymentCards) {
+    const { billingAddress, ...cardData } = card;
+
+    // Create the billing address first, if present
+    let billingAddressId = null;
+    if (billingAddress) {
+      const createdBillingAddress = await tx.address.create({
+        data: {
+          street: billingAddress.street,
+          city: billingAddress.city,
+          state: billingAddress.state,
+          zipCode: billingAddress.zipCode,
+          addressTypeId: 2, // Billing
+          userID: userId,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      });
+      billingAddressId = createdBillingAddress.id;
+    } else {
+      throw new Error("A billing address must be provided for each payment card");
+    }
+
+    // Now create the payment card with reference to the new billing address
     await tx.paymentCard.create({
       data: {
-        cardNo: card.cardNo,
-        expirationDate: card.expirationDate, // MM/YY (per your schema)
+        cardNo: cardData.cardNo,
+        expirationDate: cardData.expirationDate,
         userID: userId,
-        billingAddressId: billingAddress.id,
-      },
+        billingAddressId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
     });
   }
 }

@@ -36,6 +36,7 @@ const Navbar = () => {
   const handleLogout = () => {
     // Clear only the "userId" from localStorage
     localStorage.removeItem("userId");
+    localStorage.removeItem("userType"); // <-- ADD THIS LINE
     
     // Redirect to the login page
     router.push("/login");

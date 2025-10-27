@@ -166,6 +166,7 @@ export const login = async (req, res) => {
       token: token, // --- 2. RETURN THE TOKEN ---
       user: {
         id: user.id,
+        userTypeId: user.userType.id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
