@@ -1,6 +1,8 @@
 'use client'
 import React, { useState, useEffect } from "react";
 import "./page.css";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 export default function EditProfile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -158,6 +160,25 @@ export default function EditProfile() {
     setIsEditing(false);
   };
 
+  const sendEmail = async (email) => {
+    try {
+          const docRef = await addDoc(collection(db, "mail"), {
+            to: [email],
+            message: {
+              subject: `Cinema E-Booking: Profile Updated`,
+              html: `
+          <p>Dear Customer,</p>
+          <p>This email is to notify you that your profile has been updated.</p>
+          <p>If you did not edit your profile, please email support and update your password.</p>
+        `,
+            },
+          });
+          console.log("Document written with ID: ", docRef.id);
+        } catch (error) {
+          console.error("Error sending email:", error);
+        }
+  };
+
   // --- This handleSaveClick is now fixed (No Token) ---
   const handleSaveClick = async () => {
     // 1. Get ID from localStorage
@@ -251,10 +272,10 @@ export default function EditProfile() {
       // --- UPDATED: Reset password fields on successful save ---
       handleCancelPasswordReset();
       setIsEditing(false);
-      alert("Profile saved successfully!");
+      sendEmail(user.email);
 
     } catch (err) {
-      alert(`Error saving: ${err.message}`);
+      console.log(err.message)
     }
   };
 
