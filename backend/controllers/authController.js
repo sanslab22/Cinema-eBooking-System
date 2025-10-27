@@ -185,3 +185,47 @@ export const login = async (req, res) => {
   }
 };
 
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: "Email and new password are required." });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { email },
+      data: { passwordHash },
+    });
+    res.json({ message: "Password reset successfully." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        addresses: true, // all addresses (home, billing)
+        paymentCards: {
+          include: { billingAddress: true },
+        },
+        userType: true,
+        userStatus: true,
+      },
+    });
+    res.json({ exists: !!user });
+  } catch (err) {
+    console.error("checkEmailExists error:", err); // Log the actual error for server-side debugging
+    res.status(500).json({ error: "Internal Server Error", details: err.message }); // Provide more details in the response
+  }
+
+  };

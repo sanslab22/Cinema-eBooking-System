@@ -1,6 +1,6 @@
 .navbar {
     background-color: #D84040;
-    padding: 20px;
+    padding: 10px;
     top: 0;
     left: 0;
     right: 0;
@@ -10,6 +10,7 @@
     justify-content: space-between;
     align-items: center;
     position: sticky;
+    text-align: center;
 }
 
 .nav-buttons {
@@ -34,6 +35,7 @@
 }
 
 .link {
+    align-items: center;
     text-decoration: none;
     color: #fff; 
 }

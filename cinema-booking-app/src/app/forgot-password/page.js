@@ -1,13 +1,14 @@
 "use client";
 import { Button } from "@mui/material";
 import "./page.css";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import BackButton from "../components/BackButton";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const ForgotPassword = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -48,30 +49,74 @@ const ForgotPassword = () => {
     }
   };
 
-  const sendEmail = async () => {
-    const generatedCode = Math.floor(100000 + Math.random() * 900000);
-    setOneTimeCode(generatedCode);
+  const sendEmail = async (email) => {
     try {
-      const docRef = await addDoc(collection(db, "mail"), {
-        to: [email],
-        message: {
-          subject: `Cinema E-Booking: One-Time Code to Reset Password`,
-          html: `
+      const response = await fetch(
+        "http://localhost:3002/api/auth/check-email-exists",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await response.json(); // Parse the JSON response
+      console.log(data);
+
+      if (data.exists) { // Access the 'exists' property from the parsed data
+        const generatedCode = Math.floor(100000 + Math.random() * 900000);
+        setOneTimeCode(generatedCode);
+        try {
+          const docRef = await addDoc(collection(db, "mail"), {
+            to: [email],
+            message: {
+              subject: `Cinema E-Booking: One-Time Code to Reset Password`,
+              html: `
           <p>Dear Customer,</p>
           <p>Here is your one-time password to reset your password:</p>
           <p><b>${generatedCode}</b></p>
           <p>If you did not request a password reset, please ignore this email.</p>
         `,
-        },
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error("Error sending email:", error);
+            },
+          });
+          console.log("Document written with ID: ", docRef.id);
+          setStep(2);
+        } catch (error) {
+          console.error("Error sending email:", error);
+        }
+      } else {
+        setError(true);
+        setErrorMessage(
+          "Email not associated with a user. Try a different email"
+        );
+      }
+    } catch (err) {
+      setError(true);
+      setErrorMessage(err.message);
     }
   };
 
   const resetPassword = async () => {
     try {
+      const response = await fetch(
+        "http://localhost:3002/api/auth/reset-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            newPassword: password, // Send the new password
+          }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to reset password.");
+      }
+      router.push("/login"); // Redirect to login on success
     } catch (error) {
       console.error("Error resetting password:", error);
     }
@@ -101,8 +146,7 @@ const ForgotPassword = () => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                  sendEmail();
-                  setStep(2);
+                  sendEmail(email);
                 }}
               >
                 Send Code

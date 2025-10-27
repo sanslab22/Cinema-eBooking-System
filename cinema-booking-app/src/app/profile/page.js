@@ -374,6 +374,7 @@ export default function EditProfile() {
           <div className="form-section promotions">
             <label>
               <input
+              style={{display:"flex", alignItems:"center", justifyContent:"center", }}
                 type="checkbox"
                 checked={promotions}
                 onChange={() => setPromotions(!promotions)}
