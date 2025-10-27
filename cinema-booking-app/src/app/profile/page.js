@@ -66,7 +66,6 @@ export default function EditProfile() {
           email: backendData.email,
           // Set billingAddress to be the homeAddress, ensuring zipCode is used
           billingAddress: homeAddress, 
-          password: "", // Never fetch/store the real password
           paymentCards: backendData.paymentCards || [],
         };
 
@@ -281,13 +280,13 @@ export default function EditProfile() {
         <div className="profile-view">
           <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
           <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Billing Address:</strong> {user.billingAddress.street}, {user.billingAddress.apt}, {user.billingAddress.city}, {user.billingAddress.state} {user.billingAddress.zipCode}</p>
-          <p><strong>Password:</strong> {user.password}</p>
+          <p><strong>Home Address:</strong> {user.billingAddress.street ? (`${user.billingAddress.street}${user.billingAddress.apt ? `, ${user.billingAddress.apt}` : ''}, ${user.billingAddress.city}, ${user.billingAddress.state} ${user.billingAddress.zipCode}`) : "N/A"}</p>
           <div>
             <strong>Payment Cards:</strong>
             <ul>
-              {user.paymentCards.map((card, i) => (
-                <li key={i}>{card.cardNumber} — {card.name} ({card.expiry})</li>
+              {console.log(user)}
+              {user.paymentCards.map((card) => (
+                <li key={card.id}> {card.cardNo} — {card.id} ({card.expirationDate})</li>
               ))}
             </ul>
           </div>

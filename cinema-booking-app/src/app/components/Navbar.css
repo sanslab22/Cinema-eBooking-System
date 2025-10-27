@@ -23,6 +23,14 @@
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     gap: 12px;
+    text-align: center;
+}
+
+.nav-buttons-loggedin-admin {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    align-items: center;
+    text-align: center;
 }
 
 .link {

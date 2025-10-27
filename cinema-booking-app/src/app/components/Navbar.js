@@ -17,7 +17,7 @@ const Navbar = () => {
   // 2. Use state to track login status. Default to 'false' (not logged in).
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // We can also add admin state later if needed
-  // const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // 3. Update the useEffect hook
   useEffect(() => {
@@ -25,6 +25,11 @@ const Navbar = () => {
     const userId = localStorage.getItem("userId"); 
     if (userId) {
       setIsLoggedIn(true);
+      if (localStorage.getItem("userType") === "1") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
     } else {
       // 4. Add an 'else' block
       // This ensures you are logged out when you click "Logout"
@@ -41,6 +46,7 @@ const Navbar = () => {
     // Redirect to the login page
     router.push("/login");
   };
+
   return (
     <div className="navbar">
       <Link href="/" style={{ textDecoration: "none", color: "white" }}>
@@ -62,15 +68,14 @@ const Navbar = () => {
           </Button>
         </div>
       ) : (
+        !isAdmin ?
         <div className="nav-buttons-loggedin">
           <Link href="/orders" style={{ textDecoration: "none", color: "white" }}>
              <p>Orders</p>
           </Link>
-          <Button variant="contained"
-          color="secondary"
-          onClick={() => router.push("/profile")}
-          className="profile-button"
-        >Profile</Button>
+          <Link href="/profile" style={{ textDecoration: "none", color: "white" }}>
+             <p>Profile</p>
+          </Link>
           <Button 
             variant="contained" 
             color="secondary" 
@@ -79,7 +84,20 @@ const Navbar = () => {
             Logout
           </Button>
         </div>
-      )} 
+        : (
+        <div className="nav-buttons-loggedin-admin">
+          <p>Movies</p>
+          <p>Promotions</p>
+          <p>Users</p>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => router.push("/login")}
+          >
+            Logout
+          </Button>
+        </div>
+      ))}
     </div>
   );
 };
