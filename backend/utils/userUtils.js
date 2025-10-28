@@ -1,4 +1,4 @@
-// utils/userUtils.js
+import { hashPassword } from "../utils/hashUtils.js";
 
 /** remove secrets + mask PANs while keeping everything else */
 export function sanitizeFullUser(raw) {
@@ -12,12 +12,11 @@ export function sanitizeFullUser(raw) {
   delete user.refreshTokenId;
 
   // mask card numbers
-  if (Array.isArray(user.paymentCards)) {
-    user.paymentCards = user.paymentCards.map((c) => {
-      const last4 = (c.cardNo || "").slice(-4);
-      return { ...c, cardNo: last4 ? `•••• ${last4}` : null };
-    });
-  }
+  user.paymentCards = user.paymentCards.map((c) => {
+    const last4 = c.maskedCardNo || null;
+    return { ...c, cardNo: last4 ? `•••• ${last4}` : null };
+  });
+
 
   return user;
 }
@@ -102,10 +101,14 @@ export async function replaceCardsIfProvided(tx, userId, paymentCards) {
       throw new Error("A billing address must be provided for each payment card");
     }
 
+    const last4 = card.cardNo.slice(-4);
+    const hashedCardNo = await hashPassword(cardData.cardNo);
+
     // Now create the payment card with reference to the new billing address
     await tx.paymentCard.create({
       data: {
-        cardNo: cardData.cardNo,
+        cardNo: hashedCardNo,
+        maskedCardNo: last4,
         expirationDate: cardData.expirationDate,
         userID: userId,
         billingAddressId,

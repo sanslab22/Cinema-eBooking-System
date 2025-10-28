@@ -30,7 +30,7 @@ export const register = async (req, res) => {
           lastName,
           passwordHash: hashed,
           userTypeId: 2,
-          userStatusId: 1,
+          userStatusId: 2,
         },
       });
 
@@ -66,9 +66,11 @@ export const register = async (req, res) => {
           // 2. Create a Date object representing the last day of that month
           const validExpDate = new Date(`20${year}-${month}-01`); // Day 0 gives last day of previous month
 
+          const hashedCardNo = await hashPassword(card.cardNo);
+
           await tx.paymentCard.create({
             data: {
-              cardNo: card.cardNo,
+              cardNo: hashedCardNo,
               expirationDate: validExpDate,
               userID: createdUser.id,
               billingAddressId: billingAddress.id,
@@ -140,6 +142,12 @@ export const login = async (req, res) => {
     const valid = await comparePasswords(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: "Invalid credentials." });
 
+    // Set userStatusId to Active (1) upon successful login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { userStatusId: 1 },
+    });
+    
     // --- 1. THIS IS THE LINE YOU NEED TO ADD ---
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
       expiresIn: "1d",
@@ -228,4 +236,21 @@ export const checkEmailExists = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: err.message }); // Provide more details in the response
   }
 
-  };
+};
+
+export const logoutUserStatusUpdate = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
+
+    // Update userStatusId to 2 (Inactive)
+    await prisma.user.update({
+      where: { id: parseInt(userId, 10) },
+      data: { userStatusId: 2 },
+    });
+
+    res.json({ message: "User status set to Inactive on logout." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

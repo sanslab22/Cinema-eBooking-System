@@ -38,7 +38,20 @@ const Navbar = () => {
   }, [pathname]); // 5. Add 'pathname' as a dependency
 
   // 4. Create a function to handle logging out
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      try {
+        const response = await fetch('http://localhost:3002/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
+      } catch (err) {
+        console.error("Failed to update user status on logout:", err);
+      }
+    }
+
     // Clear only the "userId" from localStorage
     localStorage.removeItem("userId");
     localStorage.removeItem("userType"); // <-- ADD THIS LINE

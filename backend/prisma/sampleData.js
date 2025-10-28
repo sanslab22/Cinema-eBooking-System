@@ -95,7 +95,7 @@ export const users = [
     phoneNumber: '555-123-4567',
     EnrollforPromotions: true,
     userTypeId: 1, // Admin
-    userStatusId: 1, // Active
+    userStatusId: 2, // inactive
   },
   {
     id: 2,
@@ -106,7 +106,7 @@ export const users = [
     phoneNumber: '555-987-6543',
     EnrollforPromotions: true,
     userTypeId: 2, // Customer
-    userStatusId: 2, // Active
+    userStatusId: 2, // inactive
   },
   {
     id: 3,
@@ -179,6 +179,7 @@ export const paymentCards = [
   {
     id: 1,
     cardNo: 'XXXXXXXXXXXXXXXX1234', // Tokenized/Encrypted representation
+    maskedCardNo: '1234',
     expirationDate: '12/26',
     userID: 2, // Jane Doe
     billingAddressID: 2,

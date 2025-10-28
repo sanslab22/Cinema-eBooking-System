@@ -37,7 +37,7 @@ export default function EditProfile() {
       setError("You must be logged in to view this page.");
       // You should redirect here:
       //router.push('/login');
-      return; 
+      return;
     }
 
     const fetchUserData = async () => {
@@ -53,7 +53,7 @@ export default function EditProfile() {
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
         }
-        
+
         const backendData = await response.json();
 
         // Transform backend data to fit frontend state
@@ -62,19 +62,25 @@ export default function EditProfile() {
           street: "", apt: "", city: "", state: "", zipCode: "",
         };
 
+        // Clear cardNo (hashed) but keep maskedCardNo for display
+       const paymentCards = (backendData.paymentCards || []).map(card => ({
+          ...card,
+          cardNo: card.maskedCardNo ? `•••• ${card.maskedCardNo}` : "",
+        }));
+
         const frontendUser = {
           firstName: backendData.firstName,
           lastName: backendData.lastName,
           email: backendData.email,
           // Set billingAddress to be the homeAddress, ensuring zipCode is used
-          billingAddress: homeAddress, 
-          paymentCards: backendData.paymentCards || [],
+          billingAddress: homeAddress,
+          paymentCards,
         };
 
         // Set the state
         setUser(frontendUser);
         setPromotions(backendData.EnrollforPromotions || false);
-        
+
         // Store original state for "Cancel" button
         setOriginalUser(JSON.parse(JSON.stringify(frontendUser))); // Deep copy
         setOriginalPromotions(backendData.EnrollforPromotions || false);
@@ -132,17 +138,17 @@ export default function EditProfile() {
 
   const handleAddCard = () => {
     // Note: Your backend supports 3, your frontend check says 4.
-    if (user.paymentCards.length >= 3) { 
+    if (user.paymentCards.length >= 3) {
       alert("You can only store up to 3 payment cards.");
       return;
     }
     setUser({
       ...user,
       paymentCards: [
-        ...user.paymentCards, 
-        { 
-          cardNo: "", expirationDate: "", 
-          billingAddress: { street: "", city: "", state: "", zipCode: "" } 
+        ...user.paymentCards,
+        {
+          cardNo: "", expirationDate: "",
+          billingAddress: { street: "", city: "", state: "", zipCode: "" }
         }],
     });
   };
@@ -162,21 +168,21 @@ export default function EditProfile() {
 
   const sendEmail = async (email) => {
     try {
-          const docRef = await addDoc(collection(db, "mail"), {
-            to: [email],
-            message: {
-              subject: `Cinema E-Booking: Profile Updated`,
-              html: `
-          <p>Dear Customer,</p>
-          <p>This email is to notify you that your profile has been updated.</p>
-          <p>If you did not edit your profile, please email support and update your password.</p>
-        `,
-            },
-          });
-          console.log("Document written with ID: ", docRef.id);
-        } catch (error) {
-          console.error("Error sending email:", error);
-        }
+      const docRef = await addDoc(collection(db, "mail"), {
+        to: [email],
+        message: {
+          subject: `Cinema E-Booking: Profile Updated`,
+          html: `
+            <p>Dear Customer,</p>
+            <p>This email is to notify you that your profile has been updated.</p>
+            <p>If you did not edit your profile, please email support and update your password.</p>
+          `,
+        },
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   };
 
   // --- This handleSaveClick is now fixed (No Token) ---
@@ -185,7 +191,7 @@ export default function EditProfile() {
     const userId = localStorage.getItem('userId');
 
     // 2. Check ONLY for userId
-    if (!userId) { 
+    if (!userId) {
       alert("You must be logged in to save.");
       return;
     }
@@ -208,7 +214,7 @@ export default function EditProfile() {
     // --- END NEW VALIDATION ---
 
     try {
-      // Transform frontend state BACK to backend format
+      // Prepare paymentCards for backend: send cardNo (plaintext), backend will hash and store maskedCardNo separately
       const backendPayload = {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -218,14 +224,15 @@ export default function EditProfile() {
           city: user.billingAddress.city,
           state: user.billingAddress.state,
           zipCode: user.billingAddress.zipCode,
-          // 'apt' is not in the backend Address model, so we don't send it.
         },
-        paymentCards: user.paymentCards,
+        paymentCards: user.paymentCards.map(card => ({
+          id: card.id, // keep id if exists, useful for updates
+          cardNo: card.cardNo, // plaintext entered by user
+          expirationDate: card.expirationDate,
+          billingAddress: card.billingAddress || { street: "", city: "", state: "", zipCode: "" },
+        })),
       };
 
-      console.log(backendPayload)
-
-      // --- UPDATED: Only send password if the user filled out the reset form ---
       if (
         isResettingPassword &&
         passwordFields.oldPassword &&
@@ -250,7 +257,7 @@ export default function EditProfile() {
       if (!response.ok) {
         throw new Error('Failed to save profile');
       }
-      
+
       const savedBackendData = await response.json();
 
       // Re-transform the saved data to update our state
@@ -260,8 +267,10 @@ export default function EditProfile() {
         lastName: savedBackendData.lastName,
         email: savedBackendData.email,
         billingAddress: homeAddress,
-        //password: "", // Always clear password field after save
-        paymentCards: savedBackendData.paymentCards || [],
+        paymentCards: (savedBackendData.paymentCards || []).map(card => ({
+          ...card,
+          cardNo: "", // Clear hashed cardNo for editing
+        })),
       };
 
       setUser(savedFrontendUser);
@@ -275,7 +284,7 @@ export default function EditProfile() {
       sendEmail(user.email);
 
     } catch (err) {
-      console.log(err.message)
+      console.log(err.message);
     }
   };
 
@@ -307,7 +316,9 @@ export default function EditProfile() {
             <ul>
               {console.log(user)}
               {user.paymentCards.map((card) => (
-                <li key={card.id}> {card.cardNo} — {card.id} ({card.expirationDate})</li>
+                <li key={card.id}>
+                  {card.maskedCardNo ? `•••• ${card.maskedCardNo}` : "•••• ****"} — ({card.expirationDate})
+                </li>
               ))}
             </ul>
           </div>
@@ -380,12 +391,36 @@ export default function EditProfile() {
             {user.paymentCards.map((card, i) => (
               <div key={card.id || i} className="card-entry">
                 <h4>Card #{i + 1}</h4>
-                <input placeholder="Card Number" value={card.cardNo} onChange={(e) => handleInputChange(e, "paymentCards", "cardNo", i)} />
-                <input placeholder="Expiry (MM/YY)" value={card.expirationDate} onChange={(e) => handleInputChange(e, "paymentCards", "expirationDate", i)} />
-                <input placeholder="Billing Street" value={card.billingAddress?.street || ''} onChange={(e) => handleInputChange(e, "paymentCards", "street", i)} />
-                <input placeholder="Billing City" value={card.billingAddress?.city || ''} onChange={(e) => handleInputChange(e, "paymentCards", "city", i)} />
-                <input placeholder="Billing State" value={card.billingAddress?.state || ''} onChange={(e) => handleInputChange(e, "paymentCards", "state", i)} />
-                <input placeholder="Billing Zip Code" value={card.billingAddress?.zipCode || ''} onChange={(e) => handleInputChange(e, "paymentCards", "zipCode", i)} />
+                <input
+                  placeholder="Card Number"
+                  value={card.cardNo || ""}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "cardNo", i)}
+                />
+                <input
+                  placeholder="Expiry (MM/YY)"
+                  value={card.expirationDate}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "expirationDate", i)}
+                />
+                <input
+                  placeholder="Billing Street"
+                  value={card.billingAddress?.street || ''}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "street", i)}
+                />
+                <input
+                  placeholder="Billing City"
+                  value={card.billingAddress?.city || ''}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "city", i)}
+                />
+                <input
+                  placeholder="Billing State"
+                  value={card.billingAddress?.state || ''}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "state", i)}
+                />
+                <input
+                  placeholder="Billing Zip Code"
+                  value={card.billingAddress?.zipCode || ''}
+                  onChange={(e) => handleInputChange(e, "paymentCards", "zipCode", i)}
+                />
                 <button onClick={() => handleRemoveCard(i)}>Remove</button>
               </div>
             ))}
