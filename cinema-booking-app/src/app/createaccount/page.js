@@ -262,7 +262,7 @@ const CreateAccount = () => {
           <>
             <h2>Personal Information</h2>
             <label>
-              Username (Email Only):
+              Username (Email Only): *
               <input
                 type="text"
                 name="username"
@@ -272,7 +272,7 @@ const CreateAccount = () => {
               />
             </label>
             <label>
-              Full Name:
+              Full Name: *
               <input
                 type="text"
                 name="fullName"
@@ -282,7 +282,7 @@ const CreateAccount = () => {
               />
             </label>
             <label>
-              Email:
+              Email: *
               <input
                 type="email"
                 name="email"
@@ -292,7 +292,7 @@ const CreateAccount = () => {
               />
             </label>
             <label>
-              Password:
+              Password: *
               <input
                 type="password"
                 name="password"
@@ -302,7 +302,7 @@ const CreateAccount = () => {
               />
             </label>
             <label>
-              Confirm Password:
+              Confirm Password: *
               <input
                 type="password"
                 name="confirmPassword"
