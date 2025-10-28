@@ -178,7 +178,7 @@ export const addresses = [
 export const paymentCards = [
   {
     id: 1,
-    cardNo: 'XXXXXXXXXXXXXXXX1234', // Tokenized/Encrypted representation
+    cardNo: '$2b$10$WjwXBJ5St0NoBHb9cAYmBO2asD3i8Ac9Bi3ajA/pKm.AiyKDnKGZO', // Tokenized/Encrypted representation
     maskedCardNo: '1234',
     expirationDate: '12/26',
     userID: 2, // Jane Doe

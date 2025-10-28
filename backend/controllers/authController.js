@@ -66,12 +66,16 @@ export const register = async (req, res) => {
           // 2. Create a Date object representing the last day of that month
           const validExpDate = new Date(`20${year}-${month}-01`); // Day 0 gives last day of previous month
 
+          const expirationStr = card.expirationDate;
+
+          const last4 = card.cardNo.slice(-4);
           const hashedCardNo = await hashPassword(card.cardNo);
 
           await tx.paymentCard.create({
             data: {
               cardNo: hashedCardNo,
-              expirationDate: validExpDate,
+              maskedCardNo: last4,
+              expirationDate: card.expirationDate,
               userID: createdUser.id,
               billingAddressId: billingAddress.id,
             },
