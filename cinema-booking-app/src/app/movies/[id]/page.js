@@ -18,10 +18,10 @@ async function getMovie(id) {
 
 
 export default async function MovieDetails({ params }) {
-    const { id } = params; // <-- Get the ID string here
-  
+    const { id } = await params;  
 
     const movie = await getMovie(id);
+    // console.log("The is the movie information for id: ", id, "with details: ", movie)
     return (
         <div className="movie-details-page">
             <BackButton />

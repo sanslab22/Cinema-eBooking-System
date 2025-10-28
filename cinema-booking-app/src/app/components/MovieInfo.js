@@ -21,7 +21,7 @@ const MovieInfo = ({ movie }) => {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
-  const trailerUrl = getEmbedUrl(movie.trailerUrl);
+  const trailerUrl = getEmbedUrl(movie.trailerURL);
 
   const times = ["12:00 pm", "5:00 pm", "10:00 pm"];
 
