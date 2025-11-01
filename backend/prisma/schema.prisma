@@ -83,6 +83,7 @@ model Seat {
 
   auditorium    Auditorium @relation(fields: [auditoriumID], references: [id])
   showSeats     ShowSeats[]
+  tickets       Ticket[]
 
   @@unique([auditoriumID, rowNum, colNum])
   @@map("seat")
@@ -101,6 +102,8 @@ model MovieShow {
   movie                 Movie      @relation(fields: [movieID], references: [id])
   auditorium            Auditorium @relation(fields: [auditoriumID], references: [id])
   showSeats             ShowSeats[]
+  bookings              Booking[]
+
 
   @@unique([showID, movieID, auditoriumID, showStartTime])
   @@map("movie_show")
@@ -160,6 +163,7 @@ model User {
   userStatus           UserStatus    @relation(fields: [userStatusId], references: [id])
   addresses            Address[]
   paymentCards         PaymentCard[]
+  bookings             Booking[]
 
   @@map("user")
 }
@@ -208,5 +212,68 @@ model PaymentCard {
   user             User    @relation(fields: [userID], references: [id])
   billingAddress   Address @relation(fields: [billingAddressId], references: [id])
 
+  bookings         Booking[]
+
   @@map("payment_card")
 }
+
+model Booking {
+  id               Int      @id @default(autoincrement())
+  noOfTickets      Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  userID           Int
+  showTimeID       Int
+  cardID           Int
+  promoID          Int
+
+  user             User         @relation(fields: [userID], references: [id])
+  movieShow        MovieShow    @relation(fields: [showTimeID], references: [id])
+  paymentCard      PaymentCard  @relation(fields: [cardID], references: [id])
+  promotion        Promotions   @relation(fields: [promoID], references: [id])
+
+  tickets          Ticket[]   
+
+  @@map("booking")
+}
+
+model Ticket {
+  id               Int      @id @default(autoincrement())
+  
+  categoryID    Int
+  bookingID     Int
+  seatID        Int
+
+  category      TicketCategory    @relation(fields: [categoryID], references: [id])
+  booking       Booking           @relation(fields: [bookingID], references: [id])
+  seat          Seat              @relation(fields: [seatID], references: [id])
+
+  @@unique([bookingID, seatID])
+
+  @@map("ticket")
+}
+
+model TicketCategory { // Adult, Children, Senior with corresponding standard prices
+  id               Int      @id @default(autoincrement())
+  name             String   @unique @db.VarChar(50)
+  price            Int
+
+  tickets          Ticket[]
+
+  @@map("ticket_category")
+}
+
+model Promotions {
+  id               Int        @id @default(autoincrement())
+  promoCode        String     @db.VarChar(20)
+  promoValue       String     @db.VarChar(20)
+  startDate        DateTime   @db.Date
+  expirationDate   DateTime   @db.Date
+
+  bookings         Booking[]
+
+  @@map("promotions")
+}
+
+
