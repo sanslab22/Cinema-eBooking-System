@@ -210,3 +210,57 @@ model PaymentCard {
 
   @@map("payment_card")
 }
+
+model Booking {
+  id               Int      @id @default(autoincrement())
+  noOfTickets      Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  userID           Int
+  showTimeID       Int
+  cardID           Int
+  promoID          Int
+
+  user             User         @relation(field: [userID], references: [id])
+  movieShow        MovieShow    @relation(field: [showTimeID], references: [id])
+  paymentCard      PaymentCard  @relation(field: [cardID], references: [id])
+  promotion        Promotions   @relation(field: [promoID], references [id])
+
+  @@map("booking")
+}
+
+model Ticket {
+  id               Int      @id @default(autoincrement())
+  
+  categoryID    Int
+  bookingID     Int
+  seatID        Int
+
+  category      TicketCategory    @relation(field: [categoryID], references: [id])
+  booking       Booking           @relation(field: [bookingID], references: [id])
+  seat          Seat              @relation(field: [seatID], references: [id])
+
+  @@unique([bookingID, seatID])
+  @@map("ticket)
+}
+
+model TicketCategory { // Adult, Children, Senior...
+  id               Int      @id @default(autoincrement())
+  name             String   @unique @db.VarChar(50)
+  price            Int
+
+  @@map("ticket_category)
+}
+
+model Promotions {
+  id               Int        @id @default(autoincrement())
+  promoCode        String     @db.VarChar(20)
+  promoValue       String     @db.VarChar(20)
+  startDate        DateTime   @db.Date
+  expirationDate   DateTime   @db.Date
+
+  @@map(promotions)
+}
+
+
