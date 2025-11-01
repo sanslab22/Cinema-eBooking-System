@@ -28,10 +28,12 @@
 }
 
 .nav-buttons-loggedin-admin {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    display: flex;
+    justify-content: space-evenly;
     align-items: center;
     text-align: center;
+    gap: 20px; 
+    padding: 10px 20px; 
 }
 
 .link {

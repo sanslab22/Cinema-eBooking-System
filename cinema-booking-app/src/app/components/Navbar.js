@@ -101,9 +101,18 @@ const Navbar = () => {
         </div>
         : (
         <div className="nav-buttons-loggedin-admin">
-          <p>Movies</p>
-          <p>Promotions</p>
-          <p>Users</p>
+          <Link href="/manage-movies" style={{ textDecoration: "none", color: "white" }}>
+             <p>Manage Movies</p>
+          </Link>
+          <Link href="/manage-promotions" style={{ textDecoration: "none", color: "white" }}>
+             <p>Manage Promotions</p>
+          </Link>
+          <Link href="/manage-users" style={{ textDecoration: "none", color: "white" }}>
+             <p>Manage Users</p>
+          </Link>
+          <Link href="/manage-showtimes" style={{ textDecoration: "none", color: "white" }}>
+             <p>Manage Showtimes</p>
+          </Link>
           <Button
             variant="contained"
             color="secondary"
