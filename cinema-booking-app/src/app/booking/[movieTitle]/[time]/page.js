@@ -5,8 +5,8 @@ import "./page.css";
 import { useState } from "react";
 
 export default function Page({ params }) {
-  const { title, time } = useParams();
-  console.log(params.title);
+  const { movieTitle, time } = params;
+
   const [step, setStep] = useState(1);
 
   const [childrenTicket, setChildrenTicket] = useState(0);
@@ -49,7 +49,7 @@ export default function Page({ params }) {
 
   return (
     <div>
-      <h1>Book Tickets</h1>
+<h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
 
       <div className="booking-container">
         {
@@ -69,7 +69,7 @@ export default function Page({ params }) {
             <Button variant="contained" onClick={() => {
               setStep(2);}}>Next</Button>
           </>
-          :
+          : step == 2 ?
           <>
           {console.log(seatsSelected)}
             <h2>Select Seats</h2>
@@ -182,6 +182,29 @@ export default function Page({ params }) {
               className="next-button">
               Next
             </Button>
+          </> :
+
+          <>
+            <h2>Confirm Booking Details</h2>
+            <div className="booking-details">
+              <p><strong>Movie:</strong> {decodeURIComponent(movieTitle)}</p>
+              <p><strong>Showtime:</strong> {decodeURIComponent(time)}</p>
+              <p><strong>Seats:</strong> {seatsSelected.join(", ")}</p>
+              <p><strong>Children:</strong> {childrenTicket}</p>
+              <p><strong>Adults:</strong> {adultTicket}</p>
+              <p><strong>Seniors:</strong> {seniorTicket}</p>
+              
+              <div className="confirmation-buttons">
+                <Button variant="contained" onClick={() => {
+                  setStep(2);
+                }}>Go Back</Button>
+
+                <Button variant="contained" onClick={() => {
+                  // proceedToPayment();
+                }}>Checkout</Button>
+              </div>
+
+            </div>
           </>
         }
       </div>
