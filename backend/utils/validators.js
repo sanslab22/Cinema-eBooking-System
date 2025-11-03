@@ -76,3 +76,83 @@ export function validateStatusToggle(body) {
   }
   return { ok: true, data: { isActive: !!body.isActive } };
 }
+
+// --- add to utils/validators.js ---
+
+function isIsoDateString(s) {
+  if (typeof s !== "string") return false;
+  const d = new Date(s);
+  return !Number.isNaN(d.getTime());
+}
+
+/** Create show: auditoriumID (number), showStartTime (ISO), optional noAvailabileSeats (number), optional showID (number) */
+export function validateCreateShow(body) {
+  const errors = [];
+  const data = {};
+
+  if (typeof body.auditoriumID !== "number" || body.auditoriumID <= 0) {
+    errors.push("auditoriumID (number) is required.");
+  } else {
+    data.auditoriumID = body.auditoriumID;
+  }
+
+  if (!isIsoDateString(body.showStartTime)) {
+    errors.push("showStartTime (ISO string) is required.");
+  } else {
+    data.showStartTime = body.showStartTime;
+  }
+
+  if (body.noAvailabileSeats != null) {
+    if (typeof body.noAvailabileSeats !== "number" || body.noAvailabileSeats < 0) {
+      errors.push("noAvailabileSeats must be a non-negative number.");
+    } else {
+      data.noAvailabileSeats = body.noAvailabileSeats;
+    }
+  }
+
+  if (body.showID != null) {
+    if (typeof body.showID !== "number" || body.showID <= 0) {
+      errors.push("showID must be a positive number when provided.");
+    } else {
+      data.showID = body.showID;
+    }
+  }
+
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, data };
+}
+
+/** List shows query: optional date=YYYY-MM-DD */
+function isIsoDateTime(s){ return typeof s==="string" && !Number.isNaN(new Date(s).getTime()); }
+
+export function validateListShowsQuery(query) {
+  const errors = [];
+  const filters = {};
+
+  if (query.date != null) {
+    const s = String(query.date);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) errors.push("date must be YYYY-MM-DD.");
+    else filters.date = s;
+  }
+
+  if (query.from != null) {
+    const s = String(query.from);
+    if (!isIsoDateTime(s)) errors.push("from must be ISO datetime.");
+    else filters.from = s;
+  }
+
+  if (query.to != null) {
+    const s = String(query.to);
+    if (!isIsoDateTime(s)) errors.push("to must be ISO datetime.");
+    else filters.to = s;
+  }
+
+  if (filters.from && filters.to && new Date(filters.from) > new Date(filters.to)) {
+    errors.push("from must be <= to.");
+  }
+
+  if (errors.length) return { ok:false, errors };
+  return { ok:true, filters };
+}
+
+
