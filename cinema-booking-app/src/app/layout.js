@@ -3,7 +3,6 @@ import "./globals.css";
 import NavBar from "./components/Navbar";
 import Providers from "./providers.js";
 import { app, db } from "./firebase.js";
-import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,12 +23,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AuthProvider>
           <Providers>
             <NavBar />
             {children}
           </Providers>
-        </AuthProvider>
       </body>
     </html>
   );

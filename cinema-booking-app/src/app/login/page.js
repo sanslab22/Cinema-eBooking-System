@@ -4,24 +4,15 @@ import "./page.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import BackButton from "../components/BackButton";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { login, isAuthenticated } = useAuth();
 
   const router = useRouter();
-
-  useEffect(() => {
-    // If the user is already authenticated, redirect them away from the login page.
-    if (isAuthenticated) {
-      router.push('/'); // Redirect to homepage or dashboard
-    }
-  }, [isAuthenticated, router]);
 
   // 4. Make handleLogin async and accept the event 'e'
   const handleLogin = async (e) => {
@@ -36,15 +27,65 @@ const Login = () => {
     }
 
     try {
-      // Call the login function from AuthContext.
-      const user = await login(email, password);
-      
-      // On successful login, redirect based on userTypeId
-      if (user.userTypeId === 1) {
-        router.push('/admin-home');
-      } else {
-        router.push('/'); 
+      // Your fetch call is perfect.
+      const response = await fetch('http://localhost:3002/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to login');
       }
+
+      if (!data.user || !data.user.id) {
+        throw new Error("Login response is missing User Type or user ID.");
+      }
+
+      if (!data.user.userTypeId) {
+        throw new Error("Login response is missing User Type or user ID.");
+      }
+
+      // on successful login, you might want to store user data in the profile page but i wanna get it from the database
+
+      localStorage.setItem("userId", data.user.id.toString()); // Save as string
+      localStorage.setItem("userType", data.user.userTypeId.toString());
+
+
+      // --- This is the logic you asked for ---
+      // On successful login, redirect based on userTypeId
+      if (data.user.userTypeId === 1) {
+        // Replaced router.push('/admin') with window.location.href
+        // This will cause a full page refresh, but simulates the redirect.
+        alert("Admin login successful. Redirecting to /admin...");
+        window.location.href = '/admin-home';
+      } else {
+        // Replaced router.push('/') with window.location.href
+        alert("Login successful. Redirecting to home page...");
+        window.location.href = '/'; 
+      }
+      // --- End of logic ---
+      
+
+
+
+      // You can now use the token and ID in subsequent API calls
+      // For example, fetch user profile data:
+      // const userResponse = await fetch('http://localhost:3002/api/user/profile', {
+      //   method: 'GET',
+      //   headers: {
+      //     'Authorization': `Bearer ${data.token}`,
+      //   },
+      // });
+
+
+
     }
     catch (err) {
       setError(true);
