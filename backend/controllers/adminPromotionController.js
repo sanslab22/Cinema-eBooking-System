@@ -25,6 +25,27 @@ export async function createPromotion(req, res) {
     }
     if (errors.length) return res.status(400).json({ errors });
 
+    // Check for an existing, active promotion with the same promoCode.
+    // An active promotion is one where the expiration date is in the future or today.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to the start of the day
+
+    const existingActivePromo = await prisma.promotions.findFirst({
+      where: {
+        promoCode: {
+          equals: promoCode.trim(),
+          mode: 'insensitive', // Case-insensitive check
+        },
+        expirationDate: {
+          gte: today, // gte: greater than or equal to
+        },
+      },
+    });
+
+    if (existingActivePromo) {
+      return res.status(409).json({ error: "An active promotion with this code already exists." });
+    }
+
     // Create (dates are stored as date-only due to @db.Date)
     const promo = await prisma.promotions.create({
       data: {

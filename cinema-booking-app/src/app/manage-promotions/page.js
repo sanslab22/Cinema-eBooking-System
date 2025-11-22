@@ -21,7 +21,9 @@ export default function ManagePromotions() {
 
   const fetchPromotions = async () => {
     try {
-      const response = await fetch("http://localhost:3002/api/admin/promotions");
+      const response = await fetch(
+        "http://localhost:3002/api/admin/promotions"
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch promotions");
       }
@@ -50,16 +52,46 @@ export default function ManagePromotions() {
     setError(false);
     setSuccessMessage("");
 
-    // Basic validation: ensure all fields are filled
-    const missingField = Object.entries(promotion).find(([_, value]) => value === "");
-    if (missingField) {
+    // --- Validation Logic ---
+
+    // Validate new promotion
+    const requiredFields = ["promoCode", "startDate", "expirationDate", "promoValue"];
+
+
+    // 1. Validate Discount Value
+    const discount = Number(promotion.promoValue);
+    if (isNaN(discount) || discount < 1 || discount > 100) {
       setError(true);
-      setErrorMessage(`Please fill in the ${missingField[0]} field.`);
+      setErrorMessage("Discount must be a number between 1 and 100.");
+      return;
+    }
+
+    // 2. Validate Dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today's date to midnight for accurate comparison
+
+    // Create date objects from the form inputs
+    const startDate = new Date(promotion.startDate);
+    const endDate = new Date(promotion.expirationDate);
+
+    // Adjust for timezone differences by adding the offset to UTC dates
+    startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
+    endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset());
+
+    if (startDate < today) {
+      setError(true);
+      setErrorMessage("Start date cannot be in the past.");
+      return;
+    }
+
+    if (endDate < startDate) {
+      setError(true);
+      setErrorMessage("End date must be on or after the start date.");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:3002/api/promotions", {
+      const response = await fetch("http://localhost:3002/api/admin/promotions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(promotion),
@@ -68,7 +100,7 @@ export default function ManagePromotions() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create promotion");
+        throw new Error(data.error || data.message || "Failed to create promotion");
       }
 
       setSuccessMessage("Promotion created successfully!");
@@ -85,109 +117,100 @@ export default function ManagePromotions() {
     }
   };
 
-
   return (
     <div className="manage-promotions">
       <BackButton route="/admin-home" />
-      <h1 className="title">Add New Promotion</h1>
+      <h1 className="title">Manage Promotions</h1>
 
-      <div className='button-container'>
-        <Button className="promotion-button">
-          Add Promotion
-        </Button>
-        <Button className="promotion-button">
-          Send Promotion
-        </Button>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        
-        {error && <div className="error-message">{errorMessage}</div>}
-        {successMessage && (
-          <div className="error-message" style={{ backgroundColor: "green" }}>
-            {successMessage}
-          </div>
-        )}
-
-        <label>
-          Promo Code
-          <input
-            type="text"
-            name="promoCode"
-            value={promotion.promoCode}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          Start Date
-          <input
-            type="date"
-            name="startDate"
-            value={promotion.startDate}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          End Date
-          <input
-            type="date"
-            name="expirationDate"
-            value={promotion.expirationDate}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          Discount (%) 
-          <input
-            type="number"
-            name="discountPercent"
-            value={promotion.promoValue}
-            onChange={handleChange}
-            min="1"
-            max="100"
-            required
-          />
-        </label>
-
-        <div className="button-container">
-          <Button type="submit" variant="contained" color="primary">
-            Create Promotion
-          </Button>
-        </div>
-      </form>
-
-      <div className="promotions-list">
-        <h2>Existing Promotions</h2>
-        {promotions.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Promo Code</th>
-                <th>Discount</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {promotions.map((promo) => (
-                <tr key={promo.id}>
-                  <td>{promo.promoCode}</td>
-                  <td>{promo.promoValue}%</td>
-                  <td>{new Date(promo.startDate).toLocaleDateString()}</td>
-                  <td>{new Date(promo.expirationDate).toLocaleDateString()}</td>
+      <div className="content-wrapper">
+        <div className="promotions-list">
+          <h2>Existing Promotions</h2>
+          {promotions.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>Promo Code</th>
+                  <th>Discount</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No promotions found.</p>
-        )}
+              </thead>
+              <tbody>
+                {promotions.map((promo) => (
+                  <tr key={promo.id}>
+                    <td>{promo.promoCode}</td>
+                    <td>{promo.promoValue}%</td>
+                    <td>{new Date(promo.startDate).toLocaleDateString()}</td>
+                    <td>{new Date(promo.expirationDate).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No promotions found.</p>
+          )}
+        </div>
+
+        <div className="form-container">
+          <h2>Add New Promotion</h2>
+          <br />
+          <form onSubmit={handleSubmit}>
+            {error && <div className="error-message">{errorMessage}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
+
+            <label>
+              Promo Code
+              <input
+                type="text"
+                name="promoCode"
+                value={promotion.promoCode}
+                onChange={handleChange}
+                required
+              />
+            </label>
+
+            <label>
+              Start Date
+              <input
+                type="date"
+                name="startDate"
+                value={promotion.startDate}
+                onChange={handleChange}
+                required
+              />
+            </label>
+
+            <label>
+              End Date
+              <input
+                type="date"
+                name="expirationDate"
+                value={promotion.expirationDate}
+                onChange={handleChange}
+                required
+              />
+            </label>
+
+            <label>
+              Discount (%)
+              <input
+                type="number"
+                name="promoValue"
+                value={promotion.promoValue}
+                onChange={handleChange}
+                min="1"
+                max="100"
+                required
+              />
+            </label>
+
+            <div className="button-container">
+              <Button type="submit" variant="contained" color="primary">
+                Create Promotion
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
