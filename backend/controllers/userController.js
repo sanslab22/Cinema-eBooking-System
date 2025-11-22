@@ -7,6 +7,26 @@ import {
   replaceCardsIfProvided,
 } from "../utils/userUtils.js";
 
+/** GET /api/users - return all users  */
+export async function getUsers(req, res) {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        userType: true,
+        userStatus: true,
+      },
+    });
+
+    res.json({
+      total: users.length,
+      items: users,
+    });
+  } catch (err) {
+    console.error("GET /users error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 /** GET /api/users/:id — return full user (same include as register), sanitized */
 export async function getUserById(req, res) {
   console.log("GET /users/:id →", req.params.id);

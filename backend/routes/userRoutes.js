@@ -1,13 +1,16 @@
 // routes/userRoutes.js
 import express from "express";
 import cors from "cors";
-import { getUserById, updateUserById } from "../controllers/userController.js";
+import { getUsers, getUserById, updateUserById } from "../controllers/userController.js";
 
 // PLEASE ONLY DEFINE THE ENDPOINTS HERE, LOGIC HANDLED IN CONTROLLER/UTILS
 const router = express.Router();
 
 router.use(express.json());
 router.use(cors());
+
+// GET /api/users - retrieve all users
+router.get("/users", getUsers);
 
 // GET /api/users/:id — full user (relations) minus secrets
 router.get("/users/:id", getUserById);

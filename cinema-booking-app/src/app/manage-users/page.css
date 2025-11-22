@@ -1,0 +1,50 @@
+.manage-users {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2rem;
+    gap: 2rem;
+}
+  
+.users-table-container {
+    flex: 2;
+}
+  
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+  
+.users-table th,
+.users-table td {
+    border: 1px solid #ddd;
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.users-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+  
+.users-table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+  
+.remove-user-btn {
+    background-color: #c62828;
+    color: white;
+    font-size: 1rem;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+  
+.remove-user-btn:hover {
+    background-color: #b71c1c;
+}
