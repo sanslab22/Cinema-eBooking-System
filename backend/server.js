@@ -15,7 +15,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api", movieRoutes);
-app.use("/api", userRoutes);  
+app.use("/api", userRoutes);
 
 
 app.get("/", (req, res) => res.send("Cinema E-Booking API running..."));

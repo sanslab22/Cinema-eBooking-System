@@ -16,27 +16,10 @@ const StatCard = ({ title, value, icon }) => (
   </div>
 );
 
-const QuickLink = ({ text, icon, onClick }) => (
-  <button className="quick-link" onClick={onClick}>
-    <div className="quick-link-icon">{icon}</div>
-    <div className="quick-link-text">{text}</div>
-  </button>
-);
-
-// Simulated API fetch
-const fetchAdminStats = async () => ({
-  totalBookings: 125,
-  registeredUsers: 1836,
-  runningMovies: 12,
-  upcomingMovies: 6,
-});
 
 export default function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
-  const [uniqueGenres, setUniqueGenres] = useState([]);
-
-  const [genreSelected, setGenreSelected] = useState([]);
 
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -45,20 +28,24 @@ export default function Home() {
     upcomingMovies: 0,
   });
 
+  // Format showtimes
+  const formatShowtimes = (movie) => {
+    if (!movie || !Array.isArray(movie.showtimes) || movie.showtimes.length === 0)
+      return "No Showtimes";
+  
+    return movie.showtimes
+      .map((s) =>
+        new Date(s.showStartTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      )
+      .join(", ");
+  };
+
   // Fetch data from the API when the component loads
   useEffect(() => {
     
-    //pulling from sample data located above, mimicking API call
-    fetchAdminStats()
-      .then((statsData) => {
-        setStats(statsData);
-      })
-      .catch((err) => {
-        console.error("Error fetching admin stats:", err);
-      });
-
-
-
     fetch("http://localhost:3002/api/movies")
       .then((response) => response.json())
       .then((data) => {
@@ -67,23 +54,73 @@ export default function Home() {
       .catch((error) => console.error("Error fetching movies:", error));
   }, []); // Empty array means this effect runs only once
 
-  //  Derive "Playing Now" and "Coming Soon" from the live data
-  //const moviesPlayingNow = filteredMovies.filter((movie) => movie.isActive);
-  //const moviesComingSoon = filteredMovies.filter((movie) => !movie.isActive);
+  useEffect(() => {
+    if (allMovies.length === 0) return;
+  
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  
+    Promise.all(
+      allMovies.map((movie) =>
+        fetch(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${today}`)
+          .then((res) => res.json())
+          .catch(() => ({ showtimes: [] }))
+      )
+    ).then((allShowtimeResponses) => {
+      
+      // attach showtimes to each movie
+      const mapped = allMovies.map((movie, index) => ({
+        ...movie,
+        showtimes: allShowtimeResponses[index].showtimes || []
+      }));
+      console.log("Mapped movies with showtimes:", mapped);
+  
+      setAllMovies(mapped);
+    });
+  }, [allMovies.length]);
+  
+  // Fetch Customer Users for Stats
+  useEffect(() => {
+    fetch("http://localhost:3002/api/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.items) return;
+
+        // Filter only customers
+        const customers = data.items.filter(
+          (u) => u.userTypeId === 1 // or use u.userType.name === "Customer"
+        );
+
+        setStats((prev) => ({
+          ...prev,
+          registeredUsers: customers.length,
+        }));
+      })
+      .catch((err) => console.error("Error fetching users:", err));
+  }, []);
+
+  // Calculate movie counts for stats
+  useEffect(() => {
+    if (allMovies.length === 0) return;
+
+    const running = allMovies.filter(m => m.isActive).length;
+    const upcoming = allMovies.filter(m => !m.isActive).length;
+
+    setStats(prev => ({
+      ...prev,
+      runningMovies: running,
+      upcomingMovies: upcoming
+    }));
+  }, [allMovies]);
 
   // Admin UI icons
-  const IconBooking = "🎬";
   const IconUsers = "👤";
   const IconRunning = "🍿";
   const IconUpcoming = "🕒";
-  const IconAddMovie = "+";
-  const IconTicketPrice = "$";
-  const IconPromotion = "📣";
 
   //need to correctly pull from DB
   const movieManagementList = allMovies.map((movie) => ({
-    title: movie.title,
-    genre: movie.genre,
+    movieTitle: movie.movieTitle,
+    category: movie.category,
     showtimes: "TBD", // Replace with showtimes logic
     status: movie.isActive ? "Now Playing" : "Coming Soon",
   }));
@@ -91,44 +128,38 @@ export default function Home() {
   return (
     <div className="page">
       <div className="container">     
+          
           <div>
             
             <div className="stats-row">
-              <StatCard title="Total Bookings" value={stats.totalBookings} icon={IconBooking} />
               <StatCard title="Registered Users" value={stats.registeredUsers} icon={IconUsers} />
               <StatCard title="Running Movies" value={stats.runningMovies} icon={IconRunning} />
               <StatCard title="Upcoming Movies" value={stats.upcomingMovies} icon={IconUpcoming} />
             </div>
 
-            <div className="quick-links-panel">
-              <h2 className="panel-header">Quick Links</h2>
-              <QuickLink text="Add New Movie" icon={IconAddMovie} onClick={() => {}} />
-              <QuickLink text="Update Ticket Prices" icon={IconTicketPrice} onClick={() => {}} />
-              <QuickLink text="Create Promotion" icon={IconPromotion} onClick={() => {}} />
-            </div>
+            <div className="main-content-container">
 
-            <div className="movie-management-panel">
-              <h2 className="panel-header">Movie Management</h2>
-              <table className="movie-table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Genre</th>
-                    <th>Showtimes</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movieManagementList.map((movie, idx) => (
-                    <tr key={idx}>
-                      <td>{movie.title}</td>
-                      <td>{movie.genre}</td>
-                      <td>{movie.showtimes}</td>
-                      <td>{movie.status}</td>
+              <div className="movie-management-panel">
+                <h2 className="panel-header">Movie Management</h2>
+                <table className="movie-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Genre</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {movieManagementList.map((movie, idx) => (
+                      <tr key={idx}>
+                        <td>{movie.movieTitle}</td>
+                        <td>{movie.category}</td>
+                        <td>{movie.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
           </div>

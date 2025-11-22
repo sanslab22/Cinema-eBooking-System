@@ -12,6 +12,17 @@ form {
     border-radius: 20px;
 }
 
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  
+    gap: 20px 40px;                  
+    align-items: start;
+}
+ 
+.full-width {
+    grid-column: 1 / span 2;
+}
+
 label {
     display: block;
     margin-bottom: 10px;

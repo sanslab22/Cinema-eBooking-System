@@ -91,116 +91,118 @@ export default function ManageMovies() {
                     {successMessage}
                 </div>
             )}
-
-            <label>
-                Movie Title
-                <input
-                    type="text"
-                    name="movieTitle"
-                    value={movie.movieTitle}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
             
-            <label>
-                Category
-                <input
-                    type="text"
-                    name="category"
-                    value={movie.category}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+            <div className="form-grid">
+                <label>
+                    Movie Title
+                    <input
+                        type="text"
+                        name="movieTitle"
+                        value={movie.movieTitle}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
+                
+                <label>
+                    Category
+                    <input
+                        type="text"
+                        name="category"
+                        value={movie.category}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Cast
-                <input
-                    type="text"
-                    name="cast"
-                    value={movie.cast}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Cast
+                    <input
+                        type="text"
+                        name="cast"
+                        value={movie.cast}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Director
-                <input
-                    type="text"
-                    name="director"
-                    value={movie.director}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Director
+                    <input
+                        type="text"
+                        name="director"
+                        value={movie.director}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Producer
-                <input
-                    type="text"
-                    name="producer"
-                    value={movie.producer}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Producer
+                    <input
+                        type="text"
+                        name="producer"
+                        value={movie.producer}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Synopsis
-                <textarea
-                    name="synopsis"
-                    rows="4"
-                    value={movie.synopsis}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Synopsis
+                    <textarea
+                        name="synopsis"
+                        rows="4"
+                        value={movie.synopsis}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Trailer URL
-                <input
-                    type="text"
-                    name="trailerURL"
-                    value={movie.trailerURL}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Trailer URL
+                    <input
+                        type="text"
+                        name="trailerURL"
+                        value={movie.trailerURL}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Film Rating
-                <input
-                    type="text"
-                    name="filmRating"
-                    value={movie.filmRating}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Film Rating
+                    <input
+                        type="text"
+                        name="filmRating"
+                        value={movie.filmRating}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                Image Poster
-                <input
-                    type="text"
-                    name="imagePoster"
-                    value={movie.imagePoster}
-                    onChange={handleChange}
-                    required
-                />
-            </label>
+                <label>
+                    Image Poster
+                    <input
+                        type="text"
+                        name="imagePoster"
+                        value={movie.imagePoster}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
 
-            <label>
-                <input
-                    type="checkbox"
-                    name="isActive"
-                    value={movie.isActive}
-                    onChange={handleChange}
-                    required
-                />{" "}
-                Currently Playing?
-            </label>
+                <label>
+                    <input
+                        type="checkbox"
+                        name="isActive"
+                        value={movie.isActive}
+                        onChange={handleChange}
+                        required
+                    />{" "}
+                    Currently Playing?
+                </label>
+            </div>
 
             <div className='button-container'>
                 <Button>
