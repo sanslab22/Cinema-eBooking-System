@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
 import "./page.css";
 import { Button } from "@mui/material";
 import BackButton from "../components/BackButton";
@@ -18,6 +20,45 @@ export default function ManagePromotions() {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const sendPromotionToSubscribedUsers = async (newPromotion) => {
+    try {
+      // 1. Fetch the list of subscribed user emails from the new backend endpoint
+      const response = await fetch("http://localhost:3002/api/admin/subscribed-emails");
+      if (!response.ok) {
+        throw new Error("Failed to fetch subscribed users.");
+      }
+      const emails = await response.json();
+
+      if (emails.length === 0) {
+        console.log("No subscribed users to email.");
+        return; // No one to email, so we're done.
+      }
+
+      // 2. Send the email to all subscribed users via the Firebase mail service
+      await addDoc(collection(db, "mail"), {
+        to: emails, // The `to` field can be an array of email addresses
+        message: {
+          subject: `New Promotion: ${newPromotion.promoCode}!`,
+          html: `
+          <p>Dear Customer,</p>
+          <p>A new promotion has been released!</p>
+          <p><b>Promo Code: ${newPromotion.promoCode}</b></p>
+          <p><b>Discount: ${newPromotion.promoValue}%</b></p>
+          <p><b>Start Date: ${new Date(newPromotion.startDate).toLocaleDateString()}</b></p>
+          <p><b>End Date: ${new Date(newPromotion.expirationDate).toLocaleDateString()}</b></p>
+          <p>We hope to see you at the theaters soon!</p>
+        `,
+        },
+      });
+
+      console.log(`Promotion email sent to ${emails.length} users.`);
+
+    } catch (err) {
+      // We can show an error, but we won't overwrite the "Promotion Created" success message.
+      console.error("Failed to send promotion email:", err.message);
+    }
+  };
 
   const fetchPromotions = async () => {
     try {
@@ -102,6 +143,9 @@ export default function ManagePromotions() {
       if (!response.ok) {
         throw new Error(data.error || data.message || "Failed to create promotion");
       }
+
+      // On success, send the email to subscribed users
+      await sendPromotionToSubscribedUsers(promotion);
 
       setSuccessMessage("Promotion created successfully!");
       setPromotion({

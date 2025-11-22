@@ -14,6 +14,8 @@ import {
 } from "../controllers/adminShowController.js";
 import { createPromotion, listPromotions } from "../controllers/adminPromotionController.js";
 
+import { getSubscribedUserEmails } from "../controllers/adminUserController.js";
+
 const router = express.Router();
 router.use(express.json());
 router.use(cors());
@@ -31,6 +33,8 @@ router.delete("/admin/shows/:showId", deleteShow);
 // -- Promotions (Admin) ---
 router.post("/admin/promotions", createPromotion);
 router.get("/admin/promotions", listPromotions);
+router.get("/admin/subscribed-emails", getSubscribedUserEmails);
+
 
 // (Optional later)
 // router.get("/admin/movies", listMoviesAdmin);
