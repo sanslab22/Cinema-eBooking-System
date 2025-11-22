@@ -11,7 +11,6 @@ import { collection, addDoc } from "firebase/firestore";
 const CreateAccount = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -66,15 +65,10 @@ const CreateAccount = () => {
   const validateStep = () => {
     setError(false);
     setErrorMessage("");
-    const { username, email, password, confirmPassword, fullName } = formData;
+    const { email, password, confirmPassword, fullName } = formData;
 
     switch (step) {
       case 1:
-        if (!username || !/\S+@\S+\.\S+/.test(username)) {
-          setError(true);
-          setErrorMessage("Please enter a username (email only)");
-          return false;
-        }
         if (!email || !/\S+@\S+\.\S+/.test(email)) {
           setError(true);
           setErrorMessage("Please enter a valid email");
@@ -121,14 +115,20 @@ const CreateAccount = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (!validateStep()) {
+      return;
+    }
 
-  if (validateStep()) {
-
-  setStep((prevStep) => prevStep + 1);
-
-  }
-
+    if (step === 1) {
+      const emailExists = await checkEmailExists(formData.email);
+      if (emailExists) {
+        setError(true);
+        setErrorMessage("An account with this email already exists.");
+        return;
+      }
+    }
+    setStep((prevStep) => prevStep + 1);
   };
 
    const handleBack = () => {
@@ -251,6 +251,25 @@ const CreateAccount = () => {
     }
   };
 
+  const checkEmailExists = async (curr) => {
+    try {
+      const response = await fetch('http://localhost:3002/api/auth/check-email-exists', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: curr,
+          }),
+        });
+        const data = await response.json();
+        return data.exists;
+        } catch (error) {
+        console.error("Error checking email:", error);
+        return false;
+      }
+    }
+
   return (
     <div>
       <BackButton route="/" />
@@ -261,16 +280,6 @@ const CreateAccount = () => {
         {step === 1 && (
           <>
             <h2>Personal Information</h2>
-            <label>
-              Username (Email Only): *
-              <input
-                type="text"
-                name="username"
-                required
-                value={formData.username}
-                onChange={handleChange}
-              />
-            </label>
             <label>
               Full Name: *
               <input
