@@ -6,15 +6,24 @@ import { useRouter } from "next/navigation";
 
 const MovieCard = (prop) => {
   // Ensure the path always starts with /
-  const imageSrc = prop.movie.imagePoster?.startsWith("/")
-    ? prop.movie.imagePoster
-    : `/images/movies/${prop.movie.imagePoster}`;
+// 2. Logic to determine Image Source
+  const imageSrc = (poster) => {
+    if (!poster) return ""; // Add a default placeholder path here if you have one
+
+    // If it's a web URL (http/https) or already an absolute path (/), use it as is
+    if (poster.startsWith("http") || poster.startsWith("/")) {
+      return poster;
+    }
+
+    // Otherwise, assume it's a local filename and prepend the folder path
+    return `/images/movies/${poster}`;
+  };
   const router = useRouter();
 
   return (
     <div className="movie-card">
       <Image
-        src={imageSrc}
+        src={imageSrc(prop.movie.imagePoster)}
         alt={prop.movie.movieTitle}
         width={200}
         height={300}

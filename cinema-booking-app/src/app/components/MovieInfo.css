@@ -1,35 +1,143 @@
-.movie-info {
-    display: flex;
-    gap: 20px;
-    max-width: 900px;
-    margin: 80px auto 20px; 
-    padding: 0 20px;
+/* 1. Base Variables & Container */
+:root {
+  --bg-color: #b10000;
+  --card-bg: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --accent-color: #ff0000; /* "IMDb Yellow" style accent */
 }
+
+/* 1. Main Grid Container */
+.movie-info-container {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: sans-serif;
+  padding: 20px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
   
-.movie-poster {
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  /* KEY CHANGE: Grid Layout */
+  display: grid;
+  gap: 20px;
+  /* Layout: Header spans top, Content left, Trailer right */
+  grid-template-columns: 1fr 450px; 
+  grid-template-areas:
+    "header header"
+    "category category"
+    "details trailer";
+  align-content: start;
 }
-  
+
+/* 2. Header & Category (Full Width) */
+.movie-header {
+  grid-area: header;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.movie-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.movie-rating {
+  background: var(--text-primary);
+  color: var(--bg-color);
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.movie-category {
+  grid-area: category;
+  color: var(--text-secondary);
+  margin: 0; /* Remove default p margin */
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+/* 3. Main Content (Poster + Text) - Left Column */
+.movie-content {
+  grid-area: details;
+  display: flex;
+  gap: 25px;
+  background-color: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.movie-poster img {
+  width: 200px; /* Smaller poster to save space */
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* Scrollable text area if synopsis is huge */
 .movie-details {
-    flex: 1;
+  flex: 1;
+  overflow-y: auto; /* Internal scroll only if text is massive */
+  padding-right: 10px;
 }
-  
-.movie-details h1 {
-    margin-bottom: 10px;
+
+.movie-details h2 {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 15px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-  
+
+.movie-details h2:first-child {
+  margin-top: 0;
+}
+
 .movie-details p {
-    margin: 5px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  color: #000000;
 }
-  
-.movie-details ul {
-    list-style: none;
-    padding: 0;
-}
-  
+
+/* 4. Trailer - Right Column */
 .trailer-container {
-    margin-top: 40px;
-    max-width: 560px;
+  grid-area: trailer;
+  background-color: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
 }
-  
+
+.trailer-container h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.trailer-container iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto; /* Auto height based on width */
+  border-radius: 4px;
+}
+
+/* 5. Responsive: Stack everything on tablets/phones */
+@media (max-width: 1100px) {
+  .movie-info-container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "category"
+      "details"
+      "trailer";
+  }
+
+  .trailer-container {
+    margin-top: 0;
+  }
+}
