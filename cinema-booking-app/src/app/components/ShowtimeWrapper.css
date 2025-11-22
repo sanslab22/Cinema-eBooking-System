@@ -1,0 +1,149 @@
+/* Variables for easy theming */
+:root {
+  --st-bg: #ffffff;
+  --st-card-bg: #b4b4b4;
+  --st-accent: #e50914; /* Netflix/Cinema Red */
+  --st-accent-hover: #b20710;
+  --st-text-main: #000000;
+  --st-text-muted: #000000;
+  --st-border-radius: 12px;
+}
+
+.showtimes-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--st-bg);
+  color: var(--st-text-main);
+  padding: 1.5rem;
+  border-radius: var(--st-border-radius);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.section-header h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--st-text-muted);
+  font-weight: 600;
+}
+
+/* --- Date Scroller --- */
+.date-scroller {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  scrollbar-width: none; /* Firefox */
+}
+
+.date-scroller::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.date-card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--st-card-bg);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  width: 60px;
+  height: 70px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--st-text-main);
+}
+
+.date-card:hover {
+  background-color: #b1b1b1;
+}
+
+.date-card.active {
+  background-color: var(--st-accent);
+  border-color: var(--st-accent);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+}
+
+.day-name {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--st-text-muted);
+}
+
+.date-card.active .day-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.day-num {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* --- Times Grid --- */
+.showtimes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.time-btn {
+  background-color: transparent;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 10px 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--st-text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-btn:hover {
+  border-color: var(--st-accent);
+  background-color: rgba(229, 9, 20, 0.1);
+}
+
+.time-text {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.format-text {
+  font-size: 0.65rem;
+  color: var(--st-text-muted);
+  margin-top: 2px;
+}
+
+/* --- States --- */
+.state-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--st-text-muted);
+  background: #a3a3a3;
+  border-radius: 8px;
+}
+
+.loading-skeleton {
+  display: flex;
+  gap: 10px;
+}
+
+.skeleton-chip {
+  height: 40px;
+  width: 90px;
+  background-color: #333;
+  border-radius: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
