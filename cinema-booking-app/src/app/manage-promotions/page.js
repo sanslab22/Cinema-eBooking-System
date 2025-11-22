@@ -1,21 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./page.css";
 import { Button } from "@mui/material";
+import BackButton from "../components/BackButton";
 
 export default function ManagePromotions() {
+  const [promotions, setPromotions] = useState([]);
 
   const [promotion, setPromotion] = useState({
     promoCode: "",
     startDate: "",
-    endDate: "",
-    discountPercent: "",
+    expirationDate: "",
+    promoValue: "",
   });
 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const fetchPromotions = async () => {
+    try {
+      const response = await fetch("http://localhost:3002/api/admin/promotions");
+      if (!response.ok) {
+        throw new Error("Failed to fetch promotions");
+      }
+      const data = await response.json();
+      setPromotions(data);
+    } catch (err) {
+      setError(true);
+      setErrorMessage(err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchPromotions();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,9 +75,10 @@ export default function ManagePromotions() {
       setPromotion({
         promoCode: "",
         startDate: "",
-        endDate: "",
-        discountPercent: "",
+        expirationDate: "",
+        promoValue: "",
       });
+      fetchPromotions(); // Refresh the list after adding
     } catch (err) {
       setError(true);
       setErrorMessage(err.message);
@@ -67,7 +88,7 @@ export default function ManagePromotions() {
 
   return (
     <div className="manage-promotions">
-
+      <BackButton route="/admin-home" />
       <h1 className="title">Add New Promotion</h1>
 
       <div className='button-container'>
@@ -114,8 +135,8 @@ export default function ManagePromotions() {
           End Date
           <input
             type="date"
-            name="endDate"
-            value={promotion.endDate}
+            name="expirationDate"
+            value={promotion.expirationDate}
             onChange={handleChange}
             required
           />
@@ -126,7 +147,7 @@ export default function ManagePromotions() {
           <input
             type="number"
             name="discountPercent"
-            value={promotion.discountPercent}
+            value={promotion.promoValue}
             onChange={handleChange}
             min="1"
             max="100"
@@ -135,12 +156,39 @@ export default function ManagePromotions() {
         </label>
 
         <div className="button-container">
-          <Button className="promotion-button">
+          <Button type="submit" variant="contained" color="primary">
             Create Promotion
           </Button>
         </div>
       </form>
 
+      <div className="promotions-list">
+        <h2>Existing Promotions</h2>
+        {promotions.length > 0 ? (
+          <table>
+            <thead>
+              <tr>
+                <th>Promo Code</th>
+                <th>Discount</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {promotions.map((promo) => (
+                <tr key={promo.id}>
+                  <td>{promo.promoCode}</td>
+                  <td>{promo.promoValue}%</td>
+                  <td>{new Date(promo.startDate).toLocaleDateString()}</td>
+                  <td>{new Date(promo.expirationDate).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No promotions found.</p>
+        )}
+      </div>
     </div>
   );
 }

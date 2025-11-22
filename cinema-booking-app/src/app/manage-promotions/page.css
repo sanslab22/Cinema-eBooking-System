@@ -38,3 +38,44 @@ textarea {
 .promotion-button:hover {
     background-color: #000000; 
 }
+
+.promotions-list {
+    margin: 40px auto;
+    width: 80%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.promotions-list h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.promotions-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.promotions-list th, .promotions-list td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.promotions-list th {
+    background-color: #8b0000;
+    color: white;
+    font-weight: bold;
+}
+
+.promotions-list tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.promotions-list tr:hover {
+    background-color: #e9e9e9;
+}
