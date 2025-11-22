@@ -39,17 +39,21 @@ export default function ManageMovies() {
         setSuccessMessage("");
     
         // Basic validation: ensure all fields are filled
-        const missingField = Object.entries(movie).find(
-          ([key, value]) => key !== "isActive" && value === ""
-        );
-        if (missingField) {
+        const requiredFields = [
+            "movieTitle", "category", "cast", "director", 
+            "producer", "synopsis", "filmRating", "imagePoster"
+        ];
+
+        for (const field of requiredFields) {
+          if (!movie[field]) {
           setError(true);
-          setErrorMessage(`Please fill in the ${missingField[0]} field.`);
+            setErrorMessage(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
           return;
+        }
         }
     
         try {
-            const response = await fetch("http://localhost:3002/api/movies", {
+            const response = await fetch("http://localhost:3002/api/admin/movies", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(movie),
@@ -198,17 +202,15 @@ export default function ManageMovies() {
                         name="isActive"
                         value={movie.isActive}
                         onChange={handleChange}
-                        required
                     />{" "}
                     Currently Playing?
                 </label>
             </div>
 
             <div className='button-container'>
-                <Button>
+                <Button type="submit" variant="contained" color="primary">
                     Add Movie
                 </Button>
-
             </div>
 
         </form>

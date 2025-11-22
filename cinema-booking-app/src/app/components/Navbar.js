@@ -22,7 +22,7 @@ const Navbar = () => {
   // 3. Update the useEffect hook
   useEffect(() => {
     // This effect will now re-run every time 'pathname' changes
-    const userId = localStorage.getItem("userId"); 
+    const userId = localStorage.getItem("userId");
     if (userId) {
       setIsLoggedIn(true);
       if (localStorage.getItem("userType") === "1") {
@@ -42,9 +42,9 @@ const Navbar = () => {
     const userId = localStorage.getItem("userId");
     if (userId) {
       try {
-        const response = await fetch('http://localhost:3002/api/auth/logout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("http://localhost:3002/api/auth/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),
         });
       } catch (err) {
@@ -57,16 +57,25 @@ const Navbar = () => {
     localStorage.removeItem("userType"); // <-- ADD THIS LINE
     setIsLoggedIn(false);
     setIsAdmin(false);
-    
+
     // Redirect to the login page
     router.push("/login");
   };
 
   return (
     <div className="navbar">
-      <Link href="/" style={{ textDecoration: "none", color: "white" }}>
-        <h1>Cinema E-Booking App</h1>{" "}
-      </Link>
+      {isAdmin ? (
+        <Link
+          href="/admin-home"
+          style={{ textDecoration: "none", color: "white" }}
+        >
+          <h1>Cinema E-Booking App</h1>{" "}
+        </Link>
+      ) : (
+        <Link href="/" style={{ textDecoration: "none", color: "white" }}>
+          <h1>Cinema E-Booking App</h1>{" "}
+        </Link>
+      )}
 
       {/* 5. Check your state variable */}
       {!isLoggedIn ? (
@@ -82,46 +91,66 @@ const Navbar = () => {
             Login
           </Button>
         </div>
-      ) : (
-        !isAdmin ?
+      ) : !isAdmin ? (
         <div className="nav-buttons-loggedin">
-          <Link href="/orders" style={{ textDecoration: "none", color: "white" }}>
-             <p>Orders</p>
+          <Link
+            href="/orders"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Orders</p>
           </Link>
-          <Link href="/profile" style={{ textDecoration: "none", color: "white" }}>
-             <p>Profile</p>
+          <Link
+            href="/profile"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Profile</p>
           </Link>
-          <Button 
-            variant="contained" 
-            color="secondary" 
+          <Button
+            variant="contained"
+            color="secondary"
             onClick={handleLogout} // 6. Call handleLogout on click
           >
             Logout
           </Button>
         </div>
-        : (
+      ) : (
         <div className="nav-buttons-loggedin-admin">
-          <Link href="/manage-movies" style={{ textDecoration: "none", color: "white" }}>
-             <p>Manage Movies</p>
+          <Link
+            href="/manage-movies"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Manage Movies</p>
           </Link>
-          <Link href="/manage-promotions" style={{ textDecoration: "none", color: "white" }}>
-             <p>Manage Promotions</p>
+          <Link
+            href="/manage-promotions"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Manage Promotions</p>
           </Link>
-          <Link href="/manage-users" style={{ textDecoration: "none", color: "white" }}>
-             <p>Manage Users</p>
+          <Link
+            href="/manage-users"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Manage Users</p>
           </Link>
-          <Link href="/manage-showtimes" style={{ textDecoration: "none", color: "white" }}>
-             <p>Manage Showtimes</p>
+          <Link
+            href="/manage-showtimes"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            <p>Manage Showtimes</p>
           </Link>
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => {router.push("/login"); handleLogout();}}
+            onClick={() => {
+              router.push("/login");
+              handleLogout();
+            }}
           >
             Logout
           </Button>
         </div>
-      ))}
+      )}
     </div>
   );
 };
