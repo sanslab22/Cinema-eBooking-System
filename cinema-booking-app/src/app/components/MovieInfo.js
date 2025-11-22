@@ -23,7 +23,29 @@ const MovieInfo = ({ movie }) => {
 
   const trailerUrl = getEmbedUrl(movie.trailerURL);
 
-  const times = ["12:00 pm", "5:00 pm", "10:00 pm"];
+  // Group showtimes by date
+  const showtimesByDate = (movie.showtimes || []).reduce((acc, showtime) => {
+    const date = new Date(showtime).toLocaleDateString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const time = new Date(showtime).toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(time);
+    return acc;
+  }, {});
+
+  const availableDates = Object.keys(showtimesByDate);
+  // State to manage which date is selected
+  const [selectedDate, setSelectedDate] = useState(availableDates[0] || null);
 
   return (
     <div className="movie-info">
@@ -69,23 +91,39 @@ const MovieInfo = ({ movie }) => {
         {movie.isActive ? (
           <div>
             <p>
-              <b>Available Showtimes for today</b>
+              <b>Available Showtimes</b>
             </p>
-            <Stack direction="row" spacing={2}>
-              {times.map((time, idx) => (
+            {/* Date Selection Buttons */}
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+              {availableDates.map((date) => (
                 <Button
-                  key={idx}
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    const encodedTitle = encodeURIComponent(movie.movieTitle);
-                    const encodedTime = encodeURIComponent(time);
-                    router.push(`/booking/${encodedTitle}/${encodedTime}`);
-                  }}
+                  key={date}
+                  variant={selectedDate === date ? 'contained' : 'outlined'}
+                  onClick={() => setSelectedDate(date)}
                 >
-                  {time}
+                  {date}
                 </Button>
               ))}
+            </Stack>
+
+            {/* Time Selection Buttons for the selected date */}
+            <Stack direction="row" spacing={2}>
+              {selectedDate &&
+                showtimesByDate[selectedDate].map((time, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outlined"
+                    color="error"
+                    onClick={() => {
+                      const encodedTitle = encodeURIComponent(movie.movieTitle);
+                      const encodedTime = encodeURIComponent(time);
+                      // You might want to include the date in the URL in the future
+                      router.push(`/booking/${encodedTitle}/${encodedTime}`);
+                    }}
+                  >
+                    {time}
+                  </Button>
+                ))}
             </Stack>
           </div>
         ) : null}
