@@ -2,7 +2,7 @@
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import "./page.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Page({ params }) {
   const { movieTitle, time } = params;
@@ -16,6 +16,39 @@ export default function Page({ params }) {
   const [seatsSelected, setSeatsSelected] = useState([]);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const bookingDataJSON = localStorage.getItem("bookingData");
+    if (bookingDataJSON) {
+      const { data, expiry } = JSON.parse(bookingDataJSON);
+      if (new Date().getTime() < expiry && data.movieTitle === decodeURIComponent(movieTitle) && data.time === decodeURIComponent(time)) {
+        setStep(data.step || 1);
+        setChildrenTicket(data.childrenTicket || 0);
+        setAdultTicket(data.adultTicket || 0);
+        setSeniorTicket(data.seniorTicket || 0);
+        setSeatsSelected(data.seatsSelected || []);
+      } else {
+        localStorage.removeItem("bookingData");
+      }
+    }
+  }, [movieTitle, time]);
+
+  useEffect(() => {
+    const expiry = new Date().getTime() + 5 * 60 * 1000; // 5 minutes
+    const bookingData = {
+      data: {
+        step,
+        childrenTicket,
+        adultTicket,
+        seniorTicket,
+        seatsSelected,
+        movieTitle: decodeURIComponent(movieTitle),
+        time: decodeURIComponent(time),
+      },
+      expiry,
+    };
+    localStorage.setItem("bookingData", JSON.stringify(bookingData));
+  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time]);
 
   const updateChildrenTicket = (e) => {
     setChildrenTicket(parseInt(e.target.value) || 0);
@@ -55,19 +88,27 @@ export default function Page({ params }) {
         {
           step == 1 ? <>
             <h2>Select Tickets</h2>
+            {error && <p className="error-message">{errorMessage}</p>}
             <div className="ticket-selection">
               <div>
-                <label>Children</label> <input type="number" placeholder="0" min="0" onChange={updateChildrenTicket} />
+                <label>Children</label> <input type="number" placeholder="0" min="0" value={childrenTicket} onChange={updateChildrenTicket} />
               </div>
               <div>
-                <label>Adults</label> <input type="number" placeholder="0" min="0" onChange={updateAdultTicket} />
+                <label>Adults</label> <input type="number" placeholder="0" min="0" value={adultTicket} onChange={updateAdultTicket} />
               </div>
               <div>
-                <label>Seniors</label> <input type="number" placeholder="0" min="0" onChange={updateSeniorTicket} />
+                <label>Seniors</label> <input type="number" placeholder="0" min="0" value={seniorTicket} onChange={updateSeniorTicket} />
               </div>
             </div>
             <Button variant="contained" onClick={() => {
-              setStep(2);}}>Next</Button>
+              if (childrenTicket + adultTicket + seniorTicket === 0) {
+                setError(true);
+                setErrorMessage("Please add at least one ticket.");
+              } else {
+                setError(false);
+                setErrorMessage("");
+                setStep(2);
+              }}}>Next</Button>
           </>
           : step == 2 ?
           <>
@@ -201,6 +242,8 @@ export default function Page({ params }) {
 
                 <Button variant="contained" onClick={() => {
                   // proceedToPayment();
+                  localStorage.removeItem("bookingData");
+                  window.location.href = "/checkout";
                 }}>Checkout</Button>
               </div>
 

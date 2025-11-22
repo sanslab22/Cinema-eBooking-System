@@ -1,0 +1,13 @@
+.checkout-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.booking-summary p {
+    font-size: 1.1rem;
+    margin: 10px 0;
+}
