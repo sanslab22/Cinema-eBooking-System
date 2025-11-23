@@ -5,16 +5,22 @@ import { useRouter } from "next/navigation";
 import "./page.css";
 import { useState, useEffect } from "react";
 
-export default function Page({ params }) {
+export default function Page() {
   const router = useRouter();
 
   const { movieTitle, time } = params;
 
   const [step, setStep] = useState(1);
+  const [ticketCategories, setTicketCategories] = useState([]);
+  const [loadingPrices, setLoadingPrices] = useState(true);
+  const [priceError, setPriceError] = useState(null);
 
-  const [childrenTicket, setChildrenTicket] = useState(0);
-  const [adultTicket, setAdultTicket] = useState(0);
-  const [seniorTicket, setSeniorTicket] = useState(0);
+  // Dynamic ticket counts: categoryName -> count
+  const [ticketCounts, setTicketCounts] = useState({});
+
+  const [auditoriumSeats, setAuditoriumSeats] = useState([]);
+  const [seatsLoading, setSeatsLoading] = useState(true);
+  const [seatsError, setSeatsError] = useState(null);
 
   const [seatsSelected, setSeatsSelected] = useState([]);
   const [error, setError] = useState(false);
@@ -28,9 +34,7 @@ export default function Page({ params }) {
 
       if (new Date().getTime() < expiry && data.movieTitle === decodeURIComponent(movieTitle) && data.time === decodeURIComponent(time)) {
         setStep(data.step || 1);
-        setChildrenTicket(data.childrenTicket || 0);
-        setAdultTicket(data.adultTicket || 0);
-        setSeniorTicket(data.seniorTicket || 0);
+        setTicketCounts(data.ticketCounts || {});
         setSeatsSelected(data.seatsSelected || []);
       } else {
         localStorage.removeItem("bookingData");
@@ -38,6 +42,7 @@ export default function Page({ params }) {
     }
   }, [movieTitle, time]);
 
+  // Save booking info to localStorage on changes
   useEffect(() => {
     const expiry = new Date().getTime() + 5 * 60 * 1000; // 5 minutes
     saveBookingData(expiry);
@@ -48,9 +53,7 @@ export default function Page({ params }) {
     const bookingData = {
       data: {
         step,
-        childrenTicket,
-        adultTicket,
-        seniorTicket,
+        ticketCounts,
         seatsSelected,
         movieTitle: decodeURIComponent(movieTitle),
         time: decodeURIComponent(time),
@@ -61,35 +64,93 @@ export default function Page({ params }) {
   };
 
 
-  const updateChildrenTicket = (e) => {
-    setChildrenTicket(parseInt(e.target.value) || 0);
-  }
+  // Fetch ticket categories & prices
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch(
+          "http://localhost:3002/api/ticket-categories"
+        );
+        const json = await response.json();
 
-  const updateAdultTicket = (e) => {
-    setAdultTicket(parseInt(e.target.value) || 0);
-  }
+        if (json.success) {
+          setTicketCategories(json.data);
+          setLoadingPrices(false);
+        } else {
+          setPriceError("Failed to load ticket prices.");
+        }
+      } catch (err) {
+        console.error(err);
+        setPriceError("Error loading ticket prices.");
+      }
+    }
+    fetchCategories();
+  }, []);
 
-  const updateSeniorTicket = (e) => {
-    setSeniorTicket(parseInt(e.target.value) || 0);
-  }
+  // Fetch auditorium seats dynamically
+  useEffect(() => {
+    async function fetchSeats() {
+      setSeatsLoading(true);
+      setSeatsError(null);
+      try {
+        const response = await fetch(
+          "http://localhost:3002/api/auditoriums?includeSeats=true"
+        );
+        const json = await response.json();
+        console.log("Fetched seats payload:", json); // Log payload here
 
 
+        if (json.auditoriums && json.auditoriums.length > 0) {
+          setAuditoriumSeats(json.auditoriums[0].seats || []);
+        } else {
+          setAuditoriumSeats([]);
+        }
+      } catch (error) {
+        console.error(error);
+        setSeatsError("Failed to load seats.");
+      } finally {
+        setSeatsLoading(false);
+      }
+    }
+    fetchSeats();
+  }, []);
+
+  // Handle changing ticket count for category
+  const updateTicketCount = (categoryName, value) => {
+    setTicketCounts((prev) => ({
+      ...prev,
+      [categoryName]: Math.max(0, parseInt(value) || 0),
+    }));
+  };
+
+  // Handle seat selection toggling
   const updateSeatsSelected = (seatId) => {
     if (seatsSelected.includes(seatId)) {
       setError(false);
       setErrorMessage("");
-      setSeatsSelected(seatsSelected.filter(s => s !== seatId));
+      setSeatsSelected(seatsSelected.filter((s) => s !== seatId));
     } else {
-      if (seatsSelected.length >= (childrenTicket + adultTicket + seniorTicket) && (childrenTicket + adultTicket + seniorTicket) > 0) {
+      const totalTickets = Object.values(ticketCounts).reduce(
+        (sum, n) => sum + n,
+        0
+      );
+      if (seatsSelected.length >= totalTickets && totalTickets > 0) {
         setError(true);
-        setErrorMessage("You have selected the maximum number of seats. Please deselect a seat to choose a different one.")
+        setErrorMessage(
+          "You have selected the maximum number of seats. Please deselect a seat to choose a different one."
+        );
       } else {
         setError(false);
         setErrorMessage("");
         setSeatsSelected([...seatsSelected, seatId]);
       }
     }
-  }
+  };
+
+  const totalTickets = Object.values(ticketCounts).reduce(
+    (sum, n) => sum + n,
+    0
+  );
 
   // --- NEW LOGIC: Handle Checkout Flow ---
   const handleCheckout = () => {
@@ -116,172 +177,139 @@ export default function Page({ params }) {
 
   return (
     <div>
-    <h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
+      <h1 style={{ textAlign: "center", marginTop: "20px" }}>Book Tickets</h1>
 
       <div className="booking-container">
-        {
-          step == 1 ? <>
+        {step === 1 ? (
+          <>
             <h2>Select Tickets</h2>
             {error && <p className="error-message">{errorMessage}</p>}
-            <div className="ticket-selection">
-              <div>
-                <label>Children</label> <input type="number" placeholder="0" min="0" value={childrenTicket} onChange={updateChildrenTicket} />
+            {priceError && <p className="error-message">{priceError}</p>}
+
+            {loadingPrices ? (
+              <p>Loading ticket prices...</p>
+            ) : (
+              <div className="ticket-selection">
+                {ticketCategories.map((category) => (
+                  <div key={category.id}>
+                    <label>{category.name} – ${category.price}</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      min="0"
+                      value={ticketCounts[category.name] || 0}
+                      onChange={(e) =>
+                        updateTicketCount(category.name, e.target.value)
+                      }
+                    />
+                  </div>
+                ))}
               </div>
-              <div>
-                <label>Adults</label> <input type="number" placeholder="0" min="0" value={adultTicket} onChange={updateAdultTicket} />
-              </div>
-              <div>
-                <label>Seniors</label> <input type="number" placeholder="0" min="0" value={seniorTicket} onChange={updateSeniorTicket} />
-              </div>
-            </div>
-            <Button variant="contained" onClick={() => {
-              if (childrenTicket + adultTicket + seniorTicket === 0) {
-                setError(true);
-                setErrorMessage("Please add at least one ticket.");
-              } else {
-                setError(false);
-                setErrorMessage("");
-                setStep(2);
-              }}}>Next</Button>
+            )}
+
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (totalTickets === 0) {
+                  setError(true);
+                  setErrorMessage("Please add at least one ticket.");
+                } else {
+                  setError(false);
+                  setErrorMessage("");
+                  setStep(2);
+                }
+              }}
+            >
+              Next
+            </Button>
           </>
-          : step == 2 ?
+        ) : step === 2 ? (
           <>
-          {console.log(seatsSelected)}
             <h2>Select Seats</h2>
             {error && <p className="error-message">{errorMessage}</p>}
-            <p># of seats left to select: {childrenTicket + adultTicket + seniorTicket - seatsSelected.length}</p>
-            <div className="seats">
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A1") ? "primary" : "secondary"}  onClick={() => updateSeatsSelected("A1")}>
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A2") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("A2")}>
-                A2
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A3") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("A3")}>
-                A3
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A4") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("A4")}>
-                A4
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A5") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("A5")}>
-                A5
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("A6") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("A6")}>
-                A6
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B1") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B1")}>
-                B1
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B2") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B2")}>
-                B2
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B3") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B3")}>
-                B3
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B4") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B4")}>
-                B4
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B5") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B5")}>
-                B5
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("B6") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("B6")}>
-                B6
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C1") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C1")}>
-                C1
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C2") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C2")}>
-                C2
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C3") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C3")}>
-                C3
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C4") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C4")}>
-                C4
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C5") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C5")}>
-                C5
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("C6") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("C6")}>
-                C6
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D1") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D1")}>
-                D1
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D2") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D2")}>
-                D2
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D3") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D3")}>
-                D3
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D4") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D4")}>
-                D4
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D5") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D5")}>
-                D5
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("D6") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("D6")}>
-                D6
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E1") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E1")}>
-                E1
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E2") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E2")}>
-                E2
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E3") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E3")}>
-                E3
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E4") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E4")}>
-                E4
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E5") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E5")}>
-                E5
-              </Button>
-              <Button className="seat-button" variant="contained" color={seatsSelected.includes("E6") ? "primary" : "secondary"} onClick={() => updateSeatsSelected("E6")}>
-                E6
-              </Button>
-            </div>
+            {seatsError && <p className="error-message">{seatsError}</p>}
+            <p>
+              # of seats left to select:{" "}
+              {totalTickets - seatsSelected.length}
+            </p>
+            {seatsLoading ? (
+              <p>Loading seats...</p>
+            ) : (
+              <div className="seats">
+                {auditoriumSeats.map(({ id, rowNum, colNum }) => {
+                  const seatLabel = `${rowNum}${colNum}`;
+                  return (
+                    <Button
+                      key={id}
+                      className="seat-button"
+                      variant="contained"
+                      color={
+                        seatsSelected.includes(seatLabel)
+                          ? "primary"
+                          : "secondary"
+                      }
+                      onClick={() => updateSeatsSelected(seatLabel)}
+                    >
+                      {seatLabel}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
 
-            <br/>
+            <br />
 
-            <Button variant="contained"
+            <Button
+              variant="contained"
               onClick={() => {
-                if (seatsSelected.length === (childrenTicket + adultTicket + seniorTicket)) {
+                if (seatsSelected.length === totalTickets) {
                   setStep(3);
                 } else {
                   setError(true);
-                  setErrorMessage("Select seats for all tickets.")
+                  setErrorMessage("Select seats for all tickets.");
                 }
               }}
-              className="next-button">
+              className="next-button"
+            >
               Next
             </Button>
-          </> :
-
+          </>
+        ) : (
           <>
             <h2>Confirm Booking Details</h2>
             <div className="booking-details">
-              <p><strong>Movie:</strong> {decodeURIComponent(movieTitle)}</p>
-              <p><strong>Showtime:</strong> {decodeURIComponent(time)}</p>
-              <p><strong>Seats:</strong> {seatsSelected.join(", ")}</p>
-              <p><strong>Children:</strong> {childrenTicket}</p>
-              <p><strong>Adults:</strong> {adultTicket}</p>
-              <p><strong>Seniors:</strong> {seniorTicket}</p>
-              
+              <p>
+                <strong>Movie:</strong> {decodeURIComponent(movieTitle)}
+              </p>
+              <p>
+                <strong>Showtime:</strong> {decodeURIComponent(time)}
+              </p>
+              <p>
+                <strong>Seats:</strong> {seatsSelected.join(", ")}
+              </p>
+              {ticketCategories.map((cat) => (
+                <p key={cat.id}>
+                  <strong>{cat.name}:</strong> {ticketCounts[cat.name] || 0}
+                </p>
+              ))}
+
               <div className="confirmation-buttons">
-                <Button variant="contained" onClick={() => {
-                  setStep(2);
-                }}>Go Back</Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setStep(2);
+                  }}
+                >
+                  Go Back
+                </Button>
 
                 <Button variant="contained" onClick={handleCheckout}>
                   Checkout
                 </Button>
               </div>
-
             </div>
           </>
-        }
+        )}
       </div>
     </div>
   );
