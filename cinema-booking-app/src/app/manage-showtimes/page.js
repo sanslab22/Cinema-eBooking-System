@@ -1,5 +1,6 @@
 "use client";
-
+import { Button } from "@mui/material";
+import BackButton from "../components/BackButton";
 import { useEffect, useState } from "react";
 import "./page.css";
 
@@ -125,6 +126,7 @@ export default function ManageShowtimes() {
 
   return (
     <div className="manage-showtimes">
+      <BackButton route="/admin-home" />
       <h2>Manage Showtimes</h2>
 
       <div className="movie-select-section">
