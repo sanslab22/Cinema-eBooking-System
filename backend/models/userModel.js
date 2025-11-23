@@ -51,3 +51,20 @@ export const findUserByEmail = async (email) => {
     throw new Error("Database error while finding user by email");
   }
 };
+
+export const verifyUser = async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return res.status(404).json({ message: "User not found." });
+
+  if (user.userStatusId !== 4)
+    return res.status(400).json({ message: "User already verified." });
+
+  // Update user status to inactive (2)
+  await prisma.user.update({
+    where: { email },
+    data: { userStatusId: 2 },
+  });
+
+  res.json({ message: "User verified successfully." });
+};

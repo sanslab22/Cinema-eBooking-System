@@ -30,7 +30,7 @@ export const register = async (req, res) => {
           lastName,
           passwordHash: hashed,
           userTypeId: 2,
-          userStatusId: 2,
+          userStatusId: 4, // unverified status
         },
       });
 
@@ -146,6 +146,13 @@ export const login = async (req, res) => {
     const valid = await comparePasswords(password, user.passwordHash);
     if (!valid) return res.status(401).json({ message: "Invalid credentials." });
 
+    if (user.userStatusId === 4) {
+      // User is unverified
+      return res.status(403).json({ 
+        message: "User email is not verified. Please verify your account before logging in." 
+      });
+    }
+
     // Set userStatusId to Active (1) upon successful login
     await prisma.user.update({
       where: { id: user.id },
@@ -257,4 +264,21 @@ export const logoutUserStatusUpdate = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+export const verifyUser = async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return res.status(404).json({ message: "User not found." });
+
+  if (user.userStatusId !== 4)
+    return res.status(400).json({ message: "User already verified." });
+
+  // Update user status to inactive (2)
+  await prisma.user.update({
+    where: { email },
+    data: { userStatusId: 2 },
+  });
+
+  res.json({ message: "User verified successfully." });
 };

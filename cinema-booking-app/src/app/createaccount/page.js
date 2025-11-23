@@ -142,112 +142,129 @@ const CreateAccount = () => {
   };
 
   const handleSubmit = async () => {
-    handleNext();
-    const generatedCode = Math.floor(100000 + Math.random() * 900000);
-    setRandomCode(generatedCode);
+    if (!validateStep()) return;
+
+    // Register user first
     try {
-      const docRef = await addDoc(collection(db, "mail"), {
-        to: [formData.email],
-        message: {
-          subject: `Cinema E-Booking: One-Time Code to Verify Account`,
-          html: `
-          <p>Dear Customer,</p>
-          <p>Here is your one-time password to verify your account:</p>
-          <p><b>${generatedCode}</b></p>
-          <p>If you did not create an account, please ignore this email.</p>
-        `,
-        },
+      // Prepare payload as before
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Check that all home address fields are filled (none are empty)
+      const isHomeAddressComplete =
+        formData.address.trim() !== "" &&
+        formData.city.trim() !== "" &&
+        formData.state.trim() !== "" &&
+        formData.zipCode.trim() !== "";
+
+      // Only include homeAddress if all fields are complete
+      const homeAddress = isHomeAddressComplete
+        ? {
+            street: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+          }
+        : undefined;
+
+      const paymentCards = formData.paymentCards
+        .filter(card => card.cardNumber && card.expDate)
+        .map(card => ({
+          cardNo: card.cardNumber,
+          expirationDate: card.expDate,
+          // Only assign billingAddress if homeAddress is complete
+          billingAddress: isHomeAddressComplete ? homeAddress : undefined,
+        }));
+
+      const payload = {
+        email: formData.email,
+        firstName,
+        lastName,
+        password: formData.password,
+        ...(homeAddress && { homeAddress }),
+        paymentCards,
+      };
+
+      const response = await fetch('http://localhost:3002/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      console.log("Document written with ID: ", docRef.id);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(true);
+        setErrorMessage(errorData.message || 'Failed to create account.');
+        return;
+      }
+
+
+      // After successful backend registration, generate the verification code
+      const generatedCode = Math.floor(100000 + Math.random() * 900000);
+      setRandomCode(generatedCode);
+
+      // Send the verification email via Firebase Firestore
+      try {
+        const docRef = await addDoc(collection(db, "mail"), {
+          to: [formData.email],
+          message: {
+            subject: `Cinema E-Booking: One-Time Code to Verify Account`,
+            html: `
+              <p>Dear Customer,</p>
+              <p>Here is your one-time password to verify your account:</p>
+              <p><b>${generatedCode}</b></p>
+              <p>If you did not create an account, please ignore this email.</p>
+            `,
+          },
+        });
+        console.log("Verification email sent with ID:", docRef.id);
+      } catch (error) {
+        console.error("Error sending verification email:", error);
+        setError(true);
+        setErrorMessage("Failed to send verification email.");
+        return;
+      }
+
+      // Move to verification step after registration and email sent
+      handleNext();
+
     } catch (error) {
-      console.error("Error sending email:", error);
+      setError(true);
+      setErrorMessage("An unexpected error occurred during registration.");
     }
   };
 
   const verifyAccount = async () => {
-    // 1. Check if the verification code is correct
-    if (formData.code === randomCode.toString()) {
-      try {
-        
-        // --- 2. Transform frontend data to match backend controller ---
-
-        // Split fullName into firstName and lastName
-        const nameParts = formData.fullName.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-
-        // Create the nested homeAddress object
-        const homeAddress = {
-          street: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-        };
-
-        // --- IMPORTANT ASSUMPTION ---
-        // Your backend *requires* a billingAddress for each card,
-        // but your form only collects a homeAddress.
-        // The code below *assumes the billing address is the same as the home address*.
-        const paymentCards = formData.paymentCards
-          .filter(card => card.cardNumber && card.expDate) // Only send cards that have data
-          .map(card => ({
-            cardNo: card.cardNumber,         // 'cardNumber' -> 'cardNo'
-            expirationDate: card.expDate,  // 'expDate' -> 'expirationDate'
-            
-            // Re-using home address as billing address
-            billingAddress: { 
-              street: formData.address,
-              city: formData.city,
-              state: formData.state,
-              zipCode: formData.zipCode,
-            },
-          }));
-
-        // Build the final payload for the API
-        const payload = {
-          email: formData.email,
-          firstName: firstName,
-          lastName: lastName,
-          password: formData.password,
-          homeAddress: homeAddress,
-          paymentCards: paymentCards,
-          // Note: 'username' and 'subscribe' from your form
-          // are not in your backend controller, so we don't send them.
-        };
-
-        // --- 3. Call your backend API endpoint ---
-        
-        // I am assuming your API route is '/api/auth/register'
-        // based on your file name (authController) and function (register).
-        // Change this URL if your route is different!
-        const response = await fetch('http://localhost:3002/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        // --- 4. Handle success or error from the server ---
-        if (response.ok) {
-          // Success! User was created. Now redirect to login.
-          router.push("/login");
-        } else {
-          // Handle errors (e.g., "User already exists.")
-          const errorData = await response.json();
-          setError(true);
-          setErrorMessage(errorData.message || "Failed to create account.");
-        }
-      } catch (error) {
-        // Handle network errors or other unexpected issues
-        console.error("Registration failed:", error);
-        setError(true);
-        setErrorMessage("An unexpected error occurred. Please try again.");
-      }
-    } else {
-      // Handle incorrect verification code
+    // Check if verification code matches the one generated and stored in state
+    if (formData.code !== randomCode?.toString()) {
       setError(true);
       setErrorMessage("Invalid code");
+      return;
+    }
+
+    try {
+      // Call your backend endpoint that updates user status to 2 (active)
+      const response = await fetch('http://localhost:3002/api/auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(true);
+        setErrorMessage(errorData.message || "Failed to verify account.");
+        return;
+      }
+
+      // On success, redirect to login
+      router.push('/login');
+    } catch (error) {
+      setError(true);
+      setErrorMessage("An unexpected error occurred during verification.");
     }
   };
 

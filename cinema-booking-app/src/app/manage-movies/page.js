@@ -12,6 +12,7 @@ export default function ManageMovies() {
         movieTitle: "",
         category: "",
         cast: "",
+        duration: "",
         director: "",
         producer: "",
         synopsis: "",
@@ -45,18 +46,38 @@ export default function ManageMovies() {
         ];
 
         for (const field of requiredFields) {
-          if (!movie[field]) {
-          setError(true);
-            setErrorMessage(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
-          return;
+            if (!movie[field]) {
+                setError(true);
+                    setErrorMessage(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
+                return;
+            }
         }
+
+        // Now, validate duration separately
+        if (!movie.duration) {
+            setError(true);
+            setErrorMessage("Please fill in the duration field.");
+            return;
         }
+
+        if (!Number.isInteger(Number(movie.duration))) {
+            setError(true);
+            setErrorMessage("Duration must be a valid integer.");
+            return;
+        }
+
+        const moviePayload = {
+            ...movie,
+            duration: Number(movie.duration), // convert to number for Prisma
+        };
+        console.log('Payload to send:', moviePayload);
+
     
         try {
             const response = await fetch("http://localhost:3002/api/admin/movies", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(movie),
+                body: JSON.stringify(moviePayload),
             });
     
             const data = await response.json();
@@ -70,6 +91,7 @@ export default function ManageMovies() {
                 movieTitle: "",
                 category: "",
                 cast: "",
+                duration: "",
                 director: "",
                 producer: "",
                 synopsis: "",
@@ -114,6 +136,17 @@ export default function ManageMovies() {
                         type="text"
                         name="category"
                         value={movie.category}
+                        onChange={handleChange}
+                        required
+                    />
+                </label>
+
+                <label>
+                    Duration (in minutes)
+                    <input
+                        type="text"
+                        name="duration"
+                        value={movie.duration}
                         onChange={handleChange}
                         required
                     />
@@ -196,15 +229,18 @@ export default function ManageMovies() {
                     />
                 </label>
 
-                <label>
-                    <input
-                        type="checkbox"
-                        name="isActive"
-                        value={movie.isActive}
-                        onChange={handleChange}
-                    />{" "}
-                    Currently Playing?
-                </label>
+                {/* {movie.imagePoster && (
+                    <div>
+                        <p>Image Preview:</p>
+                        <img
+                        src={movie.imagePoster}
+                        alt={`Poster for ${movie.movieTitle || 'movie'}`}
+                        style={{ maxWidth: '200px', maxHeight: '300px', marginTop: '10px' }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder.png'; }}
+                        />
+                    </div>
+                )} */}
+
             </div>
 
             <div className='button-container'>
