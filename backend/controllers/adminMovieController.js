@@ -16,6 +16,7 @@ export async function createMovie(req, res) {
         movieTitle:  data.movieTitle,
         category:    data.category,
         cast:        data.cast,
+        duration:    data.duration,
         director:    data.director,
         producer:    data.producer,
         synopsis:    data.synopsis ?? null,

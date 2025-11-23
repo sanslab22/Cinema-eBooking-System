@@ -8,31 +8,42 @@ export function validateCreateMovie(body) {
   const errors = [];
 
   if (!isNonEmptyString(body.movieTitle)) errors.push("movieTitle is required.");
-  if (!isNonEmptyString(body.category))   errors.push("category is required.");
-  if (!isNonEmptyString(body.cast))       errors.push("cast is required.");
-  if (!isNonEmptyString(body.director))   errors.push("director is required.");
-  if (!isNonEmptyString(body.producer))   errors.push("producer is required.");
+  if (!isNonEmptyString(body.category)) errors.push("category is required.");
+  if (!isNonEmptyString(body.cast)) errors.push("cast is required.");
+  if (!isNonEmptyString(body.director)) errors.push("director is required.");
+  if (!isNonEmptyString(body.producer)) errors.push("producer is required.");
   if (!isNonEmptyString(body.filmRating)) errors.push("filmRating is required.");
 
-  // Optional fields: synopsis, trailerURL, imagePoster, isActive
+  // Validate duration explicitly
+  if (body.duration == null) {
+    errors.push("duration is required.");
+  } else {
+    const dur = Number(body.duration);
+    if (!Number.isInteger(dur) || dur <= 0) {
+      errors.push("duration must be a positive integer.");
+    }
+  }
+
   if (errors.length) return { ok: false, errors };
 
   const data = {
     movieTitle: String(body.movieTitle).trim(),
-    category:   String(body.category).trim(),
-    cast:       String(body.cast).trim(),
-    director:   String(body.director).trim(),
-    producer:   String(body.producer).trim(),
+    category: String(body.category).trim(),
+    cast: String(body.cast).trim(),
+    director: String(body.director).trim(),
+    producer: String(body.producer).trim(),
     filmRating: String(body.filmRating).trim(),
+    duration: Number(body.duration),  // Add parsed duration here
   };
 
-  if (body.synopsis != null)   data.synopsis   = String(body.synopsis);
+  if (body.synopsis != null)   data.synopsis = String(body.synopsis);
   if (body.trailerURL != null) data.trailerURL = String(body.trailerURL);
   if (body.imagePoster != null) data.imagePoster = String(body.imagePoster);
-  if (body.isActive != null)   data.isActive   = !!body.isActive;
+  if (body.isActive != null) data.isActive = !!body.isActive;
 
   return { ok: true, data };
 }
+
 
 export function validateUpdateMovie(body) {
   const errors = [];
