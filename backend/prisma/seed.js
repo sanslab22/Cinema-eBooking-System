@@ -36,6 +36,17 @@ async function main() {
     );
     console.log('Seeded Lookup Tables (Types & Statuses).');
 
+    await Promise.all(
+        sampleData.ticketCategory.map(t => prisma.ticketCategory.upsert({
+            where: { id: t.id },
+            update: {}, 
+            create: t,
+        }))
+    );
+    console.log('Seeded TicketCategory.');
+
+
+
     // ----------------------------------------------------
     // 2. Seed Independent Entities (Theater, Movie)
     // ----------------------------------------------------
@@ -57,6 +68,7 @@ async function main() {
             return prisma.movie.create({
                 data: {
                     movieTitle: data.movieTitle,
+                    duration: data.duration,
                     category: data.category,
                     cast: data.cast,
                     director: data.director,
@@ -200,19 +212,19 @@ async function main() {
     console.log('Seeded Movie Shows.');
 
     // ShowSeats (Requires Seat ID, MovieShow ID)
-    // await Promise.all(
-    //     sampleData.showSeats.map(ss => {
-    //         const { seatID, showID, ...data } = ss;
-    //         return prisma.showSeats.create({
-    //             data: {
-    //                 ...data,
-    //                 seat: { connect: { id: seatID } },
-    //                 movieShow: { connect: { id: movieShowIdByShowID[showID] } }
-    //             }
-    //         });
-    //     })
-    // );
-    // console.log('Seeded Show Seats.');
+    await Promise.all(
+        sampleData.showSeats.map(ss => {
+            const { seatID, showID, ...data } = ss;
+            return prisma.showSeats.create({
+                data: {
+                    ...data,
+                    seat: { connect: { id: seatID } },
+                    movieShow: { connect: { id: showID } }
+                }
+            });
+        })
+    );
+    console.log('Seeded Show Seats.');
 
 
     console.log('\nSeeding Complete.');

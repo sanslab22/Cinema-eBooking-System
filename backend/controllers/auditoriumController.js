@@ -39,6 +39,7 @@ export async function getAuditoriumById(req, res) {
     }
 
     const includeSeats = String(req.query.includeSeats || "").toLowerCase() === "true";
+    const showID = req.query.showID ? Number(req.query.showID) : null;
 
     const auditorium = await prisma.auditorium.findUnique({
       where: { id: auditoriumId },
@@ -47,7 +48,17 @@ export async function getAuditoriumById(req, res) {
         _count: { select: { seats: true, movieShows: true } },
         ...(includeSeats && {
           seats: {
-            select: { id: true, rowNum: true, colNum: true },
+            select: {
+              id: true,
+              rowNum: true,
+              colNum: true,
+              showSeats: showID
+                ? {
+                    where: { showID },
+                    select: { status: true },
+                  }
+                : false,
+            },
             orderBy: [{ rowNum: "asc" }, { colNum: "asc" }],
           },
         }),
@@ -55,9 +66,18 @@ export async function getAuditoriumById(req, res) {
     });
 
     if (!auditorium) return res.status(404).json({ error: "Auditorium not found." });
+
+    if (includeSeats && showID) {
+      auditorium.seats = auditorium.seats.map((seat) => {
+        const status = seat.showSeats.length > 0 ? seat.showSeats[0].status : "available";
+        return { ...seat, status };
+      });
+    }
+
     return res.json(auditorium);
   } catch (err) {
     console.error("getAuditoriumById error:", err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
+

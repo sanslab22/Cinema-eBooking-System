@@ -15,6 +15,7 @@ model Movie {
   id          Int      @id @default(autoincrement())
   movieTitle  String   @unique @db.VarChar(255)
   category    String   @db.VarChar(100)
+  duration    Int
   cast        String   @db.Text
   director    String   @db.VarChar(255)
   producer    String   @db.VarChar(255)
