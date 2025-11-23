@@ -20,6 +20,12 @@ export const addressTypes = [
   { id: 2, name: 'Billing' },
 ];
 
+export const seatStatus = [
+  {id: 1, name: 'Temp'},
+  {id: 2, name: 'Available'},
+  {id: 3, name: 'Booked'},
+]
+
 // --- 2. Core Entities (Independent) ---
 
 export const theaters = [
@@ -31,6 +37,7 @@ export const movies = [
   {
     id: 1,
     movieTitle: 'The Shawshank Redemption',
+    duration: 142,
     category: 'Drama',
     cast: 'Tim Robbins, Morgan Freeman',
     director: 'Frank Darabont',
@@ -45,6 +52,7 @@ export const movies = [
   {
     id: 2,
     movieTitle: 'The Godfather',
+    duration: 175,
     category: 'Crime, Drama',
     cast: 'Marlon Brando, Al Pacino',
     director: 'Francis Ford Coppola',
@@ -58,6 +66,7 @@ export const movies = [
   {
     id: 3,
     movieTitle: 'Inception',
+    duration: 148,
     category: 'Action, Sci-Fi',
     cast: 'Leonardo DiCaprio, Elliot Page',
     director: 'Christopher Nolan',
@@ -71,6 +80,7 @@ export const movies = [
   {
     id: 4,
     movieTitle: 'Spirited Away',
+    duration: 125,
     category: 'Animation, Fantasy',
     cast: 'Rumi Hiiragi, Miyu Irino',
     director: 'Hayao Miyazaki',
@@ -128,17 +138,45 @@ export const auditoriums = [
   { id: 1, AuditoriumName: 'Screen A', noOfSeats: 100, theaterId: 1 },
   { id: 2, AuditoriumName: 'Screen B', noOfSeats: 80, theaterId: 1 },
   // Theater 2
-  { id: 3, AuditoriumName: 'Grand Hall', noOfSeats: 120, theaterId: 2 },
+  { id: 3, AuditoriumName: 'Screen C', noOfSeats: 120, theaterId: 2 },
 ];
 
 export const seats = [
-  // Auditorium 1 (100 seats, A1-A10, B1-B10, ..., J1-J10) - just a few samples
+  // Auditorium 1 (10 seats)
   { id: 1, auditoriumID: 1, rowNum: 'A', colNum: 1 },
   { id: 2, auditoriumID: 1, rowNum: 'A', colNum: 2 },
-  { id: 3, auditoriumID: 1, rowNum: 'B', colNum: 5 },
-  // Auditorium 3 (120 seats)
-  { id: 4, auditoriumID: 3, rowNum: 'F', colNum: 10 },
-  { id: 5, auditoriumID: 3, rowNum: 'F', colNum: 11 },
+  { id: 3, auditoriumID: 1, rowNum: 'A', colNum: 3 },
+  { id: 4, auditoriumID: 1, rowNum: 'A', colNum: 4 },
+  { id: 5, auditoriumID: 1, rowNum: 'A', colNum: 5 },
+  { id: 6, auditoriumID: 1, rowNum: 'B', colNum: 1 },
+  { id: 7, auditoriumID: 1, rowNum: 'B', colNum: 2 },
+  { id: 8, auditoriumID: 1, rowNum: 'B', colNum: 3 },
+  { id: 9, auditoriumID: 1, rowNum: 'B', colNum: 4 },
+  { id: 10, auditoriumID: 1, rowNum: 'B', colNum: 5 },
+
+  // Auditorium 2 (10 seats)
+  { id: 1, auditoriumID: 2, rowNum: 'A', colNum: 1 },
+  { id: 2, auditoriumID: 2, rowNum: 'A', colNum: 2 },
+  { id: 3, auditoriumID: 2, rowNum: 'A', colNum: 3 },
+  { id: 4, auditoriumID: 2, rowNum: 'A', colNum: 4 },
+  { id: 5, auditoriumID: 2, rowNum: 'A', colNum: 5 },
+  { id: 6, auditoriumID: 2, rowNum: 'B', colNum: 1 },
+  { id: 7, auditoriumID: 2, rowNum: 'B', colNum: 2 },
+  { id: 8, auditoriumID: 2, rowNum: 'B', colNum: 3 },
+  { id: 9, auditoriumID: 2, rowNum: 'B', colNum: 4 },
+  { id: 10, auditoriumID: 2, rowNum: 'B', colNum: 5 },
+
+  // Auditorium 3 (10 seats)
+  { id: 1, auditoriumID: 3, rowNum: 'A', colNum: 1 },
+  { id: 2, auditoriumID: 3, rowNum: 'A', colNum: 2 },
+  { id: 3, auditoriumID: 3, rowNum: 'A', colNum: 3 },
+  { id: 4, auditoriumID: 3, rowNum: 'A', colNum: 4 },
+  { id: 5, auditoriumID: 3, rowNum: 'A', colNum: 5 },
+  { id: 6, auditoriumID: 3, rowNum: 'B', colNum: 1 },
+  { id: 7, auditoriumID: 3, rowNum: 'B', colNum: 2 },
+  { id: 8, auditoriumID: 3, rowNum: 'B', colNum: 3 },
+  { id: 9, auditoriumID: 3, rowNum: 'B', colNum: 4 },
+  { id: 10, auditoriumID: 3, rowNum: 'B', colNum: 5 },
 ];
 
 export const reviews = [
@@ -196,52 +234,40 @@ export const movieShows = [
     movieID: 1, // The Shawshank Redemption
     auditoriumID: 1, // Screen A
     showStartTime: '2025-11-23T18:00:00Z',
-    noAvailabileSeats: 98, // 100 total - 2 booked
+    noAvailabileSeats: 10,  // All available
   },
   {
     id: 2,
     showID: 201, // Another show ID, unique per show/movie/auditorium/time combination
-    movieID: 3, // Inception
+    movieID: 2, // Godfather
     auditoriumID: 3, // Grand Hall
     showStartTime: '2025-11-23T21:00:00Z',
-    noAvailabileSeats: 120, // All available
-  },
-  {
-    id: 3,
-    showID: 301,
-    movieID: 4, // Spirited Away
-    auditoriumID: 2, // Screen B
-    showStartTime: '2025-11-24T14:30:00Z',
-    noAvailabileSeats: 80, // All available
+    noAvailabileSeats: 10, // All available
   },
 ];
 
-// showSeats: [
-//   // For MovieShow ID 1 (Shawshank, Screen A)
-//   { 
-//     seatID: 1, // Seat A1
-//     showID: 1,
-//     status: 'Booked' 
-//   },
-//   { 
-//     seatID: 2, // Seat A2
-//     showID: 1,
-//     status: 'Booked' 
-//   },
-//   { 
-//     seatID: 3, // Seat B5
-//     showID: 1,
-//     status: 'Available' 
-//   },
-//   // For MovieShow ID 2 (Inception, Grand Hall)
-//   { 
-//     seatID: 4, // Seat F10
-//     showID: 2,
-//     status: 'Available' 
-//   },
-//   { 
-//     seatID: 5, // Seat F11
-//     showID: 2,
-//     status: 'Available' 
-//   },
-// ],
+export const showSeats = [
+  // Auditorium 1 seats (IDs 1–10)
+  { seatID: 1, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 2, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 3, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 4, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 5, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 6, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 7, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 8, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 9, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+  { seatID: 10, auditoriumID: 1, showID: 1, seatStatusId: '2' },
+
+  // Auditorium 2 seats (IDs 11–20)
+  { seatID: 11, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 12, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 13, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 14, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 15, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 16, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 17, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 18, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 19, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+  { seatID: 20, auditoriumID: 2, showID: 2, seatStatusId: '2' },
+];

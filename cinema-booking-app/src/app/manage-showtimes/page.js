@@ -24,7 +24,8 @@ export default function ManageShowtimes() {
   useEffect(() => {
     async function fetchMovies() {
       try {
-        const response = await fetch("/api/movies");
+        const response = await fetch("http://localhost:3002/api/movies");
+
         const data = await response.json();
         const activeMovies = data.items
           ? data.items.filter((movie) => movie.isActive)

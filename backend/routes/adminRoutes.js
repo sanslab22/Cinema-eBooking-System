@@ -9,6 +9,7 @@ import {
 } from "../controllers/adminMovieController.js";
 import {
   createShowForMovie,
+  getAuditoriums,
   listShowsForMovie,
   deleteShow,
 } from "../controllers/adminShowController.js";
@@ -29,6 +30,7 @@ router.patch("/admin/movies/:movieId/status", setMovieStatus); // Toggle isActiv
 router.post("/admin/movies/:movieId/shows", createShowForMovie);
 router.get("/admin/movies/:movieId/shows", listShowsForMovie);
 router.delete("/admin/shows/:showId", deleteShow);
+router.get("/auditoriums", getAuditoriums)
 
 // -- Promotions (Admin) ---
 router.post("/admin/promotions", createPromotion);

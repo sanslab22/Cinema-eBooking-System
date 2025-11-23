@@ -34,6 +34,14 @@ async function main() {
             create: t,
         }))
     );
+
+    await Promise.all(
+        sampleData.seatStatus.map(t => prisma.seatStatus.upsert({
+            where: { id: t.id },
+            update: {},
+            create: t,
+        }))
+    );    
     console.log('Seeded Lookup Tables (Types & Statuses).');
 
     // ----------------------------------------------------
@@ -57,6 +65,7 @@ async function main() {
             return prisma.movie.create({
                 data: {
                     movieTitle: data.movieTitle,
+                    duration: data.duration, 
                     category: data.category,
                     cast: data.cast,
                     director: data.director,
@@ -128,6 +137,7 @@ async function main() {
     const seatIdByDetails = Object.fromEntries(seatRecords.map(s => [`${s.auditoriumID}-${s.rowNum}-${s.colNum}`, s.id]));
     console.log('Seeded Seats.');
     
+
     // ----------------------------------------------------
     // 5. Seed User Details (Address, PaymentCard)
     // ----------------------------------------------------
@@ -199,24 +209,29 @@ async function main() {
     const movieShowIdByShowID = Object.fromEntries(movieShowRecords.map(ms => [ms.showID, ms.id]));
     console.log('Seeded Movie Shows.');
 
-    // ShowSeats (Requires Seat ID, MovieShow ID)
+
+    // ShowSeats (Requires Seat ID, MovieShow ID, Auditorium ID, SeatStatus ID)
+    
     // await Promise.all(
     //     sampleData.showSeats.map(ss => {
-    //         const { seatID, showID, ...data } = ss;
+    //         const { seatID, showID, seatStatusId } = ss;
+
+    //         // Find the auditorium for this seat
+    //         const seat = seatRecords.find(s => s.id === seatID);
+    //         if (!seat) throw new Error(`Seat with id ${seatID} not found`);
+            
     //         return prisma.showSeats.create({
-    //             data: {
-    //                 ...data,
-    //                 seat: { connect: { id: seatID } },
-    //                 movieShow: { connect: { id: movieShowIdByShowID[showID] } }
-    //             }
+    //         data: {
+    //             seat: { connect: { id: seatID } },
+    //             movieShow: { connect: { id: showID } },
+    //             seatStatus: { connect: { id: Number(seatStatusId) } },
+    //             auditorium: { connect: { id: seat.auditoriumID } }, // connect the auditorium
+    //         }
     //         });
     //     })
     // );
-    // console.log('Seeded Show Seats.');
-
-
-    console.log('\nSeeding Complete.');
 }
+
 
 main()
   .catch(e => {
