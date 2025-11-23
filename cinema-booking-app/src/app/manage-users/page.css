@@ -34,7 +34,7 @@
     background-color: #fafafa;
 }
   
-.remove-user-btn {
+.suspend-user-btn {
     background-color: #c62828;
     color: white;
     font-size: 1rem;
@@ -45,6 +45,21 @@
     transition: background-color 0.3s;
 }
   
-.remove-user-btn:hover {
+.suspend-user-btn:hover {
     background-color: #b71c1c;
+}
+
+.unsuspend-user-btn {
+    background-color: #1c961eff;
+    color: white;
+    font-size: 1rem;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+  
+.unsuspend-user-btn:hover {
+    background-color: #167a18ff;
 }

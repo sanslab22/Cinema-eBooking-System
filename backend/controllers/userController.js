@@ -83,6 +83,7 @@ export async function updateUserById(req, res) {
       EnrollforPromotions,     // optional (boolean)
       homeAddress,             // optional → replace addressTypeId:1
       paymentCards,            // optional → replace all (max 3)
+      userStatusId            
     } = req.body;
 
     const raw = await prisma.$transaction(async (tx) => {
@@ -108,6 +109,8 @@ export async function updateUserById(req, res) {
         // c. If match, hash the new password
         data.passwordHash = await hashPassword(newPassword);
       }
+
+      if (userStatusId !== undefined) data.userStatusId = userStatusId;
 
       if (Object.keys(data).length > 0) {
         await tx.user.update({ where: { id: userId }, data });

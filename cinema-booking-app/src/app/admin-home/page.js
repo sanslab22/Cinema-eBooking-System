@@ -87,7 +87,7 @@ export default function Home() {
 
         // Filter only customers
         const customers = data.items.filter(
-          (u) => u.userTypeId === 1 // or use u.userType.name === "Customer"
+          (u) => u.userTypeId === 2 // or use u.userType.name === "Customer"
         );
 
         setStats((prev) => ({
