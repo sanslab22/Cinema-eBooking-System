@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 export default function Page() {
   const router = useRouter();
 
-  const { movieTitle, time } = params;
+  const { movieTitle, time } = useParams();
 
   const [step, setStep] = useState(1);
   const [ticketCategories, setTicketCategories] = useState([]);
@@ -46,7 +46,7 @@ export default function Page() {
   useEffect(() => {
     const expiry = new Date().getTime() + 5 * 60 * 1000; // 5 minutes
     saveBookingData(expiry);
-  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time]);
+  }, [step, seatsSelected, movieTitle, time]);
 
   // Helper to save data (reused in checkout)
   const saveBookingData = (expiryTime) => {
