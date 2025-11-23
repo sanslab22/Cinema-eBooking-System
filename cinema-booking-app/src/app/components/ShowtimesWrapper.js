@@ -1,142 +1,124 @@
+// components/ShowtimesWrapper.jsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import "./ShowtimeWrapper.css"; // Make sure to create this file
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from 'react';
 
+// Define the ShowtimesWrapper component
 export default function ShowtimesWrapper({ movie, movieId }) {
-  const availableDates = useMemo(() => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date);
-    }
-    return dates;
-  }, []);
+    
+    // --- State for Date, Showtimes, Loading, and Error ---
+    const [selectedDate, setSelectedDate] = useState(
+        // Initialize with today's date in YYYY-MM-DD format
+        new Date().toISOString().slice(0, 10) 
+    );
+    const [showtimes, setShowtimes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  const formatDateKey = (dateObj) => dateObj.toISOString().slice(0, 10);
+    // --- Formatting Function (Same as before) ---
+    const formatShowtime = (timeSlot) => {
+        try {
+            const start = new Date(timeSlot.startTime); 
+            const end = new Date(timeSlot.endTime); 
 
-  const [selectedDate, setSelectedDate] = useState(formatDateKey(new Date()));
-  const [showtimes, setShowtimes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const formatShowtime = (startTime) => {
-    const date = new Date(startTime);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  useEffect(() => {
-    const fetchShowtimes = async () => {
-      const idToUse = movieId || movie?.id;
-      if (!selectedDate || !idToUse) return;
-
-      setLoading(true);
-      setError(null);
-
-      const apiUrl = `http://localhost:3002/api/movies/${idToUse}/showtimes?showdate=${selectedDate}`;
-
-      try {
-        const response = await fetch(apiUrl, { cache: "no-store" });
-
-        if (!response.ok) {
-          throw new Error(`Unavailable`);
+            const formatTime = (date) => {
+                return date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                });
+            };
+            // Example: 01:00 PM - 04:23 PM
+            return `${formatTime(start)} - ${formatTime(end)}`;
+        } catch (e) {
+            console.error("Error formatting showtime:", e, timeSlot);
+            return "Time format error"; 
         }
+    };
+    
+    // --- API Fetching Logic ---
+    useEffect(() => {
+        const fetchShowtimes = async () => {
+            const idToUse = movieId; // Use movieId prop directly
+            console.log("Fetching showtimes for movie ID:", idToUse, "on date:", selectedDate);
+            if (!selectedDate || !idToUse) return; 
 
-        const data = await response.json();
-        setShowtimes(data.showtimes || []);
-      } catch (e) {
-        console.error("Fetch error:", e);
-        setError("Could not load times");
-        setShowtimes([]);
-      } finally {
-        setLoading(false);
-      }
+            setLoading(true);
+            setError(null);
+            
+            // The API call is reliable here since movie.id is passed correctly
+            // Use the correct query parameter name 'showdate'
+            const apiUrl = `http://localhost:3000/api/movies/${idToUse}/showtimes?showdate=${selectedDate}`;
+
+            try {
+                const response = await fetch(apiUrl, { cache: 'no-store' });
+                
+                if (!response.ok) {
+                    const errorDetails = await response.json().catch(() => ({ error: response.statusText }));
+                    throw new Error(errorDetails.error || `Error fetching showtimes: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                setShowtimes(data.showtimes || []); 
+
+            } catch (e) {
+                console.error("Fetch error:", e);
+                setError(e.message);
+                setShowtimes([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchShowtimes();
+    }, [selectedDate, movie.id]); 
+
+    const handleDateChange = (event) => {
+        setSelectedDate(event.target.value);
     };
 
-    fetchShowtimes();
-  }, [selectedDate, movieId, movie]);
-  
-  const router = useRouter();
+    // --- JSX Display (Styled) ---
+    return (
+        <div className="showtimes-section">
+            <h3>Available Showtimes</h3>
+            
+            <div className="date-picker-container">
+                <label htmlFor="showdate-input">Select Date:</label>
+                <input 
+                    id="showdate-input"
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={handleDateChange} 
+                    className="showdate-input"
+                />
+            </div>
 
-  return (
-    <div className="showtimes-container">
-      <div className="section-header">
-        <h3>Select a Date</h3>
-      </div>
+            {loading && <p className="loading-message">Fetching times...</p>}
+            
+            {error && <p className="error-message">🛑 {error}</p>}
+            
+            {!loading && !error && showtimes.length === 0 && (
+                <p className="no-showtimes-message">No showtimes available :(</p>
+            )}
 
-      <div className="date-scroller">
-        {availableDates.map((date) => {
-          const dateKey = formatDateKey(date);
-          const isActive = selectedDate === dateKey;
-          const dayName = date.toLocaleDateString("en-US", {
-            weekday: "short",
-          });
-          const dayNum = date.getDate();
+            {!loading && !error && showtimes.length > 0 && (
+                <div className="showtimes-grid">
+                    {showtimes.map((timeSlot) => (
+                        <button 
 
-          return (
-            <button
-              key={dateKey}
-              onClick={() => setSelectedDate(dateKey)}
-              className={`date-card ${isActive ? "active" : ""}`}
-            >
-              <span className="day-name">{dayName}</span>
-              <span className="day-num">{dayNum}</span>
-            </button>
-          );
-        })}
-      </div>
+                            key={timeSlot.id || timeSlot.startTime} 
+                            className="showtime-tile"
+                            // Add booking functionality here
 
-      <div className="section-header">
-        <h3>Available Times</h3>
-      </div>
 
-      {loading && (
-        <div className="loading-skeleton">
-          <div className="skeleton-chip"></div>
-          <div className="skeleton-chip"></div>
-          <div className="skeleton-chip"></div>
+                        >
+                            {formatShowtime(timeSlot)}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
-      )}
-
-      {error && (
-        <div className="state-message error">
-          <span>{error}</span>
-        </div>
-      )}
-
-      {!loading && !error && showtimes.length === 0 && (
-        <div className="state-message empty">
-          <span>No screenings available for this date.</span>
-        </div>
-      )}
-
-      {!loading && !error && showtimes.length > 0 && (
-        <div className="showtimes-grid">
-          {showtimes.map((timeSlot) => (
-            <button
-              key={timeSlot.id || timeSlot.showStartTime}
-              className="time-btn"
-              onClick={() => {
-                router.push(
-                  `/booking/${movie.movieTitle}/${selectedDate}+${timeSlot.showStartTime}`
-                );
-              }}
-            >
-              <span className="time-text">
-                {formatShowtime(timeSlot.showStartTime)}
-              </span>
-              <span className="format-text">Standard</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    );
 }
+
+// NOTE: You still need the CSS from the previous answer in MovieDetails.css

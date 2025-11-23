@@ -12,20 +12,9 @@ export default function MovieInfo({ movie }) {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-    const imageSrc = (poster) => {
-    if (!poster) return ""; // Add a default placeholder path here if you have one
-
-    if (poster.startsWith("http") || poster.startsWith("/")) {
-      return poster;
-    }
-
-    return `/images/movies/${poster}`;
-  };
-
   const trailerVideoId = movie.trailerURL ? getYouTubeID(movie.trailerURL) : null;
 
   return (
-    <div>
     <div className="movie-info-container">
       <div className="movie-header">
         <h1>{movie.movieTitle}</h1>
@@ -36,7 +25,7 @@ export default function MovieInfo({ movie }) {
 
       <div className="movie-content">
         <div className="movie-poster">
-          <img src={imageSrc(movie.imagePoster)} alt={`${movie.movieTitle} Poster`} />
+          <img src={movie.imagePoster} alt={`${movie.movieTitle} Poster`} />
         </div>
         <div className="movie-details">
           <h2>Synopsis</h2>
@@ -67,7 +56,6 @@ export default function MovieInfo({ movie }) {
           ></iframe>
         </div>
       )}
-    </div>
     </div>
   );
 }
