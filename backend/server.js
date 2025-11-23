@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js";
 import movieRoutes from "./routes/movieRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import auditoriumRoutes from "./routes/auditoriumRoutes.js";
 
 
 
@@ -18,6 +19,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", movieRoutes);
 app.use("/api", userRoutes);
 app.use("/api", adminRoutes);  
+app.use("/api", auditoriumRoutes);  
 
 
 app.get("/", (req, res) => res.send("Cinema E-Booking API running..."));
