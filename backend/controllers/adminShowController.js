@@ -136,6 +136,33 @@ export async function listShowsForMovie(req, res) {
   }
 }
 
+/**
+ * GET /api/admin/shows/:showId/booked-seats
+ * Returns count of ShowSeats marked as "booked" for the MovieShow.id
+ */
+export async function getBookedSeatCount(req, res) {
+  try {
+    const showId = Number(req.params.showId);
+    if (!Number.isInteger(showId) || showId <= 0) {
+      return res.status(400).json({ error: "Invalid showId" });
+    }
+
+    const show = await prisma.movieShow.findUnique({ where: { id: showId } });
+    if (!show) {
+      return res.status(404).json({ error: "Show not found." });
+    }
+
+    const bookedSeats = await prisma.showSeats.count({
+      where: { showID: showId, status: "booked" },
+    });
+
+    return res.json({ showId, bookedSeats });
+  } catch (err) {
+    console.error("getBookedSeatCount error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 
 /**
  * DELETE /api/admin/shows/:showId

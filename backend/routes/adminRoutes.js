@@ -11,6 +11,7 @@ import {
   createShowForMovie,
   listShowsForMovie,
   deleteShow,
+  getBookedSeatCount,
 } from "../controllers/adminShowController.js";
 import { createPromotion, listPromotions } from "../controllers/adminPromotionController.js";
 
@@ -27,6 +28,7 @@ router.patch("/admin/movies/:movieId/status", setMovieStatus); // Toggle isActiv
 router.post("/admin/movies/:movieId/shows", createShowForMovie);
 router.get("/admin/movies/:movieId/shows", listShowsForMovie);
 router.delete("/admin/shows/:showId", deleteShow);
+router.get("/admin/shows/:showId/bookedseats", getBookedSeatCount);
 
 // -- Promotions (Admin) ---
 router.post("/admin/promotions", createPromotion);
