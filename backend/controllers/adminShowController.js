@@ -163,37 +163,3 @@ export async function deleteShow(req, res) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
-
-export async function getAuditoriums(req, res) {
-  try {
-    const auditoriums = await prisma.auditorium.findMany({
-      select: {
-        id: true,
-        AuditoriumName: true,
-        noOfSeats: true,
-        theater: {
-          select: {
-            id: true,
-            theaterName: true,
-          },
-        },
-        _count: {
-          select: { seats: true },
-        },
-      },
-    });
-
-    res.json({
-      items: auditoriums.map(a => ({
-        id: a.id,
-        auditoriumName: a.AuditoriumName,
-        noOfSeats: a.noOfSeats,
-        theater: a.theater,
-        seatCount: a._count.seats,  // actual seats in DB
-      })),
-    });
-  } catch (err) {
-    console.error("GET /auditoriums error:", err);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-}

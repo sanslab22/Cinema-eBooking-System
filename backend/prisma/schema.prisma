@@ -14,7 +14,6 @@ datasource db {
 model Movie {
   id          Int      @id @default(autoincrement())
   movieTitle  String   @unique @db.VarChar(255)
-  duration    Int
   category    String   @db.VarChar(100)
   cast        String   @db.Text
   director    String   @db.VarChar(255)
@@ -69,21 +68,9 @@ model Auditorium {
   theater         Theater     @relation(fields: [theaterId], references: [id])
   seats           Seat[]
   movieShows      MovieShow[]
-  showSeats       ShowSeats[]
-
 
   @@unique([theaterId, AuditoriumName])
   @@map("auditorium")
-}
-
-// SeatStatus -> id 1 is Temp, id 2 is Available, id 3 is Booked
-model SeatStatus {
-  id    Int    @id
-  name  String @unique @db.VarChar(50)
-
-  seats ShowSeats[]
-
-  @@map("seat_status")
 }
 
 model Seat {
@@ -123,20 +110,16 @@ model MovieShow {
 }
 
 model ShowSeats {
-  seatID          Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  seatID    Int
+  showID    Int
+  status    String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  seatStatusId    Int
-  auditoriumID    Int
-  showID          Int
+  seat      Seat      @relation(fields: [seatID], references: [id])
+  movieShow MovieShow @relation(fields: [showID], references: [id])
 
-  seatStatus        SeatStatus      @relation(fields: [seatStatusId], references: [id])
-  seat              Seat            @relation(fields: [seatID], references: [id])
-  movieShow         MovieShow       @relation(fields: [showID], references: [id])
-  auditorium        Auditorium      @relation(fields: [auditoriumID], references: [id])
-
-  @@id([seatID, showID, auditoriumID])
+  @@id([seatID, showID])
   @@map("show_seats")
 }
 
