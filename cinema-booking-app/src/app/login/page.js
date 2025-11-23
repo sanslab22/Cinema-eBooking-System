@@ -4,7 +4,7 @@ import "./page.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import BackButton from "../components/BackButton";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
+import { useRouter, useSearchParams } from "next/navigation"; // 1. Import useRouter
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
@@ -20,6 +20,8 @@ const Login = () => {
 
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
 
   // 4. Make handleLogin async and accept the event 'e'
   const handleLogin = async (e) => {
@@ -76,12 +78,16 @@ const Login = () => {
       localStorage.setItem("userId", data.user.id.toString());
       localStorage.setItem("userType", data.user.userTypeId.toString());
 
-      if (data.user.userTypeId === 1) {
-        alert("Admin login successful. Redirecting...");
-        window.location.href = '/admin-home';
+      if (redirectUrl) {
+        // If there is a redirect param (like /checkout), go there immediately
+        router.push(redirectUrl);
       } else {
-        alert("Login successful. Redirecting...");
-        window.location.href = '/';
+        // Normal flow
+        if (data.user.userTypeId === 1) {
+          window.location.href = '/admin-home';
+        } else {
+          window.location.href = '/';
+        }
       }
 
     } catch (err) {

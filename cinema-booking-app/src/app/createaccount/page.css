@@ -19,15 +19,24 @@ label {
     color: white;
 }
 
+/* --- UPDATED SECTION START --- */
 input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="month"] { /* Added month here */
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    
+    /* These 3 lines are crucial for matching the Date Picker to Text Inputs */
+    box-sizing: border-box; 
+    height: 45px;            
+    background-color: white; 
+    font-family: inherit;
 }
+/* --- UPDATED SECTION END --- */
 
 .button-container {
     display: flex;
@@ -41,17 +50,24 @@ input[type="password"] {
     font-weight: bold;
 }
 
+/* --- UPDATED CARD INFO LAYOUT --- */
 .card-info {
     display: flex;
     justify-content: space-between;
-
+    gap: 20px; /* Adds space between Security Code and Exp Date */
 }
+
+/* This makes sure both inputs take up exactly 50% of the space */
+.card-info label {
+    flex: 1; 
+}
+/* -------------------------------- */
 
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: -10px; /* Adjust to pull the fields closer */
+    margin-bottom: -10px; 
 }
 
 .add-card-container {
@@ -89,7 +105,6 @@ input[type="checkbox"] {
     border-radius: 5px;
     margin: 10px 0px;
     text-align: center;
-;
 }
 
 h2 {
