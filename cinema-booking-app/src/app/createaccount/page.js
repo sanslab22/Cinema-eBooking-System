@@ -4,12 +4,16 @@ import "./page.css";
 import { useState } from "react";
 import BackButton from "../components/BackButton";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
 const CreateAccount = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
+
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -170,12 +174,22 @@ const CreateAccount = () => {
 
       const paymentCards = formData.paymentCards
         .filter(card => card.cardNumber && card.expDate)
-        .map(card => ({
-          cardNo: card.cardNumber,
-          expirationDate: card.expDate,
-          // Only assign billingAddress if homeAddress is complete
-          billingAddress: isHomeAddressComplete ? homeAddress : undefined,
-        }));
+        .map(card => {
+          // card.expDate is "YYYY-MM" (e.g., "2024-05")
+          const [year, month] = card.expDate.split('-'); 
+          
+          // Take the last 2 digits of the year
+          const shortYear = year.slice(-2); 
+          
+          // Combine to create "MM/YY" (e.g., "05/24")
+          const formattedDate = `${month}/${shortYear}`;
+
+          return {
+            cardNo: card.cardNumber,
+            expirationDate: formattedDate, // Send the formatted date
+            billingAddress: isHomeAddressComplete ? homeAddress : undefined,
+          };
+        });
 
       const payload = {
         email: formData.email,
@@ -260,8 +274,14 @@ const CreateAccount = () => {
         return;
       }
 
-      // On success, redirect to login
-      router.push('/login');
+
+      if (redirectUrl) {
+        // Case A: Came from booking -> Go to Login -> Login sends to Checkout
+        router.push(`/login?redirect=${redirectUrl}`);
+      } else {
+        // Case B: Came from home -> Go to Login -> Login sends to Home
+        router.push('/login');
+      }
     } catch (error) {
       setError(true);
       setErrorMessage("An unexpected error occurred during verification.");
@@ -443,10 +463,11 @@ const CreateAccount = () => {
                   <label>
                     Expiration Date:
                     <input
-                      type="text"
+                      type="month"
                       name="expDate"
                       value={card.expDate}
                       onChange={(e) => handleCardChange(index, e)}
+                      min={new Date().toISOString().slice(0, 7)}
                     />
                   </label>
                 </div>

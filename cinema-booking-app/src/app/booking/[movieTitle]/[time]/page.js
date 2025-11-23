@@ -1,10 +1,13 @@
 "use client";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import "./page.css";
 import { useState, useEffect } from "react";
 
 export default function Page({ params }) {
+  const router = useRouter();
+
   const { movieTitle, time } = params;
 
   const [step, setStep] = useState(1);
@@ -17,10 +20,12 @@ export default function Page({ params }) {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  //load data in local storage
   useEffect(() => {
     const bookingDataJSON = localStorage.getItem("bookingData");
     if (bookingDataJSON) {
       const { data, expiry } = JSON.parse(bookingDataJSON);
+
       if (new Date().getTime() < expiry && data.movieTitle === decodeURIComponent(movieTitle) && data.time === decodeURIComponent(time)) {
         setStep(data.step || 1);
         setChildrenTicket(data.childrenTicket || 0);
@@ -35,6 +40,11 @@ export default function Page({ params }) {
 
   useEffect(() => {
     const expiry = new Date().getTime() + 5 * 60 * 1000; // 5 minutes
+    saveBookingData(expiry);
+  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time]);
+
+  // Helper to save data (reused in checkout)
+  const saveBookingData = (expiryTime) => {
     const bookingData = {
       data: {
         step,
@@ -45,10 +55,11 @@ export default function Page({ params }) {
         movieTitle: decodeURIComponent(movieTitle),
         time: decodeURIComponent(time),
       },
-      expiry,
+      expiry: expiryTime,
     };
     localStorage.setItem("bookingData", JSON.stringify(bookingData));
-  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time]);
+  };
+
 
   const updateChildrenTicket = (e) => {
     setChildrenTicket(parseInt(e.target.value) || 0);
@@ -80,9 +91,32 @@ export default function Page({ params }) {
     }
   }
 
+  // --- NEW LOGIC: Handle Checkout Flow ---
+  const handleCheckout = () => {
+    // 1. Refresh the expiry time (e.g., give them 30 mins to login/register)
+    // We don't want the data to expire while they are filling out the registration form.
+    const extendedExpiry = new Date().getTime() + 30 * 60 * 1000; 
+    saveBookingData(extendedExpiry);
+
+    // 2. Check Authentication
+    // REPLACE THIS with your actual auth check (e.g., check cookie, check context, etc.)
+    const isLoggedIn = localStorage.getItem("token") || false; 
+
+    if (isLoggedIn) {
+        // 3a. If Logged In: Go to checkout
+        // Note: We DO NOT remove localStorage here. We remove it inside the Checkout page 
+        // only after the payment is successful.
+        router.push("/checkout");
+    } else {
+        // 3b. If Not Logged In: Go to login with a redirect query param
+        // This tells the login page: "After you are done, send user to /checkout"
+        router.push("/login?redirect=/checkout");
+    }
+  };
+
   return (
     <div>
-<h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
+    <h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
 
       <div className="booking-container">
         {
@@ -240,11 +274,9 @@ export default function Page({ params }) {
                   setStep(2);
                 }}>Go Back</Button>
 
-                <Button variant="contained" onClick={() => {
-                  // proceedToPayment();
-                  localStorage.removeItem("bookingData");
-                  window.location.href = "/checkout";
-                }}>Checkout</Button>
+                <Button variant="contained" onClick={handleCheckout}>
+                  Checkout
+                </Button>
               </div>
 
             </div>
