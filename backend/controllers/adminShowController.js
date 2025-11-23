@@ -46,7 +46,7 @@ export async function createShowForMovie(req, res) {
       showID = (agg._max.showID ?? 0) + 1;
     }
 
-    // create show + seat map in a transaction
+    // create show + seat map + update movie status in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const show = await tx.movieShow.create({
         data: {
@@ -58,6 +58,11 @@ export async function createShowForMovie(req, res) {
         },
       });
 
+      await tx.movie.update({
+        where: { id: movieId },
+        data: { isActive: true }, 
+      });
+      
       // Pre-create ShowSeats for all seats in the auditorium, status "available"
       if (auditorium.seats.length > 0) {
         await tx.showSeats.createMany({
@@ -109,12 +114,20 @@ export async function listShowsForMovie(req, res) {
     const where = { movieID: movieId };
 
     // If date is provided, restrict to that calendar day (UTC window)
+    // --- FIX STARTS HERE ---
     if (filters.date) {
+      // 1. Start at the beginning of the requested day (UTC)
       const start = new Date(`${filters.date}T00:00:00.000Z`);
-      const end   = new Date(`${filters.date}T23:59:59.999Z`);
+      
+      // 2. End 30 hours later instead of 24.
+      // This catches late-night US shows that technically happen "tomorrow" in UTC time.
+      const end = new Date(start);
+      end.setHours(start.getHours() + 30); 
+
       where.showStartTime = { gte: start, lte: end };
-    // Or, if an explicit from/to is provided, honor that
-    } else if (filters.from || filters.to) {
+    } 
+    // --- FIX ENDS HERE ---
+    else if (filters.from || filters.to) {
       where.showStartTime = {};
       if (filters.from) where.showStartTime.gte = new Date(filters.from);
       if (filters.to)   where.showStartTime.lte = new Date(filters.to);

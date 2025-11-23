@@ -24,12 +24,9 @@ export default function ManageShowtimes() {
   useEffect(() => {
     async function fetchMovies() {
       try {
-        const response = await fetch("/api/movies");
+        const response = await fetch("http://localhost:3002/api/movies");
         const data = await response.json();
-        const activeMovies = data.items
-          ? data.items.filter((movie) => movie.isActive)
-          : data.filter((movie) => movie.isActive);
-        setMovies(activeMovies);
+        setMovies(data.items || data || []);
       } catch (err) {
         console.error("Error fetching movies: ", err);
       }
@@ -54,7 +51,7 @@ export default function ManageShowtimes() {
     fetchShowtimes();
   }, [selectedMovie]);
 
-  const handleAddShowtime = () => {
+  const handleAddShowtime = async () => {
     setError("");
 
     const { showroom, date, time } = newShowtime;
@@ -63,30 +60,66 @@ export default function ManageShowtimes() {
       return;
     }
 
-    const showStart = new Date(`${date}T${time}:00Z`);
+    // 1. Create Local Date Object
+    // We split strings to force "Local Time" usage
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    // Note: Month is 0-indexed in JS
+    const showStart = new Date(year, month - 1, day, hours, minutes);
+    const now = new Date();
+
+    if (showStart < now) {
+      setError("You cannot schedule a showtime in the past.");
+      return;
+    }
 
     //conflict check
-    const conflict = showtimes.some(
-      (s) => 
-        s.auditoriumID === parseInt(showroom) && 
-        new Date(s.showStartTime).getTime() === showStart.getTime()
-    );
+    const conflict = showtimes.some((s) => {
+       const existingStart = new Date(s.showStartTime);
+       return (
+         s.auditoriumID === parseInt(showroom) && 
+         existingStart.getTime() === showStart.getTime()
+       );
+    });
 
     if (conflict) {
       setError("A showtime already exists in this showroom at that time.");
       return;
     }
 
-    //add showtime (frontend only)
-    const newEntry = {
-      id: showtimes.length + 1,
-      movieID: selectedMovie.id,
-      auditoriumID: parseInt(showroom),
-      showStartTime: showStart.toISOString(),
-    };
+    // add showtime
+    try {
+      const response = await fetch(`http://localhost:3002/api/admin/movies/${selectedMovie.id}/shows`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auditoriumID: parseInt(showroom),
+          // We send the ISO string. The DB will store this as the Timestamp.
+          showStartTime: showStart.toISOString(), 
+        }),
+      });
 
-    setShowtimes((prev) => [...prev, newEntry]);
-    setNewShowtime({ showroom: "", date: "", time: ""});
+      if (!response.ok) {
+
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to save showtime");
+      }
+
+      const savedShow = await response.json();
+
+
+      setShowtimes((prev) => [...prev, savedShow]);
+      
+
+      setNewShowtime({ ...newShowtime, time: "" }); 
+      
+
+    } catch (err) {
+      console.error("Save error:", err);
+      setError(err.message);
+    }
 
   };
 
@@ -141,7 +174,19 @@ export default function ManageShowtimes() {
             <label>Date:</label>
             <input 
               type="date"
+              min={new Date().toISOString().split("T")[0]}
               value={newShowtime.date}
+              onChange={(e) => 
+                setNewShowtime({...newShowtime, date: e.target.value})
+              }
+            />
+          </div>
+
+          <div className="form-row">
+            <label>Time:</label>
+            <input 
+              type="time"
+              value={newShowtime.time}
               onChange={(e) => 
                 setNewShowtime({...newShowtime, time: e.target.value})
               }
