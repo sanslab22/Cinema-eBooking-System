@@ -1,14 +1,14 @@
 "use client"
 import "./MovieDetails.css";
-import { notFound } from "next/navigation";
 import MovieInfo from "../../components/MovieInfo";
 import BackButton from "../../components/BackButton";
 import ShowtimesWrapper from "@/app/components/ShowtimesWrapper";
 import withAuth from "@/app/hoc/withAuth";
+import { useEffect, useState } from "react";
 
 // Get the data from the api from server.js using the GET a single movie by id endpoint without prisma
 async function getMovie(id) {
-    const res = await fetch(`http://localhost:3002/api/movies/${id}`, { cache: 'no-store' });
+    const res = await fetch(`http://localhost:3002/api/movies/${id}`);
 
     if (!res.ok) {
         return null;
@@ -17,17 +17,42 @@ async function getMovie(id) {
     return res.json();
 }
 
+function MovieDetails({ params }) {
+    const { id } = params;
+    const [movie, setMovie] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    useEffect(() => {
+        let mounted = true;
 
-async function MovieDetails({ params }) {
-    const { id } = await params;  
+        (async () => {
+            try {
+                setLoading(true);
+                const data = await getMovie(id);
+                if (mounted) {
+                    setMovie(data);
+                }
+            } catch (err) {
+                if (mounted) setError(err.message || "Failed to load movie");
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        })();
 
-    const movie = await getMovie(id);
-    // console.log("The is the movie information for id: ", id, "with details: ", movie)
+        return () => {
+            mounted = false;
+        };
+    }, [id]);
+
+    if (loading) return <div className="movie-details-page">Loading...</div>;
+    if (error) return <div className="movie-details-page">Error: {error}</div>;
+    if (!movie) return <div className="movie-details-page">Movie not found.</div>;
+
     return (
         <div className="movie-details-page">
             <BackButton />
-            <MovieInfo movie={movie}  />
+            <MovieInfo movie={movie} />
             <ShowtimesWrapper movie={movie} movieId={id} />
         </div>
     );
