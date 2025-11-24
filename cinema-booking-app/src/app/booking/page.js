@@ -1,10 +1,12 @@
 "use client";
 import { Button } from "@mui/material";
-import Booking from "../components/Booking";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import withAuth from "../hoc/withAuth";
 
-export default function Page({ params }) {
+function Page({ params }) {
   const { movieTitle, time } = useParams();
+  const [step, setStep] = useState(1);
   console.log(params.movieTitle);
   return (
     <div>
@@ -17,106 +19,21 @@ export default function Page({ params }) {
           <label>Children</label> <input type="number" placeholder="0"/>
           <label>Adults</label> <input type="number" placeholder="0"/>
           <label>Seniors</label> <input type="number" placeholder="0"/>
-          <button>Next</button>
+          <button onClick={() => setStep(2)}>Next</button>
           </>
           : 
           <>
             <h2>Select Seats</h2>
             <div className="seats">
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
-              <Button className="seat-button" variant="contained" color="primary">
-                A1
-              </Button>
+              {/* Add your seat selection logic here */}
+              <p>Seat selection is not implemented yet.</p>
             </div>
+            <button onClick={() => setStep(1)}>Back</button>
           </>
         }
       </div>
     </div>
   );
 }
+
+export default Page;

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import MovieInfo from "../../components/MovieInfo";
 import BackButton from "../../components/BackButton";
 import ShowtimesWrapper from "@/app/components/ShowtimesWrapper";
+import withAuth from "@/app/hoc/withAuth";
 
 // Get the data from the api from server.js using the GET a single movie by id endpoint without prisma
 async function getMovie(id) {
@@ -17,7 +18,7 @@ async function getMovie(id) {
 
 
 
-export default async function MovieDetails({ params }) {
+async function MovieDetails({ params }) {
     const { id } = await params;  
 
     const movie = await getMovie(id);
@@ -30,3 +31,5 @@ export default async function MovieDetails({ params }) {
         </div>
     );
 }
+
+export default withAuth(MovieDetails, [0, 2]);

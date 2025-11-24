@@ -1,12 +1,13 @@
 "use client";
 
+import withAuth from "../hoc/withAuth";
 import { Button } from "@mui/material";
 import "./page.css";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import BackButton from "../components/BackButton";
 
-export default function ManageMovies() {
+function ManageMovies() {
 
     const [movie, setMovie] = useState({
         movieTitle: "",
@@ -253,3 +254,5 @@ export default function ManageMovies() {
         
     </div>
   )};
+
+export default withAuth(ManageMovies, [1]);

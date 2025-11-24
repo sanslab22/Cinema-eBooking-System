@@ -1,5 +1,6 @@
 'use client';
 
+import withAuth from "../hoc/withAuth";
 import React from 'react';
 
 const CheckoutPage = () => {
@@ -7,4 +8,4 @@ const CheckoutPage = () => {
   return <div>This is the checkout page.</div>;
 };
 
-export default CheckoutPage;
+export default withAuth(CheckoutPage, [2]);

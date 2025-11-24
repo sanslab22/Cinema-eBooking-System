@@ -6,8 +6,9 @@ import Genres from "./components/Genres";
 import { useState, useEffect } from "react";
 import "./globals.css";
 import "./page.css";
+import withAuth from "./hoc/withAuth";
 
-export default function Home() {
+function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
   const [uniqueGenres, setUniqueGenres] = useState([]);
@@ -129,3 +130,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default withAuth(Home, [0, 2]);

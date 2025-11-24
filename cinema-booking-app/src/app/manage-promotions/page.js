@@ -1,5 +1,6 @@
 "use client";
 
+import withAuth from "../hoc/withAuth";
 import { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
@@ -7,7 +8,7 @@ import "./page.css";
 import { Button } from "@mui/material";
 import BackButton from "../components/BackButton";
 
-export default function ManagePromotions() {
+function ManagePromotions() {
   const [promotions, setPromotions] = useState([]);
 
   const [promotion, setPromotion] = useState({
@@ -259,3 +260,5 @@ export default function ManagePromotions() {
     </div>
   );
 }
+
+export default withAuth(ManagePromotions, [1]);

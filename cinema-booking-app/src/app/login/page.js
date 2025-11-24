@@ -7,6 +7,7 @@ import BackButton from "../components/BackButton";
 import { useRouter } from "next/navigation"; // 1. Import useRouter
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import withAuth from "../hoc/withAuth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -189,4 +190,4 @@ const displayMessage = (errorMessage) => {
   return <div className="error-message">{errorMessage}</div>;
 };
 
-export default Login;
+export default withAuth(Login, [0]);

@@ -3,8 +3,9 @@ import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import "./page.css";
 import { useState, useEffect } from "react";
+import withAuth from "../../../hoc/withAuth";
 
-export default function Page({ params }) {
+function Page({ params }) {
   const { movieTitle, time } = params;
 
   const [step, setStep] = useState(1);
@@ -254,3 +255,5 @@ export default function Page({ params }) {
     </div>
   );
 }
+
+export default withAuth(Page, [0,2]);

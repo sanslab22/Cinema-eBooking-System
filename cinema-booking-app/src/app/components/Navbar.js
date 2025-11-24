@@ -143,8 +143,8 @@ const Navbar = () => {
             variant="contained"
             color="secondary"
             onClick={() => {
-              router.push("/login");
               handleLogout();
+              router.push("/login");
             }}
           >
             Logout

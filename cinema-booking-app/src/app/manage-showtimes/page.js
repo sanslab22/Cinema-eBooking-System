@@ -1,9 +1,10 @@
 "use client";
 
+import withAuth from "../hoc/withAuth";
 import { useEffect, useState } from "react";
 import "./page.css";
 
-export default function ManageShowtimes() {
+function ManageShowtimes() {
 
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -79,8 +80,11 @@ export default function ManageShowtimes() {
        return (
          s.auditoriumID === parseInt(showroom) && 
          existingStart.getTime() === showStart.getTime()
+       
+         );
+       }
+       
        );
-    });
 
     if (conflict) {
       setError("A showtime already exists in this showroom at that time.");
@@ -242,3 +246,5 @@ export default function ManageShowtimes() {
     </div>
   );
 }
+
+export default withAuth(ManageShowtimes, [1]);

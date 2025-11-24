@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import "./page.css";
 
 // Helper components
+import withAuth from "../hoc/withAuth";
 const StatCard = ({ title, value, icon }) => (
   <div className="stat-card">
     <div className="stat-icon">{icon}</div>
@@ -17,7 +18,7 @@ const StatCard = ({ title, value, icon }) => (
 );
 
 
-export default function Home() {
+function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
 
@@ -168,3 +169,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default withAuth(Home, [1]);

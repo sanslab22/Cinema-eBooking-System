@@ -1,8 +1,9 @@
 "use client";
+import withAuth from "../hoc/withAuth";
 import { useEffect, useState } from "react";
 import "./page.css";
 
-export default function ManageUsers() {
+function ManageUsers() {
 
   const [users, setUsers] = useState([]);
 
@@ -108,5 +109,8 @@ export default function ManageUsers() {
       </div>
 
     </div>
-  );
-}
+  
+    );
+  }
+  
+  export default withAuth(ManageUsers, [1]);

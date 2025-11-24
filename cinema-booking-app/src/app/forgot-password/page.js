@@ -6,6 +6,7 @@ import BackButton from "../components/BackButton";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import withAuth from "../hoc/withAuth";
 
 const ForgotPassword = () => {
   const router = useRouter();
@@ -229,4 +230,4 @@ const displayMessage = (errorMessage) => {
   return <div className="error-message">{errorMessage}</div>;
 };
 
-export default ForgotPassword;
+export default withAuth(ForgotPassword, [0]);

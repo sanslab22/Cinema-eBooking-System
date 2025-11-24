@@ -1,10 +1,11 @@
 'use client'
+import withAuth from "../hoc/withAuth";
 import React, { useState, useEffect } from "react";
 import "./page.css";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
-export default function EditProfile() {
+function EditProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [promotions, setPromotions] = useState(false); // Will be set by fetch
   const [user, setUser] = useState(null); // Start with null
@@ -26,27 +27,13 @@ export default function EditProfile() {
 
   useEffect(() => {
 
-    // 1. Get the userId and token from localStorage
     const userId = localStorage.getItem('userId');
-    //const token = localStorage.getItem('authToken');
-
-
-    // 2. Check if they are logged in
-    if (!userId) {
-      setLoading(false);
-      setError("You must be logged in to view this page.");
-      // You should redirect here:
-      //router.push('/login');
-      return;
-    }
 
     const fetchUserData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // 3. Use the 'userId' from localStorage in the fetch URL
-        // This will become "http://localhost:3002/api/users/4"
         const response = await fetch(`http://localhost:3002/api/users/${userId}`);
 
 
@@ -449,5 +436,8 @@ export default function EditProfile() {
         
       )}
     </div>
-  );
-}
+  
+    );
+  }
+  
+  export default withAuth(EditProfile, [2]);
