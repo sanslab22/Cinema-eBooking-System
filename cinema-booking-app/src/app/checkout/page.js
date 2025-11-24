@@ -28,6 +28,8 @@ const CheckoutPage = () => {
         setExpiryTime(expiry);
       } else {
         localStorage.removeItem("bookingData");
+        localStorage.removeItem("showID");
+        localStorage.removeItem("noAvailableSeats");
         alert("Session expired.");
         router.push("/");
       }
@@ -78,6 +80,8 @@ const CheckoutPage = () => {
 
     alert("Payment Successful! Enjoy the movie.");
     localStorage.removeItem("bookingData");
+    localStorage.removeItem("showID");
+    localStorage.removeItem("noAvailableSeats");
     router.push("/"); 
   };
 

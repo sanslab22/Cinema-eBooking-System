@@ -171,6 +171,11 @@ export default function ShowtimesWrapper({ movie, movieId }) {
               key={timeSlot.id || timeSlot.showStartTime}
               className="time-btn"
               onClick={() => {
+                if (timeSlot.id) {
+                  localStorage.setItem("showID", timeSlot.id);
+                  localStorage.setItem("auditoriumID", timeSlot.auditoriumID);
+                  localStorage.setItem("noAvailableSeats", timeSlot.noAvailabileSeats || 0);
+                }
                 const timeForUrl = formatShowtimeForUrl(timeSlot.showStartTime);
                 router.push(
                   `/booking/${movie.movieTitle}/${selectedDate}+${encodeURIComponent(
