@@ -46,8 +46,6 @@ export default function Page() {
     }).format(dateObj);
   };
 
-  // --- Load data from localStorage ---
-  
 
   // --- Fetch ticket categories ---
   useEffect(() => {
