@@ -50,7 +50,7 @@
   }
   
   .add-showtime-btn {
-    background-color: #2e7d32;
+    background-color: #d83030;
     color: white;
     font-size: 1rem;
     padding: 10px 16px;
@@ -61,7 +61,7 @@
   }
   
   .add-showtime-btn:hover {
-    background-color: #1b5e20;
+    background-color: #8e0303;
   }
   
   .error-text {

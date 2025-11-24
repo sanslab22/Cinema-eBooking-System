@@ -1,6 +1,8 @@
 "use client";
 import withAuth from "../hoc/withAuth";
 import { useEffect, useState } from "react";
+import { Button } from "@mui/material";
+import BackButton from "../components/BackButton";
 import "./page.css";
 
 function ManageUsers() {
@@ -58,6 +60,7 @@ function ManageUsers() {
 
   return (
     <div className="manage-users">
+      <BackButton route="/admin-home" />
       <div className="users-table-container">
         <h2>Registered Users</h2>
         <table className="users-table">
