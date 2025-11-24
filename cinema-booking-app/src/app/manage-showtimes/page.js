@@ -9,6 +9,7 @@ function ManageShowtimes() {
 
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showrooms, setShowrooms] = useState([]);
   const [showtimes, setShowtimes] = useState([]);
   const [newShowtime, setNewShowtime] = useState({
     showroom: "",
@@ -16,12 +17,6 @@ function ManageShowtimes() {
     time: "",
   });
   const [error, setError] = useState("");
-
-  const showrooms = [
-    { id: 1, name: "Screen A" },
-    { id: 2, name: "Screen B" },
-    { id: 3, name: "Grand Hall" },
-  ];
 
   useEffect(() => {
     async function fetchMovies() {
@@ -52,6 +47,27 @@ function ManageShowtimes() {
     }
     fetchShowtimes();
   }, [selectedMovie]);
+
+  useEffect(() => {
+    async function fetchShowrooms() {
+      try {
+        const response = await fetch("http://localhost:3002/api/auditoriums");
+        const data = await response.json();
+        if (data.auditoriums) {
+          // Map with id and name
+          const mappedShowrooms = data.auditoriums.map((aud) => ({
+            id: aud.id,
+            name: aud.AuditoriumName,
+          }));
+          setShowrooms(mappedShowrooms);
+        }
+      } catch (err) {
+        console.error("Error fetching showrooms: ", err);
+      }
+    }
+    fetchShowrooms();
+  }, []);
+
 
   const handleAddShowtime = async () => {
     setError("");
