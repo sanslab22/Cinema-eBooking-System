@@ -1,3 +1,4 @@
+"use client"
 import "./MovieDetails.css";
 import { notFound } from "next/navigation";
 import MovieInfo from "../../components/MovieInfo";
