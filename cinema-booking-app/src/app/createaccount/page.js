@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import withAuth from "../hoc/withAuth";
 
 const CreateAccount = () => {
   const router = useRouter();
@@ -571,4 +572,4 @@ const displayMessage = (errorMessage) => {
   return <div className="error-message">{errorMessage}</div>;
 };
 
-export default CreateAccount;
+export default withAuth(CreateAccount, [0]);
