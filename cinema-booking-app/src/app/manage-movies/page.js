@@ -114,14 +114,14 @@ function ManageMovies() {
         <form onSubmit={handleSubmit}>
             {error && <div className="error-message">{errorMessage}</div>}
             {successMessage && (
-                <div className="error-message" style={{ backgroundColor: "green" }}>
+                <div className="error-message" style={{ backgroundColor: "green", padding: "10px", borderRadius: "5px", margin: "3px" }}>
                     {successMessage}
                 </div>
             )}
             
             <div className="form-grid">
                 <label>
-                    Movie Title
+                    Movie Title *
                     <input
                         type="text"
                         name="movieTitle"
@@ -132,7 +132,7 @@ function ManageMovies() {
                 </label>
                 
                 <label>
-                    Category
+                    Category *
                     <input
                         type="text"
                         name="category"
@@ -143,7 +143,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Duration (in minutes)
+                    Duration (minutes) *
                     <input
                         type="text"
                         name="duration"
@@ -154,7 +154,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Cast
+                    Cast *
                     <input
                         type="text"
                         name="cast"
@@ -165,7 +165,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Director
+                    Director *
                     <input
                         type="text"
                         name="director"
@@ -176,7 +176,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Producer
+                    Producer *
                     <input
                         type="text"
                         name="producer"
@@ -187,7 +187,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Synopsis
+                    Synopsis *
                     <textarea
                         name="synopsis"
                         rows="4"
@@ -198,7 +198,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Trailer URL
+                    Trailer URL *
                     <input
                         type="text"
                         name="trailerURL"
@@ -209,7 +209,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Film Rating
+                    Film Rating *
                     <input
                         type="text"
                         name="filmRating"
@@ -220,7 +220,7 @@ function ManageMovies() {
                 </label>
 
                 <label>
-                    Image Poster
+                    Image Poster *
                     <input
                         type="text"
                         name="imagePoster"
