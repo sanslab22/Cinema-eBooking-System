@@ -250,6 +250,9 @@ function Page() {
                 })}
               </div>
             )}
+                <Button variant="contained" onClick={() => setStep(1)}>
+                  Back
+                </Button>
             <Button
               variant="contained"
               className="next-button"
