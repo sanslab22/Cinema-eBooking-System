@@ -91,17 +91,24 @@ function ManageShowtimes() {
       return;
     }
 
-    //conflict check
+    // Conflict Check
+    const newShowStart = showStart.getTime();
+    // Duration is in minutes, convert to milliseconds
+    const newMovieDuration = selectedMovie.duration * 60 * 1000; 
+    const newShowEnd = newShowStart + newMovieDuration;
+
     const conflict = showtimes.some((s) => {
-       const existingStart = new Date(s.showStartTime);
-       return (
-         s.auditoriumID === parseInt(showroom) && 
-         existingStart.getTime() === showStart.getTime()
-       
-         );
-       }
-       
-       );
+            console.log(selectedMovie)
+
+      if (s.auditoriumID !== parseInt(showroom)) {
+        return false; // Not in the same showroom, no conflict
+      }
+      const existingShowStart = new Date(s.showStartTime).getTime();
+      // Assuming existing showtimes are for the same movie, use selectedMovie.duration
+      const existingShowDuration = selectedMovie.duration * 60 * 1000;
+      const existingShowEnd = existingShowStart + existingShowDuration;
+      return newShowStart < existingShowEnd && newShowEnd > existingShowStart;
+    });
 
     if (conflict) {
       setError("A showtime already exists in this showroom at that time.");
