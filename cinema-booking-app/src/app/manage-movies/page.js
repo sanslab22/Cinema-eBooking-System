@@ -61,9 +61,9 @@ function ManageMovies() {
             return;
         }
 
-        if (!Number.isInteger(Number(movie.duration))) {
+        if (!Number.isInteger(Number(movie.duration)) || Number(movie.duration) <= 0) {
             setError(true);
-            setErrorMessage("Duration must be a valid integer.");
+            setErrorMessage("Duration must be a valid, positive integer.");
             return;
         }
 
