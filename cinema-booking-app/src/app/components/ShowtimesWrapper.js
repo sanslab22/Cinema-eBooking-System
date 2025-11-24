@@ -1,24 +1,30 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import "./ShowtimeWrapper.css"; // Make sure to create this file
+import "./ShowtimeWrapper.css";
 import { useRouter } from "next/navigation";
 
 export default function ShowtimesWrapper({ movie, movieId }) {
+  const TZ = "Etc/GMT+5";
+
   const availableDates = useMemo(() => {
-    const dates = [];
-    const today = new Date();
+    const keys = [];
+    const seen = new Set();
+    const now = Date.now();
     for (let i = 0; i < 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date);
+      const d = new Date(now + i * 24 * 60 * 60 * 1000);
+      const key = d.toLocaleDateString("en-CA", { timeZone: TZ });
+      if (!seen.has(key)) {
+        seen.add(key);
+        keys.push(key);
+      }
     }
-    return dates;
+    return keys;
   }, []);
 
-  const formatDateKey = (dateObj) => dateObj.toISOString().slice(0, 10);
-
-  const [selectedDate, setSelectedDate] = useState(formatDateKey(new Date()));
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: TZ })
+  );
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +35,15 @@ export default function ShowtimesWrapper({ movie, movieId }) {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZone: TZ,
     });
+  };
+
+  const formatShowtimeForUrl = (startTime) => {
+    const date = new Date(startTime);
+    const sv = date.toLocaleString("sv", { timeZone: TZ });
+    const trimmed = sv.slice(0, 16).replace(" ", "T");
+    return trimmed;
   };
 
   useEffect(() => {
@@ -39,18 +53,46 @@ export default function ShowtimesWrapper({ movie, movieId }) {
 
       setLoading(true);
       setError(null);
+      const offset = "-05:00"; // for Etc/GMT+5 (UTC-5)
+      const startIso = `${selectedDate}T00:00:00${offset}`;
+      const endIso = `${selectedDate}T23:59:59${offset}`;
 
-      const apiUrl = `http://localhost:3002/api/movies/${idToUse}/showtimes?showdate=${selectedDate}`;
+      const startUtcDate = new Date(startIso).toISOString().slice(0, 10);
+      const endUtcDate = new Date(endIso).toISOString().slice(0, 10);
+
+      // fetch showtimes for both UTC dates (may be same) and merge
+      const datesToQuery = Array.from(new Set([startUtcDate, endUtcDate]));
 
       try {
-        const response = await fetch(apiUrl, { cache: "no-store" });
+        setLoading(true);
+        console.debug("Fetching showtimes for UTC dates", { datesToQuery, selectedDate, TZ });
 
-        if (!response.ok) {
-          throw new Error(`Unavailable`);
-        }
+        const responses = await Promise.all(
+          datesToQuery.map((d) =>
+            fetch(`http://localhost:3002/api/movies/${idToUse}/showtimes?showdate=${d}`, {
+              cache: "no-store",
+            })
+          )
+        );
 
-        const data = await response.json();
-        setShowtimes(data.showtimes || []);
+        const ok = responses.every((r) => r.ok);
+        if (!ok) throw new Error("Unavailable");
+
+        const arrays = await Promise.all(responses.map((r) => r.json()));
+        const combined = arrays.flatMap((a) => a.showtimes || []);
+
+        const filtered = combined.filter((s) => {
+          try {
+            const localDate = new Date(s.showStartTime).toLocaleDateString("en-CA", {
+              timeZone: TZ,
+            });
+            return localDate === selectedDate;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        setShowtimes(filtered);
       } catch (e) {
         console.error("Fetch error:", e);
         setError("Could not load times");
@@ -72,13 +114,18 @@ export default function ShowtimesWrapper({ movie, movieId }) {
       </div>
 
       <div className="date-scroller">
-        {availableDates.map((date) => {
-          const dateKey = formatDateKey(date);
+        {availableDates.map((dateKey) => {
           const isActive = selectedDate === dateKey;
-          const dayName = date.toLocaleDateString("en-US", {
+          const [y, m, d] = dateKey.split("-").map((n) => parseInt(n, 10));
+          const safeDate = new Date(Date.UTC(y, m - 1, d, 12));
+          const dayName = safeDate.toLocaleDateString("en-US", {
             weekday: "short",
+            timeZone: TZ,
           });
-          const dayNum = date.getDate();
+          const dayNum = safeDate.toLocaleDateString("en-US", {
+            day: "numeric",
+            timeZone: TZ,
+          });
 
           return (
             <button
@@ -124,8 +171,11 @@ export default function ShowtimesWrapper({ movie, movieId }) {
               key={timeSlot.id || timeSlot.showStartTime}
               className="time-btn"
               onClick={() => {
+                const timeForUrl = formatShowtimeForUrl(timeSlot.showStartTime);
                 router.push(
-                  `/booking/${movie.movieTitle}/${selectedDate}+${timeSlot.showStartTime}`
+                  `/booking/${movie.movieTitle}/${selectedDate}+${encodeURIComponent(
+                    timeForUrl
+                  )}`
                 );
               }}
             >

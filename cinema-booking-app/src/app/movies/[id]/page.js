@@ -1,10 +1,10 @@
 "use client"
+import React, { useEffect, useState } from "react";
 import "./MovieDetails.css";
 import MovieInfo from "../../components/MovieInfo";
 import BackButton from "../../components/BackButton";
 import ShowtimesWrapper from "@/app/components/ShowtimesWrapper";
 import withAuth from "@/app/hoc/withAuth";
-import { useEffect, useState } from "react";
 
 // Get the data from the api from server.js using the GET a single movie by id endpoint without prisma
 async function getMovie(id) {
@@ -18,7 +18,9 @@ async function getMovie(id) {
 }
 
 function MovieDetails({ params }) {
-    const { id } = params;
+    // Next.js may pass `params` as a Promise; unwrap with React.use()
+    const routeParams = React.use(params);
+    const { id } = routeParams;
     const [movie, setMovie] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
