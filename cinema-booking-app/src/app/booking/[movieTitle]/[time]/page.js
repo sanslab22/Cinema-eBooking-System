@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import "./page.css";
 import { useState, useEffect } from "react";
+import BookingTimer from "../../../components/BookingTimer.js";
 
 export default function Page({ params }) {
   const router = useRouter();
@@ -20,6 +21,46 @@ export default function Page({ params }) {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+    const [expiryTime, setExpiryTime] = useState(null);
+
+  // --- NEW: Helper function to format time to EST ---
+  const formatTimeEST = (rawTime) => {
+    if (!rawTime) return "N/A";
+    
+    // 1. Decode the URL string
+    let decoded = decodeURIComponent(rawTime);
+
+    // 2. Clean the string. 
+    // The input "2025-11-24+2025-11-24T..." is messy.
+    // We look for the 'T' to find the ISO timestamp part.
+    if (decoded.includes('+')) {
+        // Split by '+' and take the last part which usually contains the full time info
+        const parts = decoded.split('+');
+        // Find the part that looks like an ISO string (has a 'T')
+        const isoPart = parts.find(p => p.includes('T'));
+        if (isoPart) decoded = isoPart;
+    }
+
+    // 3. Create Date Object
+    const dateObj = new Date(decoded);
+
+    // 4. Check if valid
+    if (isNaN(dateObj.getTime())) return decoded;
+
+    // 5. Format to EST (America/New_York)
+    return new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',   // "Monday"
+        year: 'numeric',   // "2025"
+        month: 'long',     // "November"
+        day: 'numeric',    // "24"
+        hour: 'numeric',   // "2"
+        minute: 'numeric', // "30"
+        timeZone: 'America/New_York',
+        timeZoneName: 'short' // "EST" or "EDT"
+    }).format(dateObj);
+  };
+
+
   //load data in local storage
   useEffect(() => {
     const bookingDataJSON = localStorage.getItem("bookingData");
@@ -32,33 +73,42 @@ export default function Page({ params }) {
         setAdultTicket(data.adultTicket || 0);
         setSeniorTicket(data.seniorTicket || 0);
         setSeatsSelected(data.seatsSelected || []);
+        setExpiryTime(expiry);
       } else {
         localStorage.removeItem("bookingData");
       }
     }
   }, [movieTitle, time]);
 
+  // 2. Save Data & Manage Timer Logic
   useEffect(() => {
-    const expiry = new Date().getTime() + 5 * 60 * 1000; // 5 minutes
-    saveBookingData(expiry);
-  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time]);
+    // ONLY start the timer if seats are selected AND we don't have an expiry yet
+    let currentExpiry = expiryTime;
 
-  // Helper to save data (reused in checkout)
-  const saveBookingData = (expiryTime) => {
-    const bookingData = {
-      data: {
-        step,
-        childrenTicket,
-        adultTicket,
-        seniorTicket,
-        seatsSelected,
-        movieTitle: decodeURIComponent(movieTitle),
-        time: decodeURIComponent(time),
-      },
-      expiry: expiryTime,
-    };
-    localStorage.setItem("bookingData", JSON.stringify(bookingData));
-  };
+    if (seatsSelected.length > 0 && !currentExpiry) {
+        // Start 5 minute timer now
+        currentExpiry = new Date().getTime() + 5 * 60 * 1000;
+        setExpiryTime(currentExpiry);
+    }
+
+    // Only save if we have data to save
+    if (currentExpiry) {
+        const bookingData = {
+        data: {
+            step,
+            childrenTicket,
+            adultTicket,
+            seniorTicket,
+            seatsSelected,
+            movieTitle: decodeURIComponent(movieTitle),
+            time: decodeURIComponent(time),
+        },
+        expiry: currentExpiry,
+        };
+        localStorage.setItem("bookingData", JSON.stringify(bookingData));
+    }
+  }, [step, childrenTicket, adultTicket, seniorTicket, seatsSelected, movieTitle, time, expiryTime]);
+
 
 
   const updateChildrenTicket = (e) => {
@@ -93,30 +143,23 @@ export default function Page({ params }) {
 
   // --- NEW LOGIC: Handle Checkout Flow ---
   const handleCheckout = () => {
-    // 1. Refresh the expiry time (e.g., give them 30 mins to login/register)
-    // We don't want the data to expire while they are filling out the registration form.
-    const extendedExpiry = new Date().getTime() + 30 * 60 * 1000; 
-    saveBookingData(extendedExpiry);
+    
 
-    // 2. Check Authentication
-    // REPLACE THIS with your actual auth check (e.g., check cookie, check context, etc.)
-    const isLoggedIn = localStorage.getItem("token") || false; 
+    
+    const isLoggedIn = localStorage.getItem("userId") || false; 
 
     if (isLoggedIn) {
-        // 3a. If Logged In: Go to checkout
-        // Note: We DO NOT remove localStorage here. We remove it inside the Checkout page 
-        // only after the payment is successful.
+
         router.push("/checkout");
     } else {
-        // 3b. If Not Logged In: Go to login with a redirect query param
-        // This tells the login page: "After you are done, send user to /checkout"
         router.push("/login?redirect=/checkout");
     }
   };
 
   return (
     <div>
-    <h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
+      {expiryTime && <BookingTimer expiryTimestamp={expiryTime} />}
+      <h1 style={{textAlign: "center", marginTop: "20px"}}>Book Tickets</h1>
 
       <div className="booking-container">
         {
@@ -263,7 +306,7 @@ export default function Page({ params }) {
             <h2>Confirm Booking Details</h2>
             <div className="booking-details">
               <p><strong>Movie:</strong> {decodeURIComponent(movieTitle)}</p>
-              <p><strong>Showtime:</strong> {decodeURIComponent(time)}</p>
+              <p><strong>Showtime:</strong> {formatTimeEST(time)}</p>
               <p><strong>Seats:</strong> {seatsSelected.join(", ")}</p>
               <p><strong>Children:</strong> {childrenTicket}</p>
               <p><strong>Adults:</strong> {adultTicket}</p>

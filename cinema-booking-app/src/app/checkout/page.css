@@ -1,13 +1,64 @@
 .checkout-container {
     max-width: 600px;
     margin: 40px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
+    padding: 0 20px;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.receipt-card {
+    background-color: white;
+    border: 1px solid #ddd;
     border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.receipt-header {
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
     text-align: center;
 }
 
-.booking-summary p {
-    font-size: 1.1rem;
-    margin: 10px 0;
+.receipt-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.receipt-body {
+    padding: 20px;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #555;
+}
+
+.total-row {
+    font-size: 1.2rem;
+    color: #000;
+    margin-top: 10px;
+}
+
+hr {
+    border: 0;
+    border-top: 1px dashed #ccc;
+    margin: 15px 0;
+}
+
+.receipt-footer {
+    padding: 20px;
+    background-color: #fafafa;
+    border-top: 1px solid #eee;
+    text-align: center;
 }
