@@ -137,12 +137,19 @@ export async function listShowsForMovie(req, res) {
     const shows = await prisma.movieShow.findMany({
       where,
       orderBy: { showStartTime: "asc" },
-      include: {
-        auditorium: { select: { id: true, AuditoriumName: true, theaterId: true } },
+      select: {
+        id: true,
+        showID: true,
+        auditoriumID: true,
+        showStartTime: true,
+        noAvailabileSeats: true,
+        auditorium: {
+          select: { id: true, AuditoriumName: true, theaterId: true },
+        },
       },
     });
 
-    return res.json({ movieId, count: shows.length, shows });
+    return res.json({ movieId, count: shows.length, shows});
   } catch (err) {
     console.error("listShowsForMovie error:", err);
     return res.status(500).json({ error: "Internal Server Error" });

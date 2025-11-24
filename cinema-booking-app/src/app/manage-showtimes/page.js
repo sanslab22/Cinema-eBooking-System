@@ -35,12 +35,12 @@ function ManageShowtimes() {
     if (!selectedMovie) return;
     async function fetchShowtimes() {
       try {
-        const today = new Date().toISOString().split("T")[0];
         const response = await fetch(
-          `/api/movies/${selectedMovie.id}/showtimes?showdate=${today}`
+          "http://localhost:3002/api/admin/movies/" + selectedMovie.id + "/shows"
         );
         const data = await response.json();
-        setShowtimes(data.showtimes || []);
+        // adminShowController returns { movieId, count, shows }
+        setShowtimes(data.shows || []);
       } catch (err) {
         console.error("Error fetching showtimes:", err);
       }
@@ -166,7 +166,7 @@ function ManageShowtimes() {
                 (m) => m.id === parseInt(e.target.value)
               );
               setSelectedMovie(movie || null);
-              setShowtimes([]);
+              // setShowtimes([]);
           }}
         >
           <option value="">Choose a movie</option>
@@ -239,6 +239,7 @@ function ManageShowtimes() {
                   <th>ID</th>
                   <th>Showroom</th>
                   <th>Date/Time</th>
+                  <th>Available Seats</th>
                 </tr>
               </thead>
               <tbody>
@@ -258,6 +259,7 @@ function ManageShowtimes() {
                         timeStyle: "short",
                       })}
                     </td>
+                    <td>{s.noAvailabileSeats}</td>
                   </tr>
                 ))}
               </tbody>
