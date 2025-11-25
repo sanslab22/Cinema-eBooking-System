@@ -133,6 +133,11 @@ export async function listShowsForMovie(req, res) {
       if (filters.to)   where.showStartTime.lte = new Date(filters.to);
     }
     // else: NO time filter → return ALL shows for this movie
+    else {
+      // Only future shows, starting from now (UTC)
+      const now = new Date();
+      where.showStartTime = { gte: now };
+    }
 
     const shows = await prisma.movieShow.findMany({
       where,

@@ -54,7 +54,11 @@ const Navbar = () => {
 
     // Clear only the "userId" from localStorage
     localStorage.removeItem("userId");
-    localStorage.removeItem("userType"); // <-- ADD THIS LINE
+    localStorage.removeItem("userType");
+    localStorage.removeItem("auditoriumID");
+    localStorage.removeItem("noAvailableSeats");
+    localStorage.removeItem("showID");
+
     setIsLoggedIn(false);
     setIsAdmin(false);
 

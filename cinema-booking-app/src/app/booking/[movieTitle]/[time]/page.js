@@ -235,18 +235,9 @@ function Page() {
     alert("Booking session expired!");
     const showID = localStorage.getItem("showID");
     try {
-      await Promise.all(
-        seatsSelected.map((seatLabel) => {
-          const seatObj = auditoriumSeats.find(
-            (s) => `${s.rowNum}${s.colNum}` === seatLabel
-          );
-          if (!seatObj) return Promise.resolve();
-          const seatID = seatObj.id;
-          return fetch(`http://localhost:3002/api/showSeats/${showID}/${seatID}/releaseAll`, {
-            method: "POST",
-          });
-        })
-      );
+      await fetch(`http://localhost:3002/api/showSeats/${showID}/releaseAll`, {
+        method: "POST",
+      });
     } catch (error) {
       console.error("Failed to release seats on expiry", error);
     }
