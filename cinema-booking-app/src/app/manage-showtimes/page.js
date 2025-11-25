@@ -243,24 +243,26 @@ function ManageShowtimes() {
                 </tr>
               </thead>
               <tbody>
-                {showtimes.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.id}</td>
-                    <td>
-                      {
-                        showrooms.find(
-                          (r) => r.id === s.auditoriumID
-                        )?.name
-                      }
-                    </td>
-                    <td>
-                      {new Date(s.showStartTime).toLocaleString("en-US", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </td>
-                    <td>{s.noAvailabileSeats}</td>
-                  </tr>
+                {showtimes
+                  .filter((s) => new Date(s.showStartTime).getTime() >= Date.now())
+                  .map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.id}</td>
+                      <td>
+                        {
+                          showrooms.find(
+                            (r) => r.id === s.auditoriumID
+                          )?.name
+                        }
+                      </td>
+                      <td>
+                        {new Date(s.showStartTime).toLocaleString("en-US", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </td>
+                      <td>{s.noAvailabileSeats}</td>
+                    </tr>
                 ))}
               </tbody>
             </table>

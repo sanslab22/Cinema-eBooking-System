@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function BookingTimer({ expiryTimestamp }) {
+export default function BookingTimer({ expiryTimestamp, onExpire }) {
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(
     expiryTimestamp ? expiryTimestamp - new Date().getTime() : 0
@@ -17,6 +17,7 @@ export default function BookingTimer({ expiryTimestamp }) {
 
       if (distance < 0) {
         clearInterval(interval);
+        if (typeof onExpire === "function") onExpire();
         localStorage.removeItem("bookingData");
         alert("Session Expired! Please restart your booking.");
         router.push("/"); // Redirect to home
