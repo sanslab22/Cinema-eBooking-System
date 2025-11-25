@@ -45,7 +45,9 @@ export default function BookingTimer({ expiryTimestamp, onExpire }) {
       borderRadius: "8px",
       fontWeight: "bold",
       zIndex: 9999,
-      boxShadow: "0 4px 6px rgba(0,0,0,0.2)"
+      boxShadow: "0 4px 6px rgba(0,0,0,0.2)",
+      position: "relative",
+      display: "inline-block"
     }}>
       Time Remaining: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
     </div>

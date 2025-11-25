@@ -211,6 +211,8 @@ function Page() {
     }
   };
 
+  //Seats 
+
   // --- Handle checkout ---
   const handleCheckout = () => {
     const bookingData = {
@@ -328,22 +330,24 @@ function Page() {
                 })}
               </div>
             )}
-                <Button variant="contained" onClick={() => setStep(1)}>
-                  Back
-                </Button>
-            <Button
-              variant="contained"
-              className="next-button"
-              onClick={() => {
-                if (seatsSelected.length === totalTickets) setStep(3);
-                else {
-                  setError(true);
-                  setErrorMessage("Select seats for all tickets.");
-                }
-              }}
-            >
-              Next
-            </Button>
+            <div className="booking-buttons">
+            <Button variant="contained" onClick={() => setStep(1)} className="next-button">
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                className="next-button"
+                onClick={() => {
+                  if (seatsSelected.length === totalTickets) setStep(3);
+                  else {
+                    setError(true);
+                    setErrorMessage("Select seats for all tickets.");
+                  }
+                }}
+              >
+                Next
+              </Button>
+            </div>
           </>
         ) : (
           <>
