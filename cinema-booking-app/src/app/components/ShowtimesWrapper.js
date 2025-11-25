@@ -187,7 +187,7 @@ export default function ShowtimesWrapper({ movie, movieId }) {
               <span className="time-text">
                 {formatShowtime(timeSlot.showStartTime)}
               </span>
-              <span className="format-text">Standard</span>
+              <span className="format-text">Auditorim ID {timeSlot.auditoriumID}</span>
             </button>
           ))}
         </div>
