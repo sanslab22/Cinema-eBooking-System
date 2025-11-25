@@ -276,7 +276,6 @@ const CreateAccount = () => {
         return;
       }
 
-
       if (redirectUrl) {
         // Case A: Came from booking -> Go to Login -> Login sends to Checkout
         router.push(`/login?redirect=${redirectUrl}`);

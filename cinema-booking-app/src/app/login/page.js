@@ -22,6 +22,10 @@ const Login = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
+  // If user came to /login with ?redirect=/checkout (or similar), preserve it
+  const createAccountHref = redirectUrl
+    ? `/createaccount?redirect=${encodeURIComponent(redirectUrl)}`
+    : "/createaccount";
 
   // 4. Make handleLogin async and accept the event 'e'
   const handleLogin = async (e) => {
@@ -179,7 +183,7 @@ const Login = () => {
         </div>
 
         <div className="links-container">
-          <Link href="/createaccount" style={{ textDecoration: "none" }}>
+          <Link href={createAccountHref} style={{ textDecoration: "none" }}>
             <p className="links"> New user? Create an Account</p>{" "}
           </Link>
           <Link href="/forgot-password" style={{ textDecoration: "none" }}>
