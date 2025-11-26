@@ -199,8 +199,10 @@ const CreateAccount = () => {
         password: formData.password,
         ...(homeAddress && { homeAddress }),
         paymentCards,
-        enrollForPromotions: formData.subscribe,
+        subscribe: formData.subscribe,
       };
+
+      console.log("Payload:", payload);
 
       const response = await fetch('http://localhost:3002/api/auth/register', {
         method: 'POST',

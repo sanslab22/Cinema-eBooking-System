@@ -13,7 +13,7 @@ export const register = async (req, res) => {
   try {
     const {
       email, firstName, lastName, password,
-      homeAddress, paymentCards
+      homeAddress, paymentCards, subscribe,
     } = req.body;
 
     const existing = await findUserByEmail(email);
@@ -29,6 +29,7 @@ export const register = async (req, res) => {
           firstName,
           lastName,
           passwordHash: hashed,
+          EnrollforPromotions: subscribe,
           userTypeId: 2,
           userStatusId: 4, // unverified status
         },
