@@ -30,6 +30,7 @@ const MovieCard = (prop) => {
         className="movie-img"
       />
       <h3 className="movie-title">{prop.movie.movieTitle}</h3>
+      <p className="movie-title">Film Rating: {prop.movie.filmRating}</p>
 
       <div className="button-group">
         {prop.showButton ? (

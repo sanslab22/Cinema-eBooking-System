@@ -12,13 +12,13 @@ function Home() {
   // Set up state to hold all movies, genres, etc.
   const [allMovies, setAllMovies] = useState([]);
   const [uniqueGenres, setUniqueGenres] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
 
   const [genreSelected, setGenreSelected] = useState([]);
   // State to hold the current search query from the SearchBar
   const [searchQuery, setSearchQuery] = useState("");
   // State for date range filter
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [showDate, setShowDate] = useState("");
 
   // Fetch data from the API when the component loads
   useEffect(() => {
@@ -26,6 +26,7 @@ function Home() {
       .then((response) => response.json())
       .then((data) => {
         setAllMovies(data.items);
+        setFilteredMovies(data.items);
 
         // Calculate unique genres from the fetched data
         const allGenreStrings = data.items.map((movie) => movie.category);
@@ -38,39 +39,47 @@ function Home() {
       .catch((error) => console.error("Error fetching movies:", error));
   }, []); // Empty array means this effect runs only once
 
-  // Filter movies based on selected genres and search query
-  const filteredMovies = allMovies.filter((movie) => {
-    const titleMatchesSearch = movie.movieTitle
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    const applyFilters = async () => {
+      let movies = allMovies;
 
-    // Date range filtering
-    if (startDate && endDate && movie.releaseDate) {
-      const movieReleaseDate = new Date(movie.releaseDate);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      // Adjust end date to be the end of the day
-      end.setHours(23, 59, 59, 999);
-
-      if (movieReleaseDate < start || movieReleaseDate > end) {
-        return false;
+      // Date range filtering
+      if (showDate) {
+        const moviesWithShowtimes = new Set();
+        await Promise.all(allMovies.map(async (movie) => {
+          console.log(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${showDate}`)
+          const response = await fetch(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${showDate}`);
+          const showtimes = await response.json();
+          if (showtimes.showtimes && showtimes.showtimes.length > 0) {
+            moviesWithShowtimes.add(movie.id);
+          }
+        }));
+        movies = movies.filter(movie => moviesWithShowtimes.has(movie.id));
       }
-    }
-    // Genre filtering
-    if (genreSelected.length > 0) {
-      const movieGenres = movie.category.split(", ").map((g) => g.trim());
-      const matchesGenre = genreSelected.some((selected) =>
-        movieGenres.includes(selected)
-      );
-      if (!matchesGenre) return false;
-    }
-    // Search filtering
-    if (searchQuery.length > 0 && !titleMatchesSearch) {
-      return false;
-    }
-    return true; // No filters applied, include all
-  });
+
+      // Genre filtering
+      if (genreSelected.length > 0) {
+        movies = movies.filter((movie) => {
+          const movieGenres = movie.category.split(", ").map((g) => g.trim());
+          return genreSelected.some((selected) =>
+            movieGenres.includes(selected)
+          );
+        });
+      }
+
+      // Search filtering
+      if (searchQuery) {
+        movies = movies.filter((movie) =>
+          movie.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredMovies(movies);
+    };
+
+    applyFilters();
+  }, [showDate, genreSelected, searchQuery, allMovies]);
+
 
   //  Derive "Playing Now" and "Coming Soon" from the live data
   const moviesPlayingNow = filteredMovies.filter((movie) => movie.isActive);
@@ -91,18 +100,15 @@ function Home() {
             />
           </div>
           <div className="date-range-filter">
+            <p>Filter by Show Date</p>
             <label>
-              Start Date:
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            </label>
-            <label>
-              End Date:
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              Date:
+              <input type="date" value={showDate} onChange={(e) => setShowDate(e.target.value)} />
             </label>
           </div>
         </div>
 
-        {searchQuery.length > 0 ? (
+        {(searchQuery.length > 0 || genreSelected.length > 0 || showDate.length > 0) ? (
           <div>
             <h2 className="header">Currently Running</h2>
 
