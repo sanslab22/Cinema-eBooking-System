@@ -10,7 +10,8 @@ import BackButton from "../components/BackButton";
 
 function ManagePromotions() {
   const [promotions, setPromotions] = useState([]);
-
+  
+  // State for form data
   const [promotion, setPromotion] = useState({
     promoCode: "",
     startDate: "",
@@ -18,27 +19,32 @@ function ManagePromotions() {
     promoValue: "",
   });
 
+  // State for Edit Mode
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // Helper: Format date for HTML input (YYYY-MM-DD)
+  const formatDateForInput = (isoDateString) => {
+    if (!isoDateString) return "";
+    const date = new Date(isoDateString);
+    return date.toISOString().split('T')[0];
+  };
+
   const sendPromotionToSubscribedUsers = async (newPromotion) => {
+    // ... (Keep your existing email logic here) ...
+    // Note: Copied from your code provided in prompt
     try {
-      // 1. Fetch the list of subscribed user emails from the new backend endpoint
       const response = await fetch("http://localhost:3002/api/admin/subscribed-emails");
-      if (!response.ok) {
-        throw new Error("Failed to fetch subscribed users.");
-      }
+      if (!response.ok) throw new Error("Failed to fetch subscribed users.");
       const emails = await response.json();
+      if (emails.length === 0) return;
 
-      if (emails.length === 0) {
-        console.log("No subscribed users to email.");
-        return; // No one to email, so we're done.
-      }
-
-      // 2. Send the email to all subscribed users via the Firebase mail service
       await addDoc(collection(db, "mail"), {
-        to: emails, // The `to` field can be an array of email addresses
+        to: emails,
         message: {
           subject: `New Promotion: ${newPromotion.promoCode}!`,
           html: `
@@ -52,23 +58,15 @@ function ManagePromotions() {
         `,
         },
       });
-
-      console.log(`Promotion email sent to ${emails.length} users.`);
-
     } catch (err) {
-      // We can show an error, but we won't overwrite the "Promotion Created" success message.
       console.error("Failed to send promotion email:", err.message);
     }
   };
 
   const fetchPromotions = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:3002/api/admin/promotions"
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch promotions");
-      }
+      const response = await fetch("http://localhost:3002/api/admin/promotions");
+      if (!response.ok) throw new Error("Failed to fetch promotions");
       const data = await response.json();
       setPromotions(data);
     } catch (err) {
@@ -83,10 +81,59 @@ function ManagePromotions() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPromotion((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setPromotion((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // --- DELETE HANDLER ---
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this promotion?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:3002/api/admin/promotions/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete promotion");
+
+      setSuccessMessage("Promotion deleted successfully.");
+      fetchPromotions();
+      
+      // If we deleted the item currently being edited, reset form
+      if (isEditing && editId === id) {
+        handleCancel();
+      }
+    } catch (err) {
+      setError(true);
+      setErrorMessage(err.message);
+    }
+  };
+
+  // --- EDIT HANDLER (Populate Form) ---
+  const handleEdit = (promo) => {
+    setError(false);
+    setSuccessMessage("");
+    setIsEditing(true);
+    setEditId(promo.id);
+    setPromotion({
+      promoCode: promo.promoCode,
+      promoValue: promo.promoValue,
+      startDate: formatDateForInput(promo.startDate),
+      expirationDate: formatDateForInput(promo.expirationDate),
+    });
+  };
+
+  // --- CANCEL EDIT ---
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditId(null);
+    setPromotion({
+      promoCode: "",
+      startDate: "",
+      expirationDate: "",
+      promoValue: "",
+    });
+    setError(false);
+    setSuccessMessage("");
   };
 
   const handleSubmit = async (e) => {
@@ -95,12 +142,6 @@ function ManagePromotions() {
     setSuccessMessage("");
 
     // --- Validation Logic ---
-
-    // Validate new promotion
-    const requiredFields = ["promoCode", "startDate", "expirationDate", "promoValue"];
-
-
-    // 1. Validate Discount Value
     const discount = Number(promotion.promoValue);
     if (isNaN(discount) || discount < 1 || discount > 100) {
       setError(true);
@@ -108,24 +149,21 @@ function ManagePromotions() {
       return;
     }
 
-    // 2. Validate Dates
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today's date to midnight for accurate comparison
-
-    // Create date objects from the form inputs
+    today.setHours(0, 0, 0, 0);
     const startDate = new Date(promotion.startDate);
     const endDate = new Date(promotion.expirationDate);
-
-    // Adjust for timezone differences by adding the offset to UTC dates
+    
+    // Adjust dates for comparison
     startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
     endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset());
 
-    if (startDate < today) {
+    // Only check past date on creation, or if changing start date (optional strictness)
+    if (!isEditing && startDate < today) {
       setError(true);
       setErrorMessage("Start date cannot be in the past.");
       return;
     }
-
     if (endDate < startDate) {
       setError(true);
       setErrorMessage("End date must be on or after the start date.");
@@ -133,29 +171,40 @@ function ManagePromotions() {
     }
 
     try {
-      const response = await fetch("http://localhost:3002/api/admin/promotions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(promotion),
-      });
+      let response;
+      if (isEditing) {
+        // --- UPDATE LOGIC ---
+        response = await fetch(`http://localhost:3002/api/admin/promotions/${editId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(promotion),
+        });
+      } else {
+        // --- CREATE LOGIC ---
+        response = await fetch("http://localhost:3002/api/admin/promotions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(promotion),
+        });
+      }
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to create promotion");
+        throw new Error(data.error || data.message || "Operation failed");
       }
 
-      // On success, send the email to subscribed users
-      await sendPromotionToSubscribedUsers(promotion);
+      // Only send email on CREATE, not UPDATE
+      if (!isEditing) {
+        await sendPromotionToSubscribedUsers(promotion);
+        setSuccessMessage("Promotion created successfully!");
+      } else {
+        setSuccessMessage("Promotion updated successfully!");
+      }
 
-      setSuccessMessage("Promotion created successfully!");
-      setPromotion({
-        promoCode: "",
-        startDate: "",
-        expirationDate: "",
-        promoValue: "",
-      });
-      fetchPromotions(); // Refresh the list after adding
+      handleCancel(); // Reset form and mode
+      fetchPromotions(); // Refresh list
+
     } catch (err) {
       setError(true);
       setErrorMessage(err.message);
@@ -171,13 +220,14 @@ function ManagePromotions() {
         <div className="promotions-list">
           <h2>Existing Promotions</h2>
           {promotions.length > 0 ? (
-            <table>
+            <table className="promotions-table">
               <thead>
                 <tr>
                   <th>Promo Code</th>
                   <th>Discount</th>
                   <th>Start Date</th>
                   <th>End Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,6 +237,25 @@ function ManagePromotions() {
                     <td>{promo.promoValue}%</td>
                     <td>{new Date(promo.startDate).toLocaleDateString()}</td>
                     <td>{new Date(promo.expirationDate).toLocaleDateString()}</td>
+                    <td>
+                      <Button 
+                        size="small" 
+                        variant="contained" 
+                        color="primary"
+                        onClick={() => handleEdit(promo)}
+                        style={{ marginRight: "5px" }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        size="small" 
+                        variant="contained" 
+                        color="error"
+                        onClick={() => handleDelete(promo.id)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -197,7 +266,7 @@ function ManagePromotions() {
         </div>
 
         <div className="form-container">
-          <h2>Add New Promotion</h2>
+          <h2>{isEditing ? "Edit Promotion" : "Add New Promotion"}</h2>
           <br />
           <form onSubmit={handleSubmit}>
             {error && <div className="error-message">{errorMessage}</div>}
@@ -251,8 +320,20 @@ function ManagePromotions() {
 
             <div className="button-container">
               <Button type="submit" variant="contained" color="primary">
-                Create Promotion
+                {isEditing ? "Update Promotion" : "Create Promotion"}
               </Button>
+              
+              {isEditing && (
+                <Button 
+                  type="button" 
+                  variant="outlined" 
+                  color="secondary"
+                  onClick={handleCancel}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
           </form>
         </div>
