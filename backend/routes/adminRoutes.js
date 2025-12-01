@@ -14,7 +14,14 @@ import {
   deleteShow,
   getBookedSeatCount,
 } from "../controllers/adminShowController.js";
-import { createPromotion, listPromotions } from "../controllers/adminPromotionController.js";
+
+
+import { 
+  createPromotion, 
+  listPromotions, 
+  deletePromotion, // Import this
+  updatePromotion  // Import this
+} from "../controllers/adminPromotionController.js";
 
 import { getSubscribedUserEmails } from "../controllers/adminUserController.js";
 
@@ -37,6 +44,8 @@ router.get("/admin/shows/:showId/bookedseats", getBookedSeatCount);
 // -- Promotions (Admin) ---
 router.post("/admin/promotions", createPromotion);
 router.get("/admin/promotions", listPromotions);
+router.delete("/admin/promotions/:id", deletePromotion);
+router.put("/admin/promotions/:id", updatePromotion);
 router.get("/admin/subscribed-emails", getSubscribedUserEmails);
 
 

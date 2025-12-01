@@ -75,3 +75,72 @@ export async function listPromotions(_req, res) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
+
+// DELETE /api/admin/promotions/:id
+export async function deletePromotion(req, res) {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
+
+    await prisma.promotions.delete({
+      where: { id },
+    });
+
+    return res.status(200).json({ message: "Promotion deleted successfully" });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ error: "Promotion not found" });
+    }
+    console.error("deletePromotion error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+// PUT /api/admin/promotions/:id
+export async function updatePromotion(req, res) {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
+
+    const { promoCode, promoValue, startDate, expirationDate } = req.body || {};
+
+    // Validation (reuse existing validation logic)
+    const errors = [];
+    if (!promoCode || typeof promoCode !== "string") errors.push("promoCode is required.");
+    if (!promoValue || typeof promoValue !== "string") errors.push("promoValue is required.");
+    if (!isDateLike(startDate)) errors.push("startDate must be a valid date.");
+    if (!isDateLike(expirationDate)) errors.push("expirationDate must be a valid date.");
+    
+    // Date Logic Validation
+    if (!errors.length) {
+      const sd = new Date(startDate);
+      const ed = new Date(expirationDate);
+      if (sd > ed) errors.push("startDate must be on or before expirationDate.");
+    }
+
+    if (errors.length) return res.status(400).json({ errors });
+
+    // Update the promotion
+    const updatedPromo = await prisma.promotions.update({
+      where: { id },
+      data: {
+        promoCode: promoCode.trim(),
+        promoValue: promoValue.trim(),
+        startDate: new Date(startDate),
+        expirationDate: new Date(expirationDate),
+      },
+    });
+
+    return res.status(200).json(updatedPromo);
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ error: "Promotion not found" });
+    }
+    console.error("updatePromotion error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
