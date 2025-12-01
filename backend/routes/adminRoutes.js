@@ -25,6 +25,8 @@ import {
 
 import { getSubscribedUserEmails } from "../controllers/adminUserController.js";
 
+import * as ticketController from '../controllers/adminTicketController.js';
+
 const router = express.Router();
 router.use(express.json());
 router.use(cors());
@@ -48,6 +50,9 @@ router.delete("/admin/promotions/:id", deletePromotion);
 router.put("/admin/promotions/:id", updatePromotion);
 router.get("/admin/subscribed-emails", getSubscribedUserEmails);
 
+//-- Tickets (Admin) ---
+router.get('/admin/tickets', ticketController.listTickets);
+router.put('/admin/tickets/:id', ticketController.updateTicketPrice);
 
 // (Optional later)
 // router.get("/admin/movies", listMoviesAdmin);

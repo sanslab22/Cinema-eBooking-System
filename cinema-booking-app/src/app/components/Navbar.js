@@ -129,7 +129,7 @@ const Navbar = () => {
             href="/manage-promotions"
             style={{ textDecoration: "none", color: "white" }}
           >
-            <p>Manage Promotions</p>
+            <p>Manage Promotions and Pricing</p>
           </Link>
           <Link
             href="/manage-users"

@@ -5,13 +5,12 @@ import { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import "./page.css";
-import { Button } from "@mui/material";
+import { Button, TextField } from "@mui/material"; // Added TextField for cleaner inputs
 import BackButton from "../components/BackButton";
 
 function ManagePromotions() {
   const [promotions, setPromotions] = useState([]);
   
-  // State for form data
   const [promotion, setPromotion] = useState({
     promoCode: "",
     startDate: "",
@@ -19,15 +18,93 @@ function ManagePromotions() {
     promoValue: "",
   });
 
-  // State for Edit Mode
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
-
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Helper: Format date for HTML input (YYYY-MM-DD)
+
+  const [tickets, setTickets] = useState([]);
+  const [editTicketId, setEditTicketId] = useState(null);
+  const [tempPrice, setTempPrice] = useState(""); // Stores price while editing
+
+  const fetchTickets = async () => {
+    try {
+      const token = localStorage.getItem("token"); // OR sessionStorage.getItem("token");
+      
+      const response = await fetch("http://localhost:3002/api/admin/tickets", {
+        headers: {
+          "Authorization": `Bearer ${token}` // <--- Vital for Admin Routes
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch tickets");
+      }
+      
+      const data = await response.json();
+      setTickets(data);
+    } catch (err) {
+      console.error("Error fetching tickets:", err);
+      // Optional: setErrorMessage(err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchPromotions();
+    fetchTickets(); // Load tickets on mount
+  }, []);
+
+
+  const handleEditTicket = (ticket) => {
+    setEditTicketId(ticket.id);
+    setTempPrice(ticket.price);
+  };
+
+  const handleCancelTicketEdit = () => {
+    setEditTicketId(null);
+    setTempPrice("");
+  };
+
+  const handleSaveTicket = async (id) => {
+    try {
+      // 1. Validation
+      const priceValue = parseFloat(tempPrice);
+      if (isNaN(priceValue) || priceValue < 0) {
+        alert("Please enter a valid price");
+        return;
+      }
+
+      // 2. API Call
+      const response = await fetch(`http://localhost:3002/api/admin/tickets/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ price: priceValue }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update ticket price");
+
+      // 3. Update Local State (Reflect change in UI)
+      const updatedTickets = tickets.map((t) =>
+        t.id === id ? { ...t, price: priceValue } : t
+      );
+      setTickets(updatedTickets);
+
+      // 4. Reset Edit Mode & Show Success
+      setEditTicketId(null);
+      setSuccessMessage("Ticket price updated successfully.");
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save ticket price. Check console for details.");
+    }
+  };
+
   const formatDateForInput = (isoDateString) => {
     if (!isoDateString) return "";
     const date = new Date(isoDateString);
@@ -35,8 +112,6 @@ function ManagePromotions() {
   };
 
   const sendPromotionToSubscribedUsers = async (newPromotion) => {
-    // ... (Keep your existing email logic here) ...
-    // Note: Copied from your code provided in prompt
     try {
       const response = await fetch("http://localhost:3002/api/admin/subscribed-emails");
       if (!response.ok) throw new Error("Failed to fetch subscribed users.");
@@ -75,40 +150,27 @@ function ManagePromotions() {
     }
   };
 
-  useEffect(() => {
-    fetchPromotions();
-  }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPromotion((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --- DELETE HANDLER ---
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this promotion?")) return;
-
     try {
       const response = await fetch(`http://localhost:3002/api/admin/promotions/${id}`, {
         method: "DELETE",
       });
-
       if (!response.ok) throw new Error("Failed to delete promotion");
-
       setSuccessMessage("Promotion deleted successfully.");
       fetchPromotions();
-      
-      // If we deleted the item currently being edited, reset form
-      if (isEditing && editId === id) {
-        handleCancel();
-      }
+      if (isEditing && editId === id) handleCancel();
     } catch (err) {
       setError(true);
       setErrorMessage(err.message);
     }
   };
 
-  // --- EDIT HANDLER (Populate Form) ---
   const handleEdit = (promo) => {
     setError(false);
     setSuccessMessage("");
@@ -122,16 +184,10 @@ function ManagePromotions() {
     });
   };
 
-  // --- CANCEL EDIT ---
   const handleCancel = () => {
     setIsEditing(false);
     setEditId(null);
-    setPromotion({
-      promoCode: "",
-      startDate: "",
-      expirationDate: "",
-      promoValue: "",
-    });
+    setPromotion({ promoCode: "", startDate: "", expirationDate: "", promoValue: "" });
     setError(false);
     setSuccessMessage("");
   };
@@ -141,7 +197,6 @@ function ManagePromotions() {
     setError(false);
     setSuccessMessage("");
 
-    // --- Validation Logic ---
     const discount = Number(promotion.promoValue);
     if (isNaN(discount) || discount < 1 || discount > 100) {
       setError(true);
@@ -154,11 +209,9 @@ function ManagePromotions() {
     const startDate = new Date(promotion.startDate);
     const endDate = new Date(promotion.expirationDate);
     
-    // Adjust dates for comparison
     startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
     endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset());
 
-    // Only check past date on creation, or if changing start date (optional strictness)
     if (!isEditing && startDate < today) {
       setError(true);
       setErrorMessage("Start date cannot be in the past.");
@@ -173,14 +226,12 @@ function ManagePromotions() {
     try {
       let response;
       if (isEditing) {
-        // --- UPDATE LOGIC ---
         response = await fetch(`http://localhost:3002/api/admin/promotions/${editId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(promotion),
         });
       } else {
-        // --- CREATE LOGIC ---
         response = await fetch("http://localhost:3002/api/admin/promotions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -189,22 +240,16 @@ function ManagePromotions() {
       }
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || data.message || "Operation failed");
 
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Operation failed");
-      }
-
-      // Only send email on CREATE, not UPDATE
       if (!isEditing) {
         await sendPromotionToSubscribedUsers(promotion);
         setSuccessMessage("Promotion created successfully!");
       } else {
         setSuccessMessage("Promotion updated successfully!");
       }
-
-      handleCancel(); // Reset form and mode
-      fetchPromotions(); // Refresh list
-
+      handleCancel();
+      fetchPromotions();
     } catch (err) {
       setError(true);
       setErrorMessage(err.message);
@@ -214,8 +259,8 @@ function ManagePromotions() {
   return (
     <div className="manage-promotions">
       <BackButton route="/admin-home" />
-      <h1 className="title">Manage Promotions</h1>
 
+      {/* --- PROMOTIONS SECTION --- */}
       <div className="content-wrapper">
         <div className="promotions-list">
           <h2>Existing Promotions</h2>
@@ -282,7 +327,6 @@ function ManagePromotions() {
                 required
               />
             </label>
-
             <label>
               Start Date
               <input
@@ -293,7 +337,6 @@ function ManagePromotions() {
                 required
               />
             </label>
-
             <label>
               End Date
               <input
@@ -304,7 +347,6 @@ function ManagePromotions() {
                 required
               />
             </label>
-
             <label>
               Discount (%)
               <input
@@ -317,12 +359,10 @@ function ManagePromotions() {
                 required
               />
             </label>
-
             <div className="button-container">
               <Button type="submit" variant="contained" color="primary">
                 {isEditing ? "Update Promotion" : "Create Promotion"}
               </Button>
-              
               {isEditing && (
                 <Button 
                   type="button" 
@@ -338,6 +378,82 @@ function ManagePromotions() {
           </form>
         </div>
       </div>
+
+      {/* --- DIVIDER --- */}
+      <hr className="section-divider" />
+
+      {/* --- TICKET PRICING SECTION --- */}
+      <div className="tickets-section">
+        <h2>Manage Ticket Prices</h2>
+        <div className="tickets-table-container">
+          <table className="promotions-table tickets-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Price ($)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tickets.map((ticket) => (
+                <tr key={ticket.id}>
+                  <td>{ticket.category}</td>
+                  
+                  {/* PRICE COLUMN: Shows Input if editing, Text if not */}
+                  <td>
+                    {editTicketId === ticket.id ? (
+                      <input 
+                        type="number" 
+                        className="price-input"
+                        step="0.01" 
+                        value={tempPrice}
+                        onChange={(e) => setTempPrice(e.target.value)}
+                      />
+                    ) : (
+                      `$${Number(ticket.price).toFixed(2)}`
+                    )}
+                  </td>
+
+                  {/* ACTION COLUMN */}
+                  <td>
+                    {editTicketId === ticket.id ? (
+                      <>
+                        <Button 
+                          size="small" 
+                          variant="contained" 
+                          color="success"
+                          onClick={() => handleSaveTicket(ticket.id)}
+                          style={{ marginRight: "5px" }}
+                        >
+                          Save
+                        </Button>
+                        <Button 
+                          size="small" 
+                          variant="outlined" 
+                          color="secondary"
+                          onClick={handleCancelTicketEdit}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        size="small" 
+                        variant="contained" 
+                        color="primary"
+                        onClick={() => handleEditTicket(ticket)}
+                      >
+                        Edit Price
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 }
