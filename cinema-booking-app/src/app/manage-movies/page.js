@@ -28,6 +28,10 @@ function ManageMovies() {
   const [showForm, setShowForm] = useState(false);
   const [showMovies, setShowMovies] = useState(false);
   const [movies, setMovies] = useState([]);
+  
+  // These were already in your code, we will use them now:
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -48,12 +52,76 @@ function ManageMovies() {
         throw new Error('Failed to fetch movies');
       }
       const data = await response.json();
-      setMovies(data.items || []); // Ensure movies is always an array
+      setMovies(data.items || []); 
       setShowMovies(true);
       setShowForm(false);
     } catch (error) {
       console.error("Error fetching movies:", error);
-      setMovies([]); // On error, set to empty array to prevent crashes
+      setMovies([]); 
+    }
+  };
+
+  // --- NEW FUNCTION: Clears form for adding a new movie ---
+  const handleAddNew = () => {
+    setMovie({
+      movieTitle: "", category: "", cast: "", duration: "", director: "",
+      producer: "", synopsis: "", trailerURL: "", filmRating: "", imagePoster: "", isActive: false,
+    });
+    setIsEditing(false); // Ensure we are NOT in edit mode
+    setEditId(null);
+    setError(false);
+    setSuccessMessage("");
+    setShowForm(true);
+    setShowMovies(false);
+  };
+
+  // --- NEW FUNCTION: Populates form for editing ---
+  const handleEditClick = (selectedMovie) => {
+    // Populate state with the selected movie details
+    setMovie({
+      movieTitle: selectedMovie.movieTitle,
+      category: selectedMovie.category,
+      cast: selectedMovie.cast,
+      duration: selectedMovie.duration,
+      director: selectedMovie.director,
+      producer: selectedMovie.producer,
+      synopsis: selectedMovie.synopsis,
+      trailerURL: selectedMovie.trailerURL,
+      filmRating: selectedMovie.filmRating,
+      imagePoster: selectedMovie.imagePoster,
+      isActive: selectedMovie.isActive || false,
+    });
+
+    setEditId(selectedMovie.id); 
+    setIsEditing(true);         
+    setError(false);
+    setSuccessMessage("");
+    setShowForm(true);          
+    setShowMovies(false);       
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this movie? This cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3002/api/admin/movies", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }), 
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete movie");
+      }
+
+      alert("Movie deleted successfully.");
+      fetchMovies(); 
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -62,41 +130,27 @@ function ManageMovies() {
     setError(false);
     setSuccessMessage("");
 
-    // Basic validation: ensure all fields are filled
+    // Basic validation
     const requiredFields = [
-      "movieTitle",
-      "category",
-      "cast",
-      "director",
-      "producer",
-      "synopsis",
-      "filmRating",
-      "imagePoster",
+      "movieTitle", "category", "cast", "director", "producer", 
+      "synopsis", "filmRating", "imagePoster",
     ];
 
     for (const field of requiredFields) {
       if (!movie[field]) {
         setError(true);
-        setErrorMessage(
-          `Please fill in the ${field
-            .replace(/([A-Z])/g, " $1")
-            .toLowerCase()} field.`
-        );
+        setErrorMessage(`Please fill in the ${field} field.`);
         return;
       }
     }
 
-    // Now, validate duration separately
     if (!movie.duration) {
       setError(true);
       setErrorMessage("Please fill in the duration field.");
       return;
     }
 
-    if (
-      !Number.isInteger(Number(movie.duration)) ||
-      Number(movie.duration) <= 0
-    ) {
+    if (!Number.isInteger(Number(movie.duration)) || Number(movie.duration) <= 0) {
       setError(true);
       setErrorMessage("Duration must be a valid, positive integer.");
       return;
@@ -104,37 +158,46 @@ function ManageMovies() {
 
     const moviePayload = {
       ...movie,
-      duration: Number(movie.duration), // convert to number for Prisma
+      duration: Number(movie.duration),
     };
-    console.log("Payload to send:", moviePayload);
 
     try {
-      const response = await fetch("http://localhost:3002/api/admin/movies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(moviePayload),
-      });
+      let response;
+
+      // --- LOGIC CHANGE: Check if Adding or Editing ---
+      if (isEditing) {
+        // PUT Request (Edit)
+        response = await fetch("http://localhost:3002/api/admin/movies", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editId, ...moviePayload }),
+        });
+      } else {
+        // POST Request (Add)
+        response = await fetch("http://localhost:3002/api/admin/movies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(moviePayload),
+        });
+      }
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to add movie");
+        throw new Error(data.message || (isEditing ? "Failed to update" : "Failed to add movie"));
       }
 
-      setSuccessMessage("Movie added successfully!");
-      setMovie({
-        movieTitle: "",
-        category: "",
-        cast: "",
-        duration: "",
-        director: "",
-        producer: "",
-        synopsis: "",
-        trailerURL: "",
-        filmRating: "",
-        imagePoster: "",
-        isActive: false,
-      });
+      setSuccessMessage(isEditing ? "Movie updated successfully!" : "Movie added successfully!");
+      
+      // If we just added a new movie, clear the form. 
+      // If we edited, we might want to keep the data there so the user sees it saved.
+      if (!isEditing) {
+        setMovie({
+          movieTitle: "", category: "", cast: "", duration: "", director: "",
+          producer: "", synopsis: "", trailerURL: "", filmRating: "", imagePoster: "", isActive: false,
+        });
+      }
+      
     } catch (err) {
       setError(true);
       setErrorMessage(err.message);
@@ -150,10 +213,7 @@ function ManageMovies() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => {
-            setShowForm(true);
-            setShowMovies(false);
-          }}
+          onClick={handleAddNew} // Updated to call the reset function
         >
           Add Movie
         </Button>
@@ -161,7 +221,8 @@ function ManageMovies() {
 
       {showForm && (
         <>
-          <h2 className="title">Add New Movie</h2>
+          {/* Change Title based on mode */}
+          <h2 className="title">{isEditing ? "Edit Movie" : "Add New Movie"}</h2>
           <form onSubmit={handleSubmit}>
             {error && <div className="error-message">{errorMessage}</div>}
             {successMessage && (
@@ -291,8 +352,9 @@ function ManageMovies() {
             </div>
 
             <div className="button-container">
+              {/* Change Button text based on mode */}
               <Button type="submit" variant="contained" color="primary">
-                Add Movie
+                {isEditing ? "Save Changes" : "Add Movie"}
               </Button>
               <Button
                 variant="outlined"
@@ -331,18 +393,24 @@ function ManageMovies() {
                   <td>{movie.category}</td>
                   <td>{movie.director}</td>
                   <td>{movie.duration}</td>
-                  <td><Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-          }}
-        >Edit</Button></td>
-        <td><Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-          }}
-        >Delete</Button></td>
+                  <td>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleEditClick(movie)} // Hooked up the new function here
+                    >
+                      Edit
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleDelete(movie.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
