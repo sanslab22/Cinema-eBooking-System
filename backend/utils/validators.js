@@ -50,7 +50,7 @@ export function validateUpdateMovie(body) {
   const data = {};
 
   // Only accept known fields. All optional.
-  const fields = ["movieTitle","category","cast","director","producer","synopsis","trailerURL","filmRating","imagePoster","isActive"];
+  const fields = ["movieTitle","category","cast","director","producer","synopsis","trailerURL","filmRating","imagePoster","isActive", "duration"];
   for (const k of Object.keys(body)) {
     if (!fields.includes(k)) {
       errors.push(`Unknown field: ${k}`);
@@ -68,6 +68,15 @@ export function validateUpdateMovie(body) {
   if ("imagePoster" in body)  data.imagePoster = body.imagePoster == null ? null : String(body.imagePoster);
   if ("isActive" in body)     data.isActive    = !!body.isActive;
 
+  // FIX 2: Handle Duration Validation logic
+  if ("duration" in body) {
+    const dur = Number(body.duration);
+    if (!Number.isInteger(dur) || dur <= 0) {
+      errors.push("duration must be a positive integer.");
+    } else {
+      data.duration = dur;
+    }
+  }
   // Basic checks for non-empty strings if provided
   for (const k of ["movieTitle","category","cast","director","producer","filmRating"]) {
     if (k in body && !isNonEmptyString(body[k])) {

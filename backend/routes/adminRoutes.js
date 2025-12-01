@@ -5,6 +5,7 @@ import {
   createMovie,
   updateMovie,
   setMovieStatus,
+  deleteMovie, // <--- 1. IMPORT THIS
   // listMoviesAdmin,                // optional later
 } from "../controllers/adminMovieController.js";
 import {
@@ -25,6 +26,7 @@ router.use(cors());
 router.post("/admin/movies", createMovie);                 // Add Movie
 router.patch("/admin/movies/:movieId", updateMovie);       // Edit Movie
 router.patch("/admin/movies/:movieId/status", setMovieStatus); // Toggle isActive
+router.delete("/admin/movies/:movieId", deleteMovie); // Delete Movie
 
 // --- Shows (Admin) ---
 router.post("/admin/movies/:movieId/shows", createShowForMovie);

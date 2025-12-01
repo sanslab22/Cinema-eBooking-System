@@ -56,7 +56,7 @@ export async function updateMovie(req, res) {
     const patch = {};
     for (const k of [
       "movieTitle","category","cast","director","producer",
-      "synopsis","trailerURL","filmRating","imagePoster","isActive"
+      "synopsis","trailerURL","filmRating","imagePoster","isActive", "duration"
     ]) {
       if (k in data) patch[k] = data[k];
     }
@@ -109,5 +109,27 @@ export async function setMovieStatus(req, res) {
   }
 }
 
-// (Optional later)
-// export async function listMoviesAdmin(req, res) { ... }
+/**
+ * DELETE /api/admin/movies/:movieId
+ * Delete a Movie.
+ */
+export async function deleteMovie(req, res) {
+  try {
+    const movieId = Number(req.params.movieId);
+    if (!Number.isInteger(movieId) || movieId <= 0) {
+      return res.status(400).json({ error: "Invalid movieId" });
+    }
+
+    await prisma.movie.delete({
+      where: { id: movieId },
+    });
+
+    return res.status(200).json({ message: "Movie deleted successfully" });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ error: "Movie not found." });
+    }
+    console.error("deleteMovie error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}

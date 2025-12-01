@@ -3,7 +3,6 @@
 import withAuth from "../hoc/withAuth";
 import { Button } from "@mui/material";
 import "./page.css";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import BackButton from "../components/BackButton";
 
@@ -29,7 +28,6 @@ function ManageMovies() {
   const [showMovies, setShowMovies] = useState(false);
   const [movies, setMovies] = useState([]);
   
-  // These were already in your code, we will use them now:
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -48,9 +46,7 @@ function ManageMovies() {
   const fetchMovies = async () => {
     try {
       const response = await fetch("http://localhost:3002/api/movies");
-      if (!response.ok) {
-        throw new Error('Failed to fetch movies');
-      }
+      if (!response.ok) throw new Error('Failed to fetch movies');
       const data = await response.json();
       setMovies(data.items || []); 
       setShowMovies(true);
@@ -61,13 +57,12 @@ function ManageMovies() {
     }
   };
 
-  // --- NEW FUNCTION: Clears form for adding a new movie ---
   const handleAddNew = () => {
     setMovie({
       movieTitle: "", category: "", cast: "", duration: "", director: "",
       producer: "", synopsis: "", trailerURL: "", filmRating: "", imagePoster: "", isActive: false,
     });
-    setIsEditing(false); // Ensure we are NOT in edit mode
+    setIsEditing(false); 
     setEditId(null);
     setError(false);
     setSuccessMessage("");
@@ -75,9 +70,7 @@ function ManageMovies() {
     setShowMovies(false);
   };
 
-  // --- NEW FUNCTION: Populates form for editing ---
   const handleEditClick = (selectedMovie) => {
-    // Populate state with the selected movie details
     setMovie({
       movieTitle: selectedMovie.movieTitle,
       category: selectedMovie.category,
@@ -85,10 +78,10 @@ function ManageMovies() {
       duration: selectedMovie.duration,
       director: selectedMovie.director,
       producer: selectedMovie.producer,
-      synopsis: selectedMovie.synopsis,
-      trailerURL: selectedMovie.trailerURL,
+      synopsis: selectedMovie.synopsis || "",
+      trailerURL: selectedMovie.trailerURL || "",
       filmRating: selectedMovie.filmRating,
-      imagePoster: selectedMovie.imagePoster,
+      imagePoster: selectedMovie.imagePoster || "",
       isActive: selectedMovie.isActive || false,
     });
 
@@ -101,21 +94,21 @@ function ManageMovies() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this movie? This cannot be undone.")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this movie?")) return;
 
     try {
-      const response = await fetch("http://localhost:3002/api/admin/movies", {
+      // FIX: Matches router.delete("/admin/movies/:movieId")
+      const response = await fetch(`http://localhost:3002/api/admin/movies/${id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }), 
+        headers: { "Content-Type": "application/json" }
       });
 
-      const data = await response.json();
+      const text = await response.text(); 
+      let data;
+      try { data = JSON.parse(text); } catch(e) {}
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to delete movie");
+        throw new Error((data && data.message) || "Failed to delete movie");
       }
 
       alert("Movie deleted successfully.");
@@ -130,12 +123,8 @@ function ManageMovies() {
     setError(false);
     setSuccessMessage("");
 
-    // Basic validation
-    const requiredFields = [
-      "movieTitle", "category", "cast", "director", "producer", 
-      "synopsis", "filmRating", "imagePoster",
-    ];
-
+    // 1. Client-side Validation
+    const requiredFields = ["movieTitle", "category", "cast", "director", "producer", "synopsis", "filmRating", "imagePoster"];
     for (const field of requiredFields) {
       if (!movie[field]) {
         setError(true);
@@ -144,36 +133,24 @@ function ManageMovies() {
       }
     }
 
-    if (!movie.duration) {
-      setError(true);
-      setErrorMessage("Please fill in the duration field.");
-      return;
-    }
-
-    if (!Number.isInteger(Number(movie.duration)) || Number(movie.duration) <= 0) {
-      setError(true);
-      setErrorMessage("Duration must be a valid, positive integer.");
-      return;
-    }
-
+    // 2. Prepare Payload
     const moviePayload = {
       ...movie,
-      duration: Number(movie.duration),
+      duration: Number(movie.duration), // Ensure this is a Number
     };
 
     try {
       let response;
 
-      // --- LOGIC CHANGE: Check if Adding or Editing ---
       if (isEditing) {
-        // PUT Request (Edit)
-        response = await fetch("http://localhost:3002/api/admin/movies", {
-          method: "PUT",
+        // EDIT MODE: PATCH request to /api/admin/movies/:id
+        response = await fetch(`http://localhost:3002/api/admin/movies/${editId}`, {
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editId, ...moviePayload }),
+          body: JSON.stringify(moviePayload),
         });
       } else {
-        // POST Request (Add)
+        // ADD MODE: POST request to /api/admin/movies
         response = await fetch("http://localhost:3002/api/admin/movies", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -181,24 +158,42 @@ function ManageMovies() {
         });
       }
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || (isEditing ? "Failed to update" : "Failed to add movie"));
+      // 3. Robust Response Handling
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        throw new Error("Server returned HTML (likely 404 or 500). Check console.");
       }
 
+      if (!response.ok) {
+        // LOGIC FIX: Check for 'errors' array from backend validator
+        const backendError = 
+          data.error || 
+          data.message || 
+          (data.errors ? Object.values(data.errors).join(", ") : null) || 
+          (isEditing ? "Failed to update movie" : "Failed to add movie");
+          
+        throw new Error(backendError);
+      }
+
+      // 4. Success Handling
       setSuccessMessage(isEditing ? "Movie updated successfully!" : "Movie added successfully!");
       
-      // If we just added a new movie, clear the form. 
-      // If we edited, we might want to keep the data there so the user sees it saved.
+      // If we are adding, clear the form. If editing, we leave it so you see the changes.
       if (!isEditing) {
         setMovie({
           movieTitle: "", category: "", cast: "", duration: "", director: "",
           producer: "", synopsis: "", trailerURL: "", filmRating: "", imagePoster: "", isActive: false,
         });
+      } else {
+        // Optional: Refresh the list in the background so the table updates
+        fetchMovies(); 
       }
-      
+
     } catch (err) {
+      console.error("Submit Error:", err);
       setError(true);
       setErrorMessage(err.message);
     }
@@ -210,163 +205,34 @@ function ManageMovies() {
       <h1 className="title">Manage Movies</h1>
 
       <div className="button-container">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleAddNew} // Updated to call the reset function
-        >
+        <Button variant="contained" color="primary" onClick={handleAddNew}>
           Add Movie
         </Button>
       </div>
 
       {showForm && (
         <>
-          {/* Change Title based on mode */}
           <h2 className="title">{isEditing ? "Edit Movie" : "Add New Movie"}</h2>
           <form onSubmit={handleSubmit}>
             {error && <div className="error-message">{errorMessage}</div>}
-            {successMessage && (
-              <div
-                className="error-message"
-                style={{
-                  backgroundColor: "green",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  margin: "3px",
-                }}
-              >
-                {successMessage}
-              </div>
-            )}
+            {successMessage && <div className="error-message" style={{backgroundColor: "green", padding: "10px"}}>{successMessage}</div>}
 
             <div className="form-grid">
-              <label>
-                Movie Title *
-                <input
-                  type="text"
-                  name="movieTitle"
-                  value={movie.movieTitle}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Category *
-                <input
-                  type="text"
-                  name="category"
-                  value={movie.category}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Duration (minutes) *
-                <input
-                  type="text"
-                  name="duration"
-                  value={movie.duration}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Cast *
-                <input
-                  type="text"
-                  name="cast"
-                  value={movie.cast}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Director *
-                <input
-                  type="text"
-                  name="director"
-                  value={movie.director}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Producer *
-                <input
-                  type="text"
-                  name="producer"
-                  value={movie.producer}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Synopsis *
-                <textarea
-                  name="synopsis"
-                  rows="4"
-                  value={movie.synopsis}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Trailer URL *
-                <input
-                  type="text"
-                  name="trailerURL"
-                  value={movie.trailerURL}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Film Rating *
-                <input
-                  type="text"
-                  name="filmRating"
-                  value={movie.filmRating}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
-
-              <label>
-                Image Poster *
-                <input
-                  type="text"
-                  name="imagePoster"
-                  value={movie.imagePoster}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
+              <label>Movie Title * <input type="text" name="movieTitle" value={movie.movieTitle} onChange={handleChange} required /></label>
+              <label>Category * <input type="text" name="category" value={movie.category} onChange={handleChange} required /></label>
+              <label>Duration (minutes) * <input type="text" name="duration" value={movie.duration} onChange={handleChange} required /></label>
+              <label>Cast * <input type="text" name="cast" value={movie.cast} onChange={handleChange} required /></label>
+              <label>Director * <input type="text" name="director" value={movie.director} onChange={handleChange} required /></label>
+              <label>Producer * <input type="text" name="producer" value={movie.producer} onChange={handleChange} required /></label>
+              <label>Synopsis * <textarea name="synopsis" rows="4" value={movie.synopsis} onChange={handleChange} required /></label>
+              <label>Trailer URL * <input type="text" name="trailerURL" value={movie.trailerURL} onChange={handleChange} required /></label>
+              <label>Film Rating * <input type="text" name="filmRating" value={movie.filmRating} onChange={handleChange} required /></label>
+              <label>Image Poster * <input type="text" name="imagePoster" value={movie.imagePoster} onChange={handleChange} required /></label>
             </div>
 
             <div className="button-container">
-              {/* Change Button text based on mode */}
-              <Button type="submit" variant="contained" color="primary">
-                {isEditing ? "Save Changes" : "Add Movie"}
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => {
-                  setShowForm(false);
-                  fetchMovies();
-                }}
-                style={{ marginLeft: "10px" }}
-              >
-                Cancel
-              </Button>
+              <Button type="submit" variant="contained" color="primary">{isEditing ? "Save Changes" : "Add Movie"}</Button>
+              <Button variant="outlined" color="secondary" onClick={() => { setShowForm(false); fetchMovies(); }} style={{ marginLeft: "10px" }}>Cancel</Button>
             </div>
           </form>
         </>
@@ -377,40 +243,14 @@ function ManageMovies() {
           <h2 className="title">Existing Movies</h2>
           <table className="movies-table">
             <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Director</th>
-                <th>Duration (min)</th>
-                <th>Edit</th>
-                <th>Delete</th>
-              </tr>
+              <tr><th>Title</th><th>Category</th><th>Director</th><th>Duration</th><th>Edit</th><th>Delete</th></tr>
             </thead>
             <tbody>
               {movies.map((movie) => (
                 <tr key={movie.id}>
-                  <td>{movie.movieTitle}</td>
-                  <td>{movie.category}</td>
-                  <td>{movie.director}</td>
-                  <td>{movie.duration}</td>
-                  <td>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleEditClick(movie)} // Hooked up the new function here
-                    >
-                      Edit
-                    </Button>
-                  </td>
-                  <td>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => handleDelete(movie.id)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
+                  <td>{movie.movieTitle}</td><td>{movie.category}</td><td>{movie.director}</td><td>{movie.duration}</td>
+                  <td><Button variant="contained" color="primary" onClick={() => handleEditClick(movie)}>Edit</Button></td>
+                  <td><Button variant="contained" color="error" onClick={() => handleDelete(movie.id)}>Delete</Button></td>
                 </tr>
               ))}
             </tbody>
