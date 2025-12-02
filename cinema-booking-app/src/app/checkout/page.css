@@ -1,64 +1,97 @@
-.checkout-container {
-    max-width: 600px;
-    margin: 40px auto;
-    padding: 0 20px;
-    font-family: Arial, sans-serif;
+.checkout-page-wrapper {
+    padding: 30px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-h1 {
+.checkout-title {
     text-align: center;
-    margin-bottom: 30px;
-    color: #333;
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+    color: #111;
+}
+
+/* --- THE FIX: Vertical Stack for Right Column --- */
+.right-column-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Precise gap between Order Summary and Payment */
+}
+
+/* --- CARDS --- */
+.section-card, .receipt-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    height: fit-content; /* PREVENTS UGLY EXPANSION */
 }
 
 .receipt-card {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    overflow: hidden;
+    background-color: #f9f9f9;
 }
 
-.receipt-header {
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-}
-
-.receipt-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
+.section-header {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
     color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
 }
 
-.receipt-body {
-    padding: 20px;
+.sub-header {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 15px;
+    margin-top: 0;
+}
+
+/* --- RECEIPT DETAILS --- */
+.receipt-header h3 {
+    margin: 0;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 1rem;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.receipt-content {
+    padding: 15px 0;
 }
 
 .receipt-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    color: #555;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #666;
 }
 
-.total-row {
-    font-size: 1.2rem;
+.main-info {
     color: #000;
-    margin-top: 10px;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
-hr {
-    border: 0;
-    border-top: 1px dashed #ccc;
-    margin: 15px 0;
+.promo-box {
+    margin-top: 20px;
 }
 
-.receipt-footer {
-    padding: 20px;
-    background-color: #fafafa;
-    border-top: 1px solid #eee;
+.receipt-total {
+    border-top: 2px solid #333;
+    padding-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #d32f2f;
+}
+
+.secure-badge {
     text-align: center;
+    margin-top: 15px;
+    font-size: 0.75rem;
+    color: #999;
 }
