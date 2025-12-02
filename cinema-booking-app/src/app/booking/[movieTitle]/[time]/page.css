@@ -36,7 +36,7 @@
 
 .seats {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-top: 2rem;
   justify-items: center;
@@ -57,7 +57,17 @@
     margin: 5px;
 }
 
+.booking-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
 .confirmation-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
 }
+
