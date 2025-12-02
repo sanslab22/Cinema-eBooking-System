@@ -10,9 +10,15 @@ import {
   FormControlLabel,
   Divider,
   Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import "./page.css";
 import BookingTimer from "../components/BookingTimer";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -43,10 +49,15 @@ const CheckoutPage = () => {
     exp: "",
     name: "",
   });
+  const [savedCards, setSavedCards] = useState([]);
+  const [selectedCardId, setSelectedCardId] = useState(null); // number id or 'new'
+  const [userFullName, setUserFullName] = useState("");
+  const [saveCard, setSaveCard] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoError, setPromoError] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [errors, setErrors] = useState({});
+  const [email, setEmail] = useState("");
 
   const clearError = (field) => {
     setErrors((prev) => {
@@ -91,6 +102,8 @@ const CheckoutPage = () => {
 
         const userData = await res.json();
 
+        setEmail(userData.email);
+
         const backendHome = userData.addresses?.find(
           (addr) => addr.addressTypeId === 1
         );
@@ -100,22 +113,19 @@ const CheckoutPage = () => {
             street: backendHome.street || "",
             city: backendHome.city || "",
             state: backendHome.state || "",
-            // Database usually says 'zipCode', Frontend state expects 'zip'
             zip: backendHome.zipCode || backendHome.zip || "",
           });
         }
-
         if (userData.paymentCards && userData.paymentCards.length > 0) {
           const savedCard = userData.paymentCards[0];
-
+          setSavedCards(userData.paymentCards || []);
+          setSelectedCardId(String(savedCard.id));
           setCardDetails({
-            number:
-              savedCard.cardNum || savedCard.number || "**** **** **** ****",
+            number: savedCard.cardNo || `•••• ${savedCard.maskedCardNo}`,
             exp: savedCard.expirationDate || "",
-
-            name:
-              savedCard.nameOnCard ||
-              `${userData.firstName} ${userData.lastName}`,
+            name: `${userData.firstName || ""} ${
+              userData.lastName || ""
+            }`.trim(),
           });
 
           if (savedCard.billingAddress) {
@@ -137,6 +147,13 @@ const CheckoutPage = () => {
             }
           }
         }
+        if (!userData.paymentCards || userData.paymentCards.length === 0) {
+          setSavedCards([]);
+          setSelectedCardId(null);
+        }
+        setUserFullName(
+          `${userData.firstName || ""} ${userData.lastName || ""}`.trim()
+        );
       } catch (err) {
         console.error("Failed to load user profile", err);
       }
@@ -181,13 +198,69 @@ const CheckoutPage = () => {
     fetchPrices();
   }, []);
 
+  const handleSavedCardChange = (value) => {
+    if (!value || value === "new") {
+      // Use new card
+      setSelectedCardId(null);
+      setCardDetails({ number: "", exp: "", name: userFullName || "" });
+      setPaymentAddress({ street: "", city: "", state: "", zip: "" });
+      clearError("cardNumber");
+      clearError("cardName");
+      clearError("cardExp");
+      clearError("paymentStreet");
+      return;
+    }
+
+    const id = Number(value);
+    const c = savedCards.find((s) => s.id === id);
+    if (!c) return;
+    setSelectedCardId(String(c.id));
+    setCardDetails({
+      number: c.cardNo || `•••• ${c.maskedCardNo}`,
+      exp: c.expirationDate,
+      name: c.nameOnCard || userFullName,
+    });
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.cardNumber;
+      delete copy.cardName;
+      delete copy.cardExp;
+      return copy;
+    });
+    if (c.billingAddress) {
+      setPaymentAddress({
+        street: c.billingAddress.street || "",
+        city: c.billingAddress.city || "",
+        state: c.billingAddress.state || "",
+        zip: c.billingAddress.zipCode || c.billingAddress.zip || "",
+      });
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.paymentStreet;
+        delete copy.paymentCity;
+        delete copy.paymentState;
+        delete copy.paymentZip;
+        return copy;
+      });
+
+      if (
+        c.billingAddress.street &&
+        c.billingAddress.street === homeAddress.street
+      ) {
+        setSameAsHome(true);
+      } else {
+        setSameAsHome(false);
+      }
+    }
+    clearError("cardNumber");
+  };
+
   // --- HANDLERS ---
   const handleSameAsHomeChange = (e) => {
     setSameAsHome(e.target.checked);
     if (e.target.checked) {
       setPaymentAddress({ ...homeAddress });
-      // Clear payment address errors since they are no longer required
-      setErrors(prev => {
+      setErrors((prev) => {
         const copy = { ...prev };
         delete copy.paymentStreet;
         delete copy.paymentCity;
@@ -200,13 +273,112 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleConfirmPayment = () => {
-    // Validate fields before processing payment
+  const handleConfirmPayment = async () => {
     if (!validateFields()) return;
-    // Final Logic: Send total + booking data to backend
-    alert("Payment Successful!");
-    localStorage.removeItem("bookingData");
-    router.push("/");
+
+    try {
+      const userId = Number(localStorage.getItem("userId"));
+      const showID = Number(localStorage.getItem("showID"));
+      if (!userId || !showID) {
+        alert("Missing user or show info. Please start booking again.");
+        return;
+      }
+
+      let saveCardChoice = false;
+      if (!selectedCardId) {
+        saveCardChoice = !!saveCard;
+      }
+
+      const payload = {
+        userID: userId,
+        showTimeID: showID,
+        seatsSelected: booking.seatsSelected || [],
+        noOfTickets:
+          Object.values(booking.ticketCounts || {}).reduce(
+            (a, b) => a + b,
+            0
+          ) || (booking.seatsSelected || []).length,
+        selectedCardId: selectedCardId ? Number(selectedCardId) : undefined,
+        card: selectedCardId
+          ? undefined
+          : {
+              cardNo: cardDetails.number || "",
+              expirationDate: cardDetails.exp || "",
+              nameOnCard: cardDetails.name || "",
+              billingAddress: {
+                street: paymentAddress.street || "",
+                city: paymentAddress.city || "",
+                state: paymentAddress.state || "",
+                zipCode: paymentAddress.zip || "",
+              },
+            },
+        saveCard: saveCardChoice,
+        promoID: appliedPromo ? appliedPromo.id : undefined,
+      };
+
+      const res = await fetch("http://localhost:3002/api/createBooking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || data.message || "Failed to create booking");
+        return;
+      }
+
+      const result = await res.json();
+      // Prepare confirmation payload
+      const maskCard = (num) => {
+        const s = (num || "").toString();
+        if (s.includes("•") || s.length <= 4) return s;
+        return `•••• ${s.slice(-4)}`;
+      };
+      const confirmation = {
+        bookingId: result.id,
+        movieTitle: booking.movieTitle,
+        showTime: booking.time || booking.showTime || "",
+        seatsSelected: booking.seatsSelected || [],
+        items: items, // items computed in frontend
+        subtotal: total,
+        discountAmount: total - discountedTotal,
+        total: discountedTotal,
+        promoCode: appliedPromo?.promoCode || undefined,
+        maskedCard: selectedCardId
+          ? savedCards.find((c) => String(c.id) === String(selectedCardId))
+              ?.cardNo || "Saved Card"
+          : maskCard(cardDetails.number),
+      };
+      localStorage.setItem("bookingConfirmation", JSON.stringify(confirmation));
+      localStorage.removeItem("bookingData");
+      router.push("/checkout/confirmation");
+
+      try {
+        await addDoc(collection(db, "mail"), {
+          to: email,
+          message: {
+            subject: `New Booking: ${confirmation.movieTitle}!`,
+            html: `
+          <p>Dear Customer,</p>
+          <p>This is the confirmation email for your new booking</p>
+                    <p><b>Id: ${confirmation.bookingId}</b></p>
+
+          <p><b>Movie: ${confirmation.movieTitle}</b></p>
+          <p><b>Show Time: ${confirmation.showTime}%</b></p>
+          <p><b>Seats: ${confirmation.seatsSelected}</b></p>
+          <p><b>Total: $${confirmation.total}</b></p>
+          <p>See you at the theaters soon!</p>
+        `,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to send email:", err.message);
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Payment failed. Please try again.");
+    }
   };
 
   // Validate required fields. All fields required except promo code; when sameAsHome is true, billing address fields are not required
@@ -214,23 +386,38 @@ const CheckoutPage = () => {
     const newErrors = {};
 
     // Home address
-    if (!homeAddress.street || !homeAddress.street.trim()) newErrors.homeStreet = "Street address is required.";
-    if (!homeAddress.city || !homeAddress.city.trim()) newErrors.homeCity = "City is required.";
-    if (!homeAddress.state || !homeAddress.state.trim()) newErrors.homeState = "State is required.";
-    if (!homeAddress.zip || !homeAddress.zip.trim()) newErrors.homeZip = "Zip is required.";
+    if (!homeAddress.street || !homeAddress.street.trim())
+      newErrors.homeStreet = "Street address is required.";
+    if (!homeAddress.city || !homeAddress.city.trim())
+      newErrors.homeCity = "City is required.";
+    if (!homeAddress.state || !homeAddress.state.trim())
+      newErrors.homeState = "State is required.";
+    if (!homeAddress.zip || !homeAddress.zip.trim())
+      newErrors.homeZip = "Zip is required.";
 
     // Payment address (only required if not sameAsHome)
     if (!sameAsHome) {
-      if (!paymentAddress.street || !paymentAddress.street.trim()) newErrors.paymentStreet = "Street address is required.";
-      if (!paymentAddress.city || !paymentAddress.city.trim()) newErrors.paymentCity = "City is required.";
-      if (!paymentAddress.state || !paymentAddress.state.trim()) newErrors.paymentState = "State is required.";
-      if (!paymentAddress.zip || !paymentAddress.zip.trim()) newErrors.paymentZip = "Zip is required.";
+      if (!paymentAddress.street || !paymentAddress.street.trim())
+        newErrors.paymentStreet = "Street address is required.";
+      if (!paymentAddress.city || !paymentAddress.city.trim())
+        newErrors.paymentCity = "City is required.";
+      if (!paymentAddress.state || !paymentAddress.state.trim())
+        newErrors.paymentState = "State is required.";
+      if (!paymentAddress.zip || !paymentAddress.zip.trim())
+        newErrors.paymentZip = "Zip is required.";
     }
 
-    // Card details
-    if (!cardDetails.number || !cardDetails.number.trim()) newErrors.cardNumber = "Card number is required.";
-    if (!cardDetails.name || !cardDetails.name.trim()) newErrors.cardName = "Name on card is required.";
-    if (!cardDetails.exp || !cardDetails.exp.trim()) newErrors.cardExp = "Expiry date is required.";
+    // Card details: if using saved card (selectedCardId) then skip card fields validation
+    if (!selectedCardId) {
+      if (!cardDetails.number || !cardDetails.number.trim())
+        newErrors.cardNumber = "Card number is required.";
+      if (!cardDetails.name || !cardDetails.name.trim())
+        newErrors.cardName = "Name on card is required.";
+      if (!cardDetails.exp || !cardDetails.exp.trim())
+        newErrors.cardExp = "Expiry date is required.";
+      else if (!isExpiryValid(cardDetails.exp))
+        newErrors.cardExp = "Expiry must be a valid future date (MM/YY).";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -265,52 +452,53 @@ const CheckoutPage = () => {
 
   const { total, items } = getOrderDetails();
 
- const applyPromotion = async (name = promoCode) => {
+  const applyPromotion = async (name = promoCode) => {
     try {
-        setPromoError("");
-        setAppliedPromo(null);
-        if (!name || !name.trim()) {
-          setPromoError("Please enter a promo code.");
-          return;
-        }
-        const res = await fetch("http://localhost:3002/api/promotions");
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch ticket prices");
-        }
-
-        const data = await res.json();
-        
-        const promo = data.find((a) => (a.promoCode || "").toLowerCase() === name.trim().toLowerCase());
-
-        if (!promo) {
-          setPromoError("Promo code does not exist.");
-          return;
-        }
-
-        // Check expiration
-        const now = new Date();
-        const exp = new Date(promo.expirationDate);
-        if (exp < now) {
-          setPromoError("Promo code has expired.");
-          return;
-        }
-
-        // success
-        setAppliedPromo(promo);
-        setPromoError("");
-
-      } catch (error) {
-        console.error("Error fetching promo code:", error);
-        setPromoError("Failed to validate promotion. Try again.");
+      setPromoError("");
+      setAppliedPromo(null);
+      if (!name || !name.trim()) {
+        setPromoError("Please enter a promo code.");
+        return;
       }
-  }
+      const res = await fetch("http://localhost:3002/api/promotions");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch ticket prices");
+      }
+
+      const data = await res.json();
+
+      const promo = data.find(
+        (a) => (a.promoCode || "").toLowerCase() === name.trim().toLowerCase()
+      );
+
+      if (!promo) {
+        setPromoError("Promo code does not exist.");
+        return;
+      }
+
+      // Check expiration
+      const now = new Date();
+      const exp = new Date(promo.expirationDate);
+      if (exp < now) {
+        setPromoError("Promo code has expired.");
+        return;
+      }
+
+      // success
+      setAppliedPromo(promo);
+      setPromoError("");
+    } catch (error) {
+      console.error("Error fetching promo code:", error);
+      setPromoError("Failed to validate promotion. Try again.");
+    }
+  };
 
   const removePromotion = () => {
     setAppliedPromo(null);
     setPromoCode("");
     setPromoError("");
-  }
+  };
 
   const computeTotalWithPromo = () => {
     if (!ticketPrices) return total;
@@ -318,14 +506,38 @@ const CheckoutPage = () => {
     const raw = (appliedPromo.promoValue || "").toString().trim();
     if (!raw) return total;
 
-
     const numeric = parseFloat(raw);
     if (Number.isFinite(numeric)) {
       return Math.max(0, total - total * (numeric / 100));
     }
 
     return total;
-  }
+  };
+  // Validate expiry date: format MM/YY or MM/YYYY and in the future
+  const isExpiryValid = (exp) => {
+    if (!exp || typeof exp !== "string") return false;
+    const trimmed = exp.trim();
+    // allow formats: MM/YY or MM/YYYY
+    const mmYY = /^([0-1]?\d)\/(\d{2})$/; // MM/YY
+    const mmYYYY = /^([0-1]?\d)\/(\d{4})$/; // MM/YYYY
+    let month, year;
+    if (mmYY.test(trimmed)) {
+      const parts = trimmed.split("/");
+      month = Number(parts[0]);
+      year = 2000 + Number(parts[1]);
+    } else if (mmYYYY.test(trimmed)) {
+      const parts = trimmed.split("/");
+      month = Number(parts[0]);
+      year = Number(parts[1]);
+    } else {
+      return false;
+    }
+    if (month < 1 || month > 12) return false;
+    // Expiry is end-of-month
+    const expiryDate = new Date(year, month, 0, 23, 59, 59, 999); // last millisecond of the month
+    const now = new Date();
+    return expiryDate > now;
+  };
 
   const formatPromoValue = (valueRaw) => {
     const raw = (valueRaw || "").toString().trim();
@@ -333,7 +545,7 @@ const CheckoutPage = () => {
     const numeric = parseFloat(raw);
     if (Number.isFinite(numeric)) return `${numeric}%`;
     return raw;
-  }
+  };
   const discountedTotal = computeTotalWithPromo();
 
   return (
@@ -362,7 +574,7 @@ const CheckoutPage = () => {
               value={homeAddress.street}
               onChange={(e) => {
                 setHomeAddress({ ...homeAddress, street: e.target.value });
-                clearError('homeStreet');
+                clearError("homeStreet");
               }}
               error={!!errors.homeStreet}
               helperText={errors.homeStreet}
@@ -376,7 +588,10 @@ const CheckoutPage = () => {
                   size="small"
                   margin="normal"
                   value={homeAddress.city}
-                  onChange={(e) => { setHomeAddress({ ...homeAddress, city: e.target.value }); clearError('homeCity'); }}
+                  onChange={(e) => {
+                    setHomeAddress({ ...homeAddress, city: e.target.value });
+                    clearError("homeCity");
+                  }}
                   error={!!errors.homeCity}
                   helperText={errors.homeCity}
                   required
@@ -389,7 +604,10 @@ const CheckoutPage = () => {
                   size="small"
                   margin="normal"
                   value={homeAddress.state}
-                  onChange={(e) => { setHomeAddress({ ...homeAddress, state: e.target.value }); clearError('homeState'); }}
+                  onChange={(e) => {
+                    setHomeAddress({ ...homeAddress, state: e.target.value });
+                    clearError("homeState");
+                  }}
                   error={!!errors.homeState}
                   helperText={errors.homeState}
                   required
@@ -402,7 +620,10 @@ const CheckoutPage = () => {
                   size="small"
                   margin="normal"
                   value={homeAddress.zip}
-                  onChange={(e) => { setHomeAddress({ ...homeAddress, zip: e.target.value }); clearError('homeZip'); }}
+                  onChange={(e) => {
+                    setHomeAddress({ ...homeAddress, zip: e.target.value });
+                    clearError("homeZip");
+                  }}
                   error={!!errors.homeZip}
                   helperText={errors.homeZip}
                   required
@@ -432,7 +653,13 @@ const CheckoutPage = () => {
                 margin="normal"
                 disabled={sameAsHome}
                 value={paymentAddress.street}
-                onChange={(e) => { setPaymentAddress({ ...paymentAddress, street: e.target.value }); clearError('paymentStreet'); }}
+                onChange={(e) => {
+                  setPaymentAddress({
+                    ...paymentAddress,
+                    street: e.target.value,
+                  });
+                  clearError("paymentStreet");
+                }}
                 error={!!errors.paymentStreet}
                 helperText={errors.paymentStreet}
                 required={!sameAsHome}
@@ -446,7 +673,13 @@ const CheckoutPage = () => {
                     margin="normal"
                     disabled={sameAsHome}
                     value={paymentAddress.city}
-                    onChange={(e) => { setPaymentAddress({ ...paymentAddress, city: e.target.value }); clearError('paymentCity'); }}
+                    onChange={(e) => {
+                      setPaymentAddress({
+                        ...paymentAddress,
+                        city: e.target.value,
+                      });
+                      clearError("paymentCity");
+                    }}
                     error={!!errors.paymentCity}
                     helperText={errors.paymentCity}
                     required={!sameAsHome}
@@ -460,7 +693,13 @@ const CheckoutPage = () => {
                     margin="normal"
                     disabled={sameAsHome}
                     value={paymentAddress.state}
-                    onChange={(e) => { setPaymentAddress({ ...paymentAddress, state: e.target.value }); clearError('paymentState'); }}
+                    onChange={(e) => {
+                      setPaymentAddress({
+                        ...paymentAddress,
+                        state: e.target.value,
+                      });
+                      clearError("paymentState");
+                    }}
                     error={!!errors.paymentState}
                     helperText={errors.paymentState}
                     required={!sameAsHome}
@@ -474,7 +713,13 @@ const CheckoutPage = () => {
                     margin="normal"
                     disabled={sameAsHome}
                     value={paymentAddress.zip}
-                    onChange={(e) => { setPaymentAddress({ ...paymentAddress, zip: e.target.value }); clearError('paymentZip'); }}
+                    onChange={(e) => {
+                      setPaymentAddress({
+                        ...paymentAddress,
+                        zip: e.target.value,
+                      });
+                      clearError("paymentZip");
+                    }}
                     error={!!errors.paymentZip}
                     helperText={errors.paymentZip}
                     required={!sameAsHome}
@@ -527,23 +772,38 @@ const CheckoutPage = () => {
                     fullWidth
                     value={promoCode}
                     error={!!promoError}
-                    helperText={promoError || (appliedPromo ? `Promo applied: ${appliedPromo.promoCode} (${formatPromoValue(appliedPromo.promoValue)})` : "")}
+                    helperText={
+                      promoError ||
+                      (appliedPromo
+                        ? `Promo applied: ${
+                            appliedPromo.promoCode
+                          } (${formatPromoValue(appliedPromo.promoValue)})`
+                        : "")
+                    }
                     onChange={(e) => {
                       setPromoCode(e.target.value);
                       if (promoError) setPromoError("");
                     }}
                     InputProps={{
                       endAdornment: (
-                        <Button style={{ marginRight: "-10px" }} onClick={() => applyPromotion()}>
+                        <Button
+                          style={{ marginRight: "-10px" }}
+                          onClick={() => applyPromotion()}
+                        >
                           Apply
                         </Button>
                       ),
                     }}
                   />
                   {appliedPromo && (
-                      <div className="promo-success">
-                      <span>Promotion <strong>{appliedPromo.promoCode}</strong> applied ({formatPromoValue(appliedPromo.promoValue)}).</span>
-                      <Button size="small" onClick={removePromotion}>Remove</Button>
+                    <div className="promo-success">
+                      <span>
+                        Promotion <strong>{appliedPromo.promoCode}</strong>{" "}
+                        applied ({formatPromoValue(appliedPromo.promoValue)}).
+                      </span>
+                      <Button size="small" onClick={removePromotion}>
+                        Remove
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -574,6 +834,26 @@ const CheckoutPage = () => {
             {/* PAYMENT DETAILS */}
             <Paper elevation={0} className="section-card payment-card">
               <h3 className="sub-header">Payment Details</h3>
+              {savedCards && savedCards.length > 0 && (
+                <FormControl fullWidth size="small" margin="dense">
+                  <InputLabel id="saved-card-label">Saved Card</InputLabel>
+                  <Select
+                    labelId="saved-card-label"
+                    label="Saved Card"
+                    value={selectedCardId || "new"}
+                    onChange={(e) => handleSavedCardChange(e.target.value)}
+                  >
+                    <MenuItem value={"new"}>Use a new card</MenuItem>
+                    {savedCards.map((c) => (
+                      <MenuItem key={c.id} value={String(c.id)}>
+                        {`${c.cardNo || `•••• ${c.maskedCardNo}`} — Exp ${
+                          c.expirationDate || ""
+                        }`}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               <TextField
                 fullWidth
                 label="Card Number"
@@ -581,7 +861,11 @@ const CheckoutPage = () => {
                 margin="dense"
                 size="small"
                 value={cardDetails.number}
-                onChange={(e) => { setCardDetails({ ...cardDetails, number: e.target.value }); clearError('cardNumber'); }}
+                onChange={(e) => {
+                  setCardDetails({ ...cardDetails, number: e.target.value });
+                  clearError("cardNumber");
+                }}
+                disabled={!!selectedCardId}
                 error={!!errors.cardNumber}
                 helperText={errors.cardNumber}
                 required
@@ -594,7 +878,11 @@ const CheckoutPage = () => {
                   margin="dense"
                   size="small"
                   value={cardDetails.name}
-                  onChange={(e) => { setCardDetails({ ...cardDetails, name: e.target.value }); clearError('cardName'); }}
+                  onChange={(e) => {
+                    setCardDetails({ ...cardDetails, name: e.target.value });
+                    clearError("cardName");
+                  }}
+                  disabled={!!selectedCardId}
                   error={!!errors.cardName}
                   helperText={errors.cardName}
                   required
@@ -606,14 +894,33 @@ const CheckoutPage = () => {
                   margin="dense"
                   size="small"
                   value={cardDetails.exp}
-                  onChange={(e) => { setCardDetails({ ...cardDetails, exp: e.target.value }); clearError('cardExp'); }}
+                  onChange={(e) => {
+                    setCardDetails({ ...cardDetails, exp: e.target.value });
+                    clearError("cardExp");
+                  }}
+                  disabled={!!selectedCardId}
                   error={!!errors.cardExp}
                   helperText={errors.cardExp}
                   required
                 />
               </div>
+              {/* Save card checkbox (only when using a new card) */}
+              {!selectedCardId && (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={saveCard}
+                      onChange={(e) => setSaveCard(e.target.checked)}
+                    />
+                  }
+                  label="Save card for future use"
+                  style={{ marginTop: 12 }}
+                />
+              )}
               {Object.keys(errors).length > 0 && (
-                <div style={{ color: '#d32f2f', fontWeight: 600, marginTop: 12 }}>
+                <div
+                  style={{ color: "#d32f2f", fontWeight: 600, marginTop: 12 }}
+                >
                   Please complete all required fields.
                 </div>
               )}
@@ -624,6 +931,7 @@ const CheckoutPage = () => {
                 size="large"
                 style={{ marginTop: "20px" }}
                 onClick={handleConfirmPayment}
+                disabled={Object.keys(errors).length > 0}
               >
                 Pay ${discountedTotal.toFixed(2)}
               </Button>

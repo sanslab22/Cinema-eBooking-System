@@ -1,5 +1,5 @@
 import express from "express";
-import { getTicketCategories, lockSeatTemp, releaseSeatTemp, releaseAllTempSeats, getPromotions, createBooking } from "../controllers/bookingController.js";
+import { getTicketCategories, lockSeatTemp, releaseSeatTemp, releaseAllTempSeats, getPromotions, createBooking, fetchCards } from "../controllers/bookingController.js";
 
 const router = express.Router();
 
@@ -17,6 +17,8 @@ router.post("/showSeats/:showID/releaseAll", releaseAllTempSeats);
 router.get("/promotions", getPromotions);
 
 router.post("/createBooking", createBooking);
+
+router.post("/fetchCards", fetchCards);
 
 
 export default router;
