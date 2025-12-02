@@ -140,3 +140,19 @@ export async function releaseAllTempSeats(req, res) {
   }
 }
 
+export async function getPromotions(_req, res) {
+  try {
+    const items = await prisma.promotions.findMany({
+      orderBy: { startDate: "asc" },
+    });
+
+    return res.json(items);
+  } catch (err) {
+    console.error("listPromotions error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export async function createBooking(req, res) {
+  
+}

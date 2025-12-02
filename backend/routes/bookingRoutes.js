@@ -1,5 +1,5 @@
 import express from "express";
-import { getTicketCategories, lockSeatTemp, releaseSeatTemp, releaseAllTempSeats } from "../controllers/bookingController.js";
+import { getTicketCategories, lockSeatTemp, releaseSeatTemp, releaseAllTempSeats, getPromotions, createBooking } from "../controllers/bookingController.js";
 
 const router = express.Router();
 
@@ -13,5 +13,10 @@ router.post("/showSeats/:showID/:seatID/release", releaseSeatTemp);
 
 // Release all temp seats for a show (when timer expiry)
 router.post("/showSeats/:showID/releaseAll", releaseAllTempSeats);
+
+router.get("/promotions", getPromotions);
+
+router.post("/createBooking", createBooking);
+
 
 export default router;
