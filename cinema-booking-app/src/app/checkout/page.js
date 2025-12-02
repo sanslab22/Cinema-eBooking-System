@@ -195,7 +195,7 @@ const CheckoutPage = () => {
         </div>
       )}
 
-      <Grid container spacing={24}>
+      <Grid container spacing={20}>
         
         {/* --- LEFT COLUMN: ADDRESSES --- */}
         <Grid item xs={12} md={8}>
