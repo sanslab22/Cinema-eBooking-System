@@ -56,7 +56,6 @@ const CheckoutPage = () => {
         }
 
         const userData = await res.json();
-
         
         const backendHome = userData.addresses?.find(addr => addr.addressTypeId === 1);
         
@@ -69,11 +68,9 @@ const CheckoutPage = () => {
                 zip: backendHome.zipCode || backendHome.zip || "" 
             });
         }
-
       
         if (userData.paymentCards && userData.paymentCards.length > 0) {
             const savedCard = userData.paymentCards[0];
-            
             
             setCardDetails({
                 
