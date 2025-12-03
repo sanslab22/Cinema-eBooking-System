@@ -16,6 +16,8 @@ function EditProfile() {
   const [originalUser, setOriginalUser] = useState(null);
   const [originalPromotions, setOriginalPromotions] = useState(false);
 
+  const [validationError, setValidationError] = useState(null);
+
   // --- NEW STATE for Password Reset ---
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [passwordFields, setPasswordFields] = useState({
@@ -121,7 +123,10 @@ function EditProfile() {
   // --- END NEW ---
 
 
-  const toggleEdit = () => setIsEditing(!isEditing);
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+    setValidationError(null);
+  }
 
   const handleAddCard = () => {
     // Note: Your backend supports 3, your frontend check says 4.
@@ -150,6 +155,7 @@ function EditProfile() {
     setUser(originalUser);
     setPromotions(originalPromotions);
     handleCancelPasswordReset(); // Also reset password fields
+    setValidationError(null); // Clear error messages
     setIsEditing(false);
   };
 
@@ -172,8 +178,44 @@ function EditProfile() {
     }
   };
 
+  /**
+   * Helper function to check if the card expiration date (MM/YY) is valid (i.e., not expired).
+   * @param {string} expirationDate - The card expiration date in MM/YY format.
+   * @returns {boolean} True if the card is NOT expired, false otherwise.
+   */
+  const isCardNotExpired = (expirationDate) => {
+    // Basic format check
+    const parts = expirationDate.match(/^(\d{2})\/(\d{2})$/);
+    if (!parts) return false;
+
+    const month = parseInt(parts[1], 10); // MM
+    const year = 2000 + parseInt(parts[2], 10); // YYYY
+
+    // Check month range (1-12)
+    if (month < 1 || month > 12) return false;
+
+    const current = new Date();
+    // Month is 0-indexed in JS Date (0=Jan, 11=Dec)
+    const currentYear = current.getFullYear();
+    const currentMonth = current.getMonth() + 1;
+
+    // Check if the expiration year is in the past
+    if (year < currentYear) {
+      return false;
+    }
+
+    // Check if the expiration year is the current year, and the expiration month is in the past
+    if (year === currentYear && month < currentMonth) {
+      return false;
+    }
+
+    return true;
+  };
+
   // --- This handleSaveClick is now fixed (No Token) ---
   const handleSaveClick = async () => {
+    setValidationError(null);
+
     // 1. Get ID from localStorage
     const userId = localStorage.getItem('userId');
 
@@ -181,6 +223,22 @@ function EditProfile() {
     if (!userId) {
       alert("You must be logged in to save.");
       return;
+    }
+
+    for (const card of user.paymentCards) {
+      // Only validate cards with a non-empty expiration date
+      if (card.expirationDate) {
+        if (!isCardNotExpired(card.expirationDate)) {
+          // Determine the last 4 digits for the error message
+          // Use maskedCardNo (from backend) if present, otherwise use the entered cardNo
+          const cardIdentifier = card.maskedCardNo || card.cardNo || '...';
+          const lastFour = cardIdentifier.slice(-4); 
+
+          setValidationError(`Card ending in ${lastFour} is expired. Please update the card information.`);
+          // Stop save process and show error
+          return;
+        }
+      }
     }
 
     // --- NEW: Password Validation ---
@@ -212,13 +270,31 @@ function EditProfile() {
           state: user.billingAddress.state,
           zipCode: user.billingAddress.zipCode,
         },
-        paymentCards: user.paymentCards.map(card => ({
-          id: card.id, // keep id if exists, useful for updates
-          cardNo: card.cardNo, // plaintext entered by user
-          expirationDate: card.expirationDate,
-          billingAddress: card.billingAddress || { street: "", city: "", state: "", zipCode: "" },
-        })),
+        paymentCards: user.paymentCards.map(card => {
+            // Create a base object with fields that are always sent
+            const cardData = {
+                id: card.id, 
+                expirationDate: card.expirationDate,
+                billingAddress: card.billingAddress || { street: "", city: "", state: "", zipCode: "" },
+            };
+
+            // CHECK: Does the cardNo look like "•••• 1234"?
+            // If yes, the user hasn't changed it. Do not send cardNo.
+            // If no (it's empty or a new number like "4111"), send it.
+            if (card.cardNo && !card.cardNo.startsWith("••••")) {
+                cardData.cardNo = card.cardNo;
+            }
+
+            return cardData;
+        }),
       };
+      //   paymentCards: user.paymentCards.map(card => ({
+      //     id: card.id, // keep id if exists, useful for updates
+      //     cardNo: card.cardNo, // plaintext entered by user
+      //     expirationDate: card.expirationDate,
+      //     billingAddress: card.billingAddress || { street: "", city: "", state: "", zipCode: "" },
+      //   })),
+      // };
 
       if (
         isResettingPassword &&
@@ -266,6 +342,8 @@ function EditProfile() {
       setOriginalPromotions(savedBackendData.EnrollforPromotions);
 
       // --- UPDATED: Reset password fields on successful save ---
+      setValidationError(null);
+
       handleCancelPasswordReset();
       setIsEditing(false);
       sendEmail(user.email);
@@ -292,6 +370,10 @@ function EditProfile() {
   return (
     <div className="profile-container">
       <h1>My Profile</h1>
+
+      {isEditing && validationError && (
+        <div className="error-box">{validationError}</div>
+      )}
 
       {!isEditing ? (
         <div className="profile-view">
@@ -415,9 +497,8 @@ function EditProfile() {
           </div>
 
           <div className="form-section promotions">
-            <label>
+            <label className='promotions-label'>
               <input
-              style={{display:"flex", alignItems:"center", justifyContent:"center", }}
                 type="checkbox"
                 checked={promotions}
                 onChange={() => setPromotions(!promotions)}

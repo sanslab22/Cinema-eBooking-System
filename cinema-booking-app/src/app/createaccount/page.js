@@ -24,10 +24,27 @@ const CreateAccount = () => {
     city: "",
     state: "",
     zipCode: "",
-    paymentCards: [{ cardNumber: "", securityCode: "", expDate: "" }],
+    paymentCards: [{ 
+      cardNumber: "", 
+      securityCode: "", 
+      expDate: "", 
+      billingAddress: "",
+      billingCity: "",
+      billingState: "",
+      billingZipCode: "",
+      sameAsHome: false 
+    }],
     subscribe: false,
     code: "",
   });
+
+  // Check that all home address fields are filled (none are empty)
+  const isHomeAddressComplete =
+  formData.address.trim() !== "" &&
+  formData.city.trim() !== "" &&
+  formData.state.trim() !== "" &&
+  formData.zipCode.trim() !== "";
+
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState(false);
@@ -43,10 +60,15 @@ const CreateAccount = () => {
   };
 
   const handleCardChange = (index, e) => {
-    const { name, value } = e.target;
-    const cards = [...formData.paymentCards];
-    cards[index][name] = value;
-    setFormData((prev) => ({ ...prev, paymentCards: cards }));
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+
+    setFormData((prev) => ({
+      ...prev,
+      paymentCards: prev.paymentCards.map((card, i) =>
+        i === index ? { ...card, [name]: newValue } : card
+      ),
+    }));
   };
 
   const addCard = () => {
@@ -55,7 +77,16 @@ const CreateAccount = () => {
         ...prev,
         paymentCards: [
           ...prev.paymentCards,
-          { cardNumber: "", securityCode: "", expDate: "" },
+          { 
+            cardNumber: "", 
+            securityCode: "", 
+            expDate: "",
+            billingAddress: "",
+            billingCity: "",
+            billingState: "",
+            billingZipCode: "",
+            sameAsHome: false
+           },
         ],
       }));
     }
@@ -112,6 +143,78 @@ const CreateAccount = () => {
       case 2:
         return true;
       case 3:
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1–12
+
+        for (let i = 0; i < formData.paymentCards.length; i++) {
+          const card = formData.paymentCards[i];
+
+          // Only validate if the card has data, OR if it's the first card (mandatory)
+          const hasData = card.cardNumber || card.securityCode || card.expDate;
+          
+          if (i === 0 || hasData) {
+            // 1. Card Number Check
+            if (!card.cardNumber) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Please enter a card number.`);
+              return false;
+            }
+            if (!/^\d+$/.test(card.cardNumber)) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Card number must contain only digits.`);
+              return false;
+            }
+            if (card.cardNumber.length !== 15 && card.cardNumber.length !== 16) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Card number must be 15 or 16 digits long.`);
+              return false;
+            }
+
+            // 2. Security Code Check
+            if (!card.securityCode) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Please enter the security code (CVV).`);
+              return false;
+            }
+            if (!/^\d+$/.test(card.securityCode)) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Security code must contain only digits.`);
+              return false;
+            }
+            if (card.securityCode.length !== 3 && card.securityCode.length !== 4) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Security code must be 3 or 4 digits long.`);
+              return false;
+            }
+
+            // 3. Expiration Date Check
+            if (!card.expDate) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Please select an expiration date.`);
+              return false;
+            }
+
+            const [expYearStr, expMonthStr] = card.expDate.split("-");
+            const expYear = parseInt(expYearStr, 10);
+            const expMonth = parseInt(expMonthStr, 10);
+
+            if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+              setError(true);
+              setErrorMessage(`Card #${i + 1}: Expiration date must be after the current month.`);
+              return false;
+            }
+            
+            // 4. Billing Address Check
+            if (!card.sameAsHome) {
+               if (!card.billingAddress || !card.billingCity || !card.billingState || !card.billingZipCode) {
+                  setError(true);
+                  setErrorMessage(`Card #${i + 1}: Please complete the Billing Address fields.`);
+                  return false;
+               }
+            }
+          }
+        }
         return true;
       case 4:
         return true;
@@ -133,6 +236,7 @@ const CreateAccount = () => {
         return;
       }
     }
+      
     setStep((prevStep) => prevStep + 1);
   };
 
@@ -156,13 +260,6 @@ const CreateAccount = () => {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      // Check that all home address fields are filled (none are empty)
-      const isHomeAddressComplete =
-        formData.address.trim() !== "" &&
-        formData.city.trim() !== "" &&
-        formData.state.trim() !== "" &&
-        formData.zipCode.trim() !== "";
-
       // Only include homeAddress if all fields are complete
       const homeAddress = isHomeAddressComplete
         ? {
@@ -176,19 +273,36 @@ const CreateAccount = () => {
       const paymentCards = formData.paymentCards
         .filter(card => card.cardNumber && card.expDate)
         .map(card => {
-          // card.expDate is "YYYY-MM" (e.g., "2024-05")
           const [year, month] = card.expDate.split('-'); 
-          
-          // Take the last 2 digits of the year
           const shortYear = year.slice(-2); 
-          
-          // Combine to create "MM/YY" (e.g., "05/24")
           const formattedDate = `${month}/${shortYear}`;
+
+          // UPDATED: Determine logic for Billing Address
+          let billingAddressPayload = undefined;
+
+          // If "Same as Home" is checked and home address exists, use home address
+          if (card.sameAsHome && isHomeAddressComplete) {
+            billingAddressPayload = homeAddress;
+          } 
+          // Otherwise, check if manual billing address fields are filled
+          else if (
+            card.billingAddress && 
+            card.billingCity && 
+            card.billingState && 
+            card.billingZipCode
+          ) {
+            billingAddressPayload = {
+              street: card.billingAddress,
+              city: card.billingCity,
+              state: card.billingState,
+              zipCode: card.billingZipCode
+            };
+          }
 
           return {
             cardNo: card.cardNumber,
-            expirationDate: formattedDate, // Send the formatted date
-            billingAddress: isHomeAddressComplete ? homeAddress : undefined,
+            expirationDate: formattedDate,
+            billingAddress: billingAddressPayload,
           };
         });
 
@@ -430,7 +544,7 @@ const CreateAccount = () => {
             <p>You can add up to 3 payment cards to be used in purchases.</p>
             <br />
             {formData.paymentCards.map((card, index) => (
-              <div key={index}>
+              <div key={index} style={{ marginBottom: '20px', borderBottom: '1px solid #ccc', paddingBottom: '20px' }}>
                 <div className="card-header">
                   <h2 className="cardNum">Payment Card #{index + 1}</h2>
                   {formData.paymentCards.length > 1 && (
@@ -474,8 +588,69 @@ const CreateAccount = () => {
                     />
                   </label>
                 </div>
+
+                {/* UPDATED: Billing Address Section inside Card Loop */}
+                <h3 style={{color: 'white', fontStyle: 'bold', marginTop: '15px', marginBottom: '15px'}}>Billing Address</h3>
+                
+                {isHomeAddressComplete && (
+                  <div className="checkbox-container" style={{marginBottom: '10px'}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                      <input
+                        type="checkbox"
+                        name="sameAsHome"
+                        checked={card.sameAsHome}
+                        onChange={(e) => handleCardChange(index, e)}
+                      />
+                      Same as Home Address
+                    </label>
+                  </div>
+                )}
+
+                {!card.sameAsHome && (
+                  <div className="billing-address-form">
+                    <label>
+                      Street Address:
+                      <input
+                        type="text"
+                        name="billingAddress"
+                        value={card.billingAddress}
+                        onChange={(e) => handleCardChange(index, e)}
+                      />
+                    </label>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px'}}>
+                      <label>
+                        City:
+                        <input
+                          type="text"
+                          name="billingCity"
+                          value={card.billingCity}
+                          onChange={(e) => handleCardChange(index, e)}
+                        />
+                      </label>
+                      <label>
+                        State:
+                        <input
+                          type="text"
+                          name="billingState"
+                          value={card.billingState}
+                          onChange={(e) => handleCardChange(index, e)}
+                        />
+                      </label>
+                      <label>
+                        Zip Code:
+                        <input
+                          type="text"
+                          name="billingZipCode"
+                          value={card.billingZipCode}
+                          onChange={(e) => handleCardChange(index, e)}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
+            
             {formData.paymentCards.length < 3 && (
               <div className="add-card-container">
                 <Button variant="contained" onClick={addCard}>
