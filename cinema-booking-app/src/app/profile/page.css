@@ -72,9 +72,25 @@ input {
     background-color: #dc3545;
 }
   
-.promotions {
-    margin-top: 20px;
+.promotions-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  cursor: pointer;
 }
+
+.promotions-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  transform: scale(1.2);
+}
+
+.promotions {
+  margin-top: 20px;
+}
+
   
 .button-row {
     display: flex;
