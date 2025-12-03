@@ -280,6 +280,22 @@ function Page() {
     setExpiryTime(null);
   };
 
+  // --- Show error if too many seats selected on seat selection page ---
+useEffect(() => {
+  if (step === 2) {
+    const totalTickets = Object.values(ticketCounts).reduce((a, b) => a + b, 0);
+    if (seatsSelected.length > totalTickets) {
+      setError(true);
+      setErrorMessage(
+        `You have selected more seats (${seatsSelected.length}) than tickets (${totalTickets}). Please deselect ${seatsSelected.length - totalTickets} seat(s).`
+      );
+    } else {
+      setError(false);
+      setErrorMessage("");
+    }
+  }
+}, [step, ticketCounts, seatsSelected]);
+
   return (
     <div>
       {/* --- MOVED TIMER HERE so it persists across steps --- */}
@@ -332,7 +348,7 @@ function Page() {
             <h2>Select Seats</h2>
             {error && <p className="error-message">{errorMessage}</p>}
             {seatsError && <p className="error-message">{seatsError}</p>}
-            <p># of seats left to select: {totalTickets - seatsSelected.length}</p>
+            <p># of seats left to select: {Math.max(0, totalTickets - seatsSelected.length)}</p>
             {seatsLoading ? (
               <p>Loading seats...</p>
             ) : (
