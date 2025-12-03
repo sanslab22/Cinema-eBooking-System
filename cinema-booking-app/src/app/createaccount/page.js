@@ -590,7 +590,7 @@ const CreateAccount = () => {
                 </div>
 
                 {/* UPDATED: Billing Address Section inside Card Loop */}
-                <h4 style={{marginTop: '15px'}}>Billing Address</h4>
+                <h3 style={{color: 'white', fontStyle: 'bold', marginTop: '15px', marginBottom: '15px'}}>Billing Address</h3>
                 
                 {isHomeAddressComplete && (
                   <div className="checkbox-container" style={{marginBottom: '10px'}}>
