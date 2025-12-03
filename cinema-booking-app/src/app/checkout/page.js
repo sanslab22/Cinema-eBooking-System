@@ -550,13 +550,14 @@ const CheckoutPage = () => {
 
   return (
     <div className="checkout-page-wrapper">
-      <h1 className="checkout-title">Checkout</h1>
-
       {expiryTime && (
         <div style={{ marginBottom: "10px", width: "100%" }}>
           <BookingTimer expiryTimestamp={expiryTime} />
         </div>
       )}
+      <h1 className="checkout-title">Checkout</h1>
+
+      
 
       <Grid container spacing={20}>
         

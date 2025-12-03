@@ -49,6 +49,38 @@ function Page() {
     }).format(dateObj);
   };
 
+  // Clean temp seats
+  const cleanupTempSeats = async () => {
+    const showID = localStorage.getItem("showID");
+    if (!showID) return;
+  
+    try {
+      await fetch(`http://localhost:3002/api/showSeats/${showID}/releaseAll`, {
+        method: "POST",
+      });
+    } catch (err) {
+      console.error("Cleanup failed", err);
+    }
+  };
+
+  // Cleanup seats
+  useEffect(() => {
+    const handleBeforeUnload = () => cleanupTempSeats();
+    window.addEventListener("beforeunload", handleBeforeUnload);
+  
+    // Handle browser back button
+    const handlePopState = () => cleanupTempSeats();
+    window.addEventListener("popstate", handlePopState);
+  
+    // Cleanup old temp seats on mount
+    cleanupTempSeats();
+  
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+      cleanupTempSeats();
+    };
+  }, []);
 
   // --- Fetch ticket categories ---
   useEffect(() => {
@@ -235,17 +267,13 @@ function Page() {
   // --- Handle Timer Expiry ---
   const handleSessionExpire = async () => {
     alert("Booking session expired!");
-    const showID = localStorage.getItem("showID");
-    try {
-      await fetch(`http://localhost:3002/api/showSeats/${showID}/releaseAll`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Failed to release seats on expiry", error);
-    }
+  
+    await cleanupTempSeats();
+  
     localStorage.removeItem("bookingData");
     localStorage.removeItem("showID");
     localStorage.removeItem("noAvailableSeats");
+  
     setStep(1);
     setSeatsSelected([]);
     setTicketCounts({});
