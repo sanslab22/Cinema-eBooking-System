@@ -266,7 +266,7 @@ function Page() {
 
   // --- Handle Timer Expiry ---
   const handleSessionExpire = async () => {
-    alert("Booking session expired!");
+    //alert("Booking session expired!");
   
     await cleanupTempSeats();
   
