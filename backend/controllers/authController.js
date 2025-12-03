@@ -154,6 +154,10 @@ export const login = async (req, res) => {
       });
     }
 
+    if (user.userStatusId === 3) {
+      return res.status(403).json({ message: "Account is suspended." });
+    }
+
     // Set userStatusId to Active (1) upon successful login
     await prisma.user.update({
       where: { id: user.id },
