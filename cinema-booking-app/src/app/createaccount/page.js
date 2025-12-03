@@ -609,7 +609,7 @@ const CreateAccount = () => {
                 {!card.sameAsHome && (
                   <div className="billing-address-form">
                     <label>
-                      Street Address
+                      Street Address:
                       <input
                         type="text"
                         name="billingAddress"
@@ -619,7 +619,7 @@ const CreateAccount = () => {
                     </label>
                     <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px'}}>
                       <label>
-                        City
+                        City:
                         <input
                           type="text"
                           name="billingCity"
@@ -628,7 +628,7 @@ const CreateAccount = () => {
                         />
                       </label>
                       <label>
-                        State
+                        State:
                         <input
                           type="text"
                           name="billingState"
@@ -637,7 +637,7 @@ const CreateAccount = () => {
                         />
                       </label>
                       <label>
-                        Zip Code
+                        Zip Code:
                         <input
                           type="text"
                           name="billingZipCode"
