@@ -16,6 +16,21 @@ h1 {
 .profile-view p {
     margin: 10px 0;
 }
+
+.error-box {
+    margin-top: -15px; 
+    margin-bottom: 25px;
+    
+    /* Red Box Styling */
+    border: 2px solid #D84040;
+    background-color: #ffeaea; /* Light red background */
+    color: #D84040; /* Red text */
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
   
 button {
     margin-top: 10px;
