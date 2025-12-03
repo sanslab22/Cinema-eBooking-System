@@ -1,61 +1,89 @@
 "use client";
 import withAuth from "../hoc/withAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@mui/material";
 import BackButton from "../components/BackButton";
 import "./page.css";
 
 function ManageUsers() {
 
-  const [users, setUsers] = useState([]);
+const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    async function fetchUsers(){
-      try {
-        const response = await fetch(`http://localhost:3002/api/users`); //api to be defined later
-        const data = await response.json();
-
-        const nonAdminUsers = data.items.filter((user) => user.userTypeId !== 1);
-        setUsers(nonAdminUsers);
-      } catch (error) {
-        console.error("Error fetching users: ", error);
-      }
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await fetch(`http://localhost:3002/api/users`);
+      const data = await response.json();
+      const nonAdminUsers = data.items.filter(user => user.userTypeId !== 1);
+      setUsers(nonAdminUsers);
+    } catch (error) {
+      console.error("Error fetching users: ", error);
     }
-
-    fetchUsers();
   }, []);
 
-  //front end only
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
   const handleSuspendUser = async (id, fullName, currentlySuspended) => {
     const action = currentlySuspended ? "unsuspend" : "suspend";
-    const confirmed = window.confirm(`Are you sure you want to ${action} User: ${fullName}?`);
-    if (!confirmed) return;
-
+    if (!window.confirm(`Are you sure you want to ${action} User: ${fullName}?`)) return;
     try {
-      const newStatusId = currentlySuspended ? 2 : 3;     // 2 is inactive user and 3 is suspended user
+      const newStatusId = currentlySuspended ? 2 : 3;
       const response = await fetch(`http://localhost:3002/api/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userStatusId: newStatusId }),
       });
-
       if (!response.ok) {
         const error = await response.json();
         alert(`Failed to ${action} user: ` + (error?.error || response.statusText));
         return;
       }
-
-      setUsers(prev =>
-        prev.map(user =>
-          user.id === id ? { ...user, userStatusId: newStatusId } : user
-        )
-      );
+      await fetchUsers(); // refresh after update
       alert(`User "${fullName}" has been ${action}ed.`);
     } catch (err) {
       alert(`Failed to ${action} user due to network error.`);
       console.error(err);
     }
   };
+
+  const handlePromoteUser = async (id, fullName) => {
+    if (!window.confirm(`Promote ${fullName} to admin?`)) return;
+    try {
+      const response = await fetch(`http://localhost:3002/api/admin/users/${id}/promote`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to promote user: ${error?.error || response.statusText}`);
+        return;
+      }
+      await fetchUsers(); // refresh after update
+      alert(`User "${fullName}" has been promoted to admin.`);
+    } catch (err) {
+      alert("Failed to promote user due to network error.");
+      console.error(err);
+    }
+  };
+
+  const handleDeleteUser = async (id, fullName) => {
+    if (!window.confirm(`Delete user ${fullName}? This cannot be undone.`)) return;
+    try {
+      const response = await fetch(`http://localhost:3002/api/admin/users/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to delete user: ${error?.error || response.statusText}`);
+        return;
+      }
+      await fetchUsers(); // refresh after delete
+      alert(`User "${fullName}" has been deleted.`);
+    } catch (err) {
+      alert("Failed to delete user due to network error.");
+      console.error(err);
+    }
+  };
+
 
 
   return (
@@ -99,6 +127,18 @@ function ManageUsers() {
                         Suspend
                       </button>
                     )}
+                    <button
+                      className="promote-user-btn"
+                      onClick={() => handlePromoteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                    >
+                      Promote
+                    </button>
+                    <button
+                      className="delete-user-btn"
+                      onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))

@@ -152,3 +152,67 @@ export async function updateUserById(req, res) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
+
+export async function promoteUser(req, res) {
+  try {
+    const userId = Number(req.params.id);
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(400).json({ error: "Invalid user id" });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { userTypeId: 1 },
+      select: { id: true, firstName: true, lastName: true, userTypeId: true },
+    });
+
+    return res.status(200).json(updated);
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "Not found" });
+    console.error("PATCH /admin/users/:id/promote error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export async function deleteUserById(req, res) {
+  try {
+    const userId = Number(req.params.id);
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(400).json({ error: "Invalid user id" });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // bookings → tickets first
+      const bookings = await tx.booking.findMany({
+        where: { userID: userId },
+        select: { id: true },
+      });
+      const bookingIds = bookings.map(b => b.id);
+
+      if (bookingIds.length) {
+        await tx.ticket.deleteMany({ where: { bookingID: { in: bookingIds } } });
+        await tx.booking.deleteMany({ where: { id: { in: bookingIds } } });
+      }
+
+      // payment cards (bookings removed, so FK clear)
+      await tx.paymentCard.deleteMany({ where: { userID: userId } });
+
+      // addresses
+      await tx.address.deleteMany({ where: { userID: userId } });
+
+      // finally the user
+      return tx.user.delete({
+        where: { id: userId },
+        select: { id: true, firstName: true, lastName: true, email: true },
+      });
+    });
+
+    return res.status(200).json({ message: "User deleted", deleted: result });
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "Not found" });
+    console.error("DELETE /admin/users/:id error:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+

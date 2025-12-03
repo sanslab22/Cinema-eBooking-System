@@ -27,6 +27,8 @@ import { getSubscribedUserEmails } from "../controllers/adminUserController.js";
 
 import * as ticketController from '../controllers/adminTicketController.js';
 
+import { promoteUser, deleteUserById } from "../controllers/userController.js";
+
 const router = express.Router();
 router.use(express.json());
 router.use(cors());
@@ -53,6 +55,10 @@ router.get("/admin/subscribed-emails", getSubscribedUserEmails);
 //-- Tickets (Admin) ---
 router.get('/admin/tickets', ticketController.listTickets);
 router.put('/admin/tickets/:id', ticketController.updateTicketPrice);
+
+
+router.patch("/admin/users/:id/promote", promoteUser);
+router.delete("/admin/users/:id", deleteUserById);
 
 // (Optional later)
 // router.get("/admin/movies", listMoviesAdmin);
