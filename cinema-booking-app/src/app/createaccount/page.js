@@ -143,6 +143,16 @@ const CreateAccount = () => {
       case 2:
         return true;
       case 3:
+        const hasAnyCardData = formData.paymentCards.some(card => 
+          card.cardNumber || card.securityCode || card.expDate || 
+          card.billingAddress || card.billingCity || card.billingState || card.billingZipCode
+        );
+
+        // If no card data entered at all, skip validation entirely (optional)
+        if (!hasAnyCardData) {
+          return true;
+        }
+
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1; // 1–12
