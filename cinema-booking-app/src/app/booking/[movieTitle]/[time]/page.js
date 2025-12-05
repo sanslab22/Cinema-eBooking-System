@@ -49,34 +49,6 @@ function Page() {
     }).format(dateObj);
   };
 
-  // Clean temp seats
-  const cleanupTempSeats = async () => {
-    const showID = localStorage.getItem("showID");
-    if (!showID) return;
-  
-    try {
-      await fetch(`http://localhost:3002/api/showSeats/${showID}/releaseAll`, {
-        method: "POST",
-      });
-    } catch (err) {
-      console.error("Cleanup failed", err);
-    }
-  };
-
-  // Cleanup seats when user leaves the site or timer ends
-  useEffect(() => {
-    const handleBeforeUnload = () => cleanupTempSeats();
-    const handlePopState = () => cleanupTempSeats();  // Back button
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
   // --- Fetch ticket categories ---
   useEffect(() => {
     async function fetchCategories() {
@@ -129,6 +101,7 @@ function Page() {
 
     fetchSeatsWithStatus();
   }, []);
+
 
   // --- Fetch the noAvailableSeats ---
   useEffect(() => {
@@ -259,21 +232,6 @@ function Page() {
     else router.push("/login?redirect=/checkout");
   };
 
-  // --- Handle Timer Expiry ---
-  const handleSessionExpire = async () => {
-    //alert("Booking session expired!");
-  
-    await cleanupTempSeats();
-  
-    localStorage.removeItem("bookingData");
-    localStorage.removeItem("showID");
-    localStorage.removeItem("noAvailableSeats");
-  
-    setStep(1);
-    setSeatsSelected([]);
-    setTicketCounts({});
-    setExpiryTime(null);
-  };
 
   // --- Show error if too many seats selected on seat selection page ---
 useEffect(() => {
@@ -297,7 +255,6 @@ useEffect(() => {
       {expiryTime && (
         <BookingTimer
           expiryTimestamp={expiryTime}
-          onExpire={handleSessionExpire}
         />
       )}
 
