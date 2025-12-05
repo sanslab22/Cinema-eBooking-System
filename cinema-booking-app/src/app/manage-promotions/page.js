@@ -10,7 +10,7 @@ import BackButton from "../components/BackButton";
 
 function ManagePromotions() {
   const [promotions, setPromotions] = useState([]);
-  
+
   const [promotion, setPromotion] = useState({
     promoCode: "",
     startDate: "",
@@ -24,7 +24,6 @@ function ManagePromotions() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-
   const [tickets, setTickets] = useState([]);
   const [editTicketId, setEditTicketId] = useState(null);
   const [tempPrice, setTempPrice] = useState(""); // Stores price while editing
@@ -32,18 +31,18 @@ function ManagePromotions() {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem("token"); // OR sessionStorage.getItem("token");
-      
+
       const response = await fetch("http://localhost:3002/api/admin/tickets", {
         headers: {
-          "Authorization": `Bearer ${token}` // <--- Vital for Admin Routes
-        }
+          Authorization: `Bearer ${token}`, // <--- Vital for Admin Routes
+        },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch tickets");
       }
-      
+
       const data = await response.json();
       setTickets(data);
     } catch (err) {
@@ -56,7 +55,6 @@ function ManagePromotions() {
     fetchPromotions();
     fetchTickets(); // Load tickets on mount
   }, []);
-
 
   const handleEditTicket = (ticket) => {
     setEditTicketId(ticket.id);
@@ -78,11 +76,14 @@ function ManagePromotions() {
       }
 
       // 2. API Call
-      const response = await fetch(`http://localhost:3002/api/admin/tickets/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ price: priceValue }),
-      });
+      const response = await fetch(
+        `http://localhost:3002/api/admin/tickets/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ price: priceValue }),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to update ticket price");
 
@@ -95,10 +96,9 @@ function ManagePromotions() {
       // 4. Reset Edit Mode & Show Success
       setEditTicketId(null);
       setSuccessMessage("Ticket price updated successfully.");
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(""), 3000);
-
     } catch (err) {
       console.error(err);
       alert("Failed to save ticket price. Check console for details.");
@@ -108,12 +108,14 @@ function ManagePromotions() {
   const formatDateForInput = (isoDateString) => {
     if (!isoDateString) return "";
     const date = new Date(isoDateString);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   const sendPromotionToSubscribedUsers = async (newPromotion) => {
     try {
-      const response = await fetch("http://localhost:3002/api/admin/subscribed-emails");
+      const response = await fetch(
+        "http://localhost:3002/api/admin/subscribed-emails"
+      );
       if (!response.ok) throw new Error("Failed to fetch subscribed users.");
       const emails = await response.json();
       if (emails.length === 0) return;
@@ -127,8 +129,12 @@ function ManagePromotions() {
           <p>A new promotion has been released!</p>
           <p><b>Promo Code: ${newPromotion.promoCode}</b></p>
           <p><b>Discount: ${newPromotion.promoValue}%</b></p>
-          <p><b>Start Date: ${new Date(newPromotion.startDate).toLocaleDateString()}</b></p>
-          <p><b>End Date: ${new Date(newPromotion.expirationDate).toLocaleDateString()}</b></p>
+          <p><b>Start Date: ${new Date(
+            newPromotion.startDate
+          ).toLocaleDateString()}</b></p>
+          <p><b>End Date: ${new Date(
+            newPromotion.expirationDate
+          ).toLocaleDateString()}</b></p>
           <p>We hope to see you at the theaters soon!</p>
         `,
         },
@@ -140,7 +146,9 @@ function ManagePromotions() {
 
   const fetchPromotions = async () => {
     try {
-      const response = await fetch("http://localhost:3002/api/admin/promotions");
+      const response = await fetch(
+        "http://localhost:3002/api/admin/promotions"
+      );
       if (!response.ok) throw new Error("Failed to fetch promotions");
       const data = await response.json();
       setPromotions(data);
@@ -156,11 +164,15 @@ function ManagePromotions() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this promotion?")) return;
+    if (!window.confirm("Are you sure you want to delete this promotion?"))
+      return;
     try {
-      const response = await fetch(`http://localhost:3002/api/admin/promotions/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://localhost:3002/api/admin/promotions/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (!response.ok) throw new Error("Failed to delete promotion");
       setSuccessMessage("Promotion deleted successfully.");
       fetchPromotions();
@@ -187,7 +199,12 @@ function ManagePromotions() {
   const handleCancel = () => {
     setIsEditing(false);
     setEditId(null);
-    setPromotion({ promoCode: "", startDate: "", expirationDate: "", promoValue: "" });
+    setPromotion({
+      promoCode: "",
+      startDate: "",
+      expirationDate: "",
+      promoValue: "",
+    });
     setError(false);
     setSuccessMessage("");
   };
@@ -208,8 +225,10 @@ function ManagePromotions() {
     today.setHours(0, 0, 0, 0);
     const startDate = new Date(promotion.startDate);
     const endDate = new Date(promotion.expirationDate);
-    
-    startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
+
+    startDate.setMinutes(
+      startDate.getMinutes() + startDate.getTimezoneOffset()
+    );
     endDate.setMinutes(endDate.getMinutes() + endDate.getTimezoneOffset());
 
     if (!isEditing && startDate < today) {
@@ -226,11 +245,14 @@ function ManagePromotions() {
     try {
       let response;
       if (isEditing) {
-        response = await fetch(`http://localhost:3002/api/admin/promotions/${editId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(promotion),
-        });
+        response = await fetch(
+          `http://localhost:3002/api/admin/promotions/${editId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(promotion),
+          }
+        );
       } else {
         response = await fetch("http://localhost:3002/api/admin/promotions", {
           method: "POST",
@@ -240,7 +262,8 @@ function ManagePromotions() {
       }
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || data.message || "Operation failed");
+      if (!response.ok)
+        throw new Error(data.error || data.message || "Operation failed");
 
       if (!isEditing) {
         await sendPromotionToSubscribedUsers(promotion);
@@ -281,20 +304,22 @@ function ManagePromotions() {
                     <td>{promo.promoCode}</td>
                     <td>{promo.promoValue}%</td>
                     <td>{new Date(promo.startDate).toLocaleDateString()}</td>
-                    <td>{new Date(promo.expirationDate).toLocaleDateString()}</td>
                     <td>
-                      <Button 
-                        size="small" 
-                        variant="contained" 
+                      {new Date(promo.expirationDate).toLocaleDateString()}
+                    </td>
+                    <td>
+                      <Button
+                        size="small"
+                        variant="contained"
                         color="primary"
                         onClick={() => handleEdit(promo)}
                         style={{ marginRight: "5px" }}
                       >
                         Edit
                       </Button>
-                      <Button 
-                        size="small" 
-                        variant="contained" 
+                      <Button
+                        size="small"
+                        variant="contained"
                         color="error"
                         onClick={() => handleDelete(promo.id)}
                       >
@@ -315,7 +340,9 @@ function ManagePromotions() {
           <br />
           <form onSubmit={handleSubmit}>
             {error && <div className="error-message">{errorMessage}</div>}
-            {successMessage && <div className="success-message">{successMessage}</div>}
+            {successMessage && (
+              <div className="success-message">{successMessage}</div>
+            )}
 
             <label>
               Promo Code
@@ -364,9 +391,9 @@ function ManagePromotions() {
                 {isEditing ? "Update Promotion" : "Create Promotion"}
               </Button>
               {isEditing && (
-                <Button 
-                  type="button" 
-                  variant="outlined" 
+                <Button
+                  type="button"
+                  variant="outlined"
                   color="secondary"
                   onClick={handleCancel}
                   style={{ marginLeft: "10px" }}
@@ -376,6 +403,16 @@ function ManagePromotions() {
               )}
             </div>
           </form>
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: "15px",
+              fontSize: "0.8rem",
+              color: "#666",
+            }}
+          >
+            Note: All dates are in Central Time (CT).
+          </p>
         </div>
       </div>
 
@@ -398,14 +435,14 @@ function ManagePromotions() {
               {tickets.map((ticket) => (
                 <tr key={ticket.id}>
                   <td>{ticket.category}</td>
-                  
+
                   {/* PRICE COLUMN: Shows Input if editing, Text if not */}
                   <td>
                     {editTicketId === ticket.id ? (
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         className="price-input"
-                        step="0.01" 
+                        step="0.01"
                         value={tempPrice}
                         onChange={(e) => setTempPrice(e.target.value)}
                       />
@@ -418,18 +455,18 @@ function ManagePromotions() {
                   <td>
                     {editTicketId === ticket.id ? (
                       <>
-                        <Button 
-                          size="small" 
-                          variant="contained" 
+                        <Button
+                          size="small"
+                          variant="contained"
                           color="success"
                           onClick={() => handleSaveTicket(ticket.id)}
                           style={{ marginRight: "5px" }}
                         >
                           Save
                         </Button>
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
+                        <Button
+                          size="small"
+                          variant="outlined"
                           color="secondary"
                           onClick={handleCancelTicketEdit}
                         >
@@ -437,9 +474,9 @@ function ManagePromotions() {
                         </Button>
                       </>
                     ) : (
-                      <Button 
-                        size="small" 
-                        variant="contained" 
+                      <Button
+                        size="small"
+                        variant="contained"
                         color="primary"
                         onClick={() => handleEditTicket(ticket)}
                       >
@@ -453,7 +490,6 @@ function ManagePromotions() {
           </table>
         </div>
       </div>
-
     </div>
   );
 }
