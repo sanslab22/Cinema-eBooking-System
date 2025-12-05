@@ -336,6 +336,8 @@ const CheckoutPage = () => {
       }
 
       const result = await res.json();
+      // Get all order details for the confirmation page
+      const { subtotal, bookingFee, tax } = getOrderDetails();
       // Prepare confirmation payload
       const maskCard = (num) => {
         const s = (num || "").toString();
@@ -348,7 +350,9 @@ const CheckoutPage = () => {
         showTime: booking.time || booking.showTime || "",
         seatsSelected: booking.seatsSelected || [],
         items: items, // items computed in frontend
-        subtotal: total,
+        subtotal: subtotal,
+        bookingFee: bookingFee,
+        tax: tax,
         discountAmount: total - discountedTotal,
         total: discountedTotal,
         promoCode: appliedPromo?.promoCode || undefined,
