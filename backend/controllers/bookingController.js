@@ -1,3 +1,4 @@
+// bookingController.js
 import prisma from "../prismaClient.js";
 import { hashPassword } from "../utils/hashUtils.js";
 
@@ -5,19 +6,10 @@ import { hashPassword } from "../utils/hashUtils.js";
 export const getTicketCategories = async (req, res) => {
   try {
     const categories = await prisma.ticketCategory.findMany({
-      select: {
-        id: true,
-        name: true,
-        price: true,
-      },
+      select: { id: true, name: true, price: true },
       orderBy: { id: "asc" }
     });
-
-    return res.status(200).json({
-      success: true,
-      data: categories
-    });
-
+    return res.status(200).json({ success: true, data: categories });
   } catch (error) {
     console.error("Error fetching ticket categories:", error);
     return res.status(500).json({
@@ -27,15 +19,8 @@ export const getTicketCategories = async (req, res) => {
   }
 };
 
-
-/**
- * POST /api/showSeats/:showID/:seatID/temp
- * Set seat status to 'temp' if currently 'available', to lock the seat temporarily.
- */
+// Lock seat temporarily
 export async function lockSeatTemp(req, res) {
-   console.log("lockSeatTemp request params:", req.params);
-   console.log("lockSeatTemp request body:", req.body);
-
   const showID = Number(req.params.showID);
   const seatID = Number(req.params.seatID);
 
@@ -44,20 +29,12 @@ export async function lockSeatTemp(req, res) {
   }
 
   try {
-    // Only update if currently available
     const updated = await prisma.showSeats.updateMany({
-      where: {
-        showID,
-        seatID,
-        status: "available",
-      },
-      data: {
-        status: "temp",
-      },
+      where: { showID, seatID, status: "available" },
+      data: { status: "temp" }
     });
 
     if (updated.count === 0) {
-      // Seat was already booked or temp locked
       return res.status(409).json({ error: "Seat not available for temporary lock." });
     }
 
@@ -68,14 +45,8 @@ export async function lockSeatTemp(req, res) {
   }
 }
 
-/**
- * POST /api/showSeats/:showID/:seatID/release
- * Release a 'temp' lock on a seat, setting status back to 'available'.
- */
+// Release a selected seat immediately
 export async function releaseSeatTemp(req, res) {
-  // console.log("releaseSeatTemp request params:", req.params);
-  // console.log("releaseSeatTemp request body:", req.body);
-
   const showID = Number(req.params.showID);
   const seatID = Number(req.params.seatID);
 
@@ -84,16 +55,9 @@ export async function releaseSeatTemp(req, res) {
   }
 
   try {
-    // Only update if currently temp
     const updated = await prisma.showSeats.updateMany({
-      where: {
-        showID,
-        seatID,
-        status: "temp",
-      },
-      data: {
-        status: "available",
-      },
+      where: { showID, seatID, status: "temp" },
+      data: { status: "available" }
     });
 
     if (updated.count === 0) {
@@ -107,15 +71,8 @@ export async function releaseSeatTemp(req, res) {
   }
 }
 
-/**
- * POST /api/showSeats/:showID/releaseAll
- * Release all temp locks for a user/session on the given show.
- * Here simplified to release all temp seats for the show - improve by user/session if needed.
- */
+// Release all temp seats for a show
 export async function releaseAllTempSeats(req, res) {
-  // console.log("releaseAllTempSeats request params:", req.params);
-  // console.log("releaseAllTempSeats request body:", req.body);
-
   const showID = Number(req.params.showID);
 
   if (!showID) {
@@ -124,14 +81,8 @@ export async function releaseAllTempSeats(req, res) {
 
   try {
     const updated = await prisma.showSeats.updateMany({
-      where: {
-        showID,
-        status: "temp",
-        // Optionally filter on user/session locks if implemented
-      },
-      data: {
-        status: "available",
-      },
+      where: { showID, status: "temp" },
+      data: { status: "available" }
     });
 
     return res.json({ success: true, released: updated.count });
@@ -220,25 +171,29 @@ export async function createBooking(req, res) {
         }
 
         // Create billing address
+        // If saveCard is false, use userID = null so the card is not associated with the user account
+        const billingUserID = saveCard ? Number(userID) : null;
         const billing = await tx.address.create({ data: {
           street: card.billingAddress.street,
           city: card.billingAddress.city,
           state: card.billingAddress.state,
           zipCode: card.billingAddress.zipCode || card.billingAddress.zip,
           addressTypeId: 2, // billing
-          userID: Number(userID),
+          userID: billingUserID,
           createdAt: new Date(),
           updatedAt: new Date()
         } });
 
         // Hash the card number; store masked last4
+        // If saveCard is false, use userID = null so the card is not associated with the user account
         const last4 = (card.cardNo || '').slice(-4);
         const hashed = await hashPassword(card.cardNo);
+        const cardUserID = saveCard ? Number(userID) : null;
         const createdCard = await tx.paymentCard.create({ data: {
           cardNo: hashed,
           maskedCardNo: last4,
           expirationDate: card.expirationDate,
-          userID: Number(userID),
+          userID: cardUserID,
           billingAddressId: billing.id,
           createdAt: new Date(),
           updatedAt: new Date()

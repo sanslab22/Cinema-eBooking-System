@@ -189,10 +189,10 @@ model Address {
   updatedAt     DateTime @updatedAt
 
   addressTypeId Int
-  userID        Int
+  userID        Int?
 
   addressType   AddressType @relation(fields: [addressTypeId], references: [id])
-  user          User        @relation(fields: [userID], references: [id])
+  user          User?       @relation(fields: [userID], references: [id])
 
   paymentCards  PaymentCard[]
 
@@ -207,10 +207,10 @@ model PaymentCard {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  userID           Int
+  userID           Int?
   billingAddressId Int
 
-  user             User    @relation(fields: [userID], references: [id])
+  user             User?   @relation(fields: [userID], references: [id])
   billingAddress   Address @relation(fields: [billingAddressId], references: [id])
 
   bookings         Booking[]

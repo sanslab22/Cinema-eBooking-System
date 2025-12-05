@@ -336,8 +336,9 @@ const CreateAccount = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Registration error from server:", errorData);
         setError(true);
-        setErrorMessage(errorData.message || 'Failed to create account.');
+        setErrorMessage(errorData.message || 'Failed to create account. Please try again later.');
         return;
       }
 
@@ -372,8 +373,13 @@ const CreateAccount = () => {
       handleNext();
 
     } catch (error) {
+      console.error("An unexpected error occurred during registration:", error);
       setError(true);
-      setErrorMessage("An unexpected error occurred during registration.");
+      if (!navigator.onLine) {
+        setErrorMessage("You appear to be offline. Please check your internet connection and try again.");
+      } else {
+        setErrorMessage("Could not connect to the server. Please try again later.");
+      }
     }
   };
 
@@ -397,6 +403,7 @@ const CreateAccount = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Verification error from server:", errorData);
         setError(true);
         setErrorMessage(errorData.message || "Failed to verify account.");
         return;
@@ -410,8 +417,13 @@ const CreateAccount = () => {
         router.push('/login');
       }
     } catch (error) {
+      console.error("An unexpected error occurred during verification:", error);
       setError(true);
-      setErrorMessage("An unexpected error occurred during verification.");
+      if (!navigator.onLine) {
+        setErrorMessage("You appear to be offline. Please check your internet connection and try again.");
+      } else {
+        setErrorMessage("Could not connect to the server for verification. Please try again later.");
+      }
     }
   };
 
