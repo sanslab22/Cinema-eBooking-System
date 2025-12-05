@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import cors from 'cors';
-import { getMovies, getMovieByID, getMovieShowtimes } from "../controllers/moviesController.js";
+import { getMovies, getMovieByID, getMovieShowtimes, getMovieReviews, getAllShowtimes } from "../controllers/moviesController.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -26,5 +26,11 @@ router.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: 'Internal Server Error' });
 });
+
+// Reviews
+router.get('/reviews', getMovieReviews);
+
+router.get('/shows', getAllShowtimes);
+
 
 export default router;

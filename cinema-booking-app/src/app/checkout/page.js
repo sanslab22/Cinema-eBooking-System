@@ -58,6 +58,7 @@ const CheckoutPage = () => {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [errors, setErrors] = useState({});
   const [email, setEmail] = useState("");
+  const [paymentError, setPaymentError] = useState(""); // <--- NEW: For booking/payment errors
 
   const clearError = (field) => {
     setErrors((prev) => {
@@ -275,6 +276,7 @@ const CheckoutPage = () => {
 
   const handleConfirmPayment = async () => {
     if (!validateFields()) return;
+    setPaymentError(""); // Clear previous errors
 
     try {
       const userId = Number(localStorage.getItem("userId"));
@@ -324,7 +326,9 @@ const CheckoutPage = () => {
 
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || data.message || "Failed to create booking");
+        const errorMessage = data.error || data.message || "Failed to create booking";
+        setPaymentError(errorMessage);
+
         return;
       }
 
@@ -423,28 +427,35 @@ const CheckoutPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- CALCULATION LOGIC ---
   // Returns { total: 0, items: [] }
   const getOrderDetails = () => {
-    if (!booking || !ticketPrices) return { total: 0, items: [] };
+    if (!booking || !ticketPrices)
+      return { total: 0, items: [], subtotal: 0, tax: 0, bookingFee: 0 };
 
     const counts = booking.ticketCounts || {};
-    let total = 0;
+    let subtotal = 0;
     const items = [];
 
     // Loop through the ticket types in localStorage (e.g., "Child", "Adult")
-    Object.keys(counts).forEach((type) => {
+    // Filter out "Booking Fee" if it's in the counts object for some reason
+    Object.keys(counts).filter(type => type !== "Booking Fee").forEach((type) => {
       const count = counts[type];
       const price = ticketPrices[type] || 0; // Matches DB price
 
       if (count > 0) {
-        const subtotal = count * price;
-        total += subtotal;
-        items.push({ type, count, price, subtotal });
+        const itemSubtotal = count * price;
+        subtotal += itemSubtotal;
+        items.push({ type, count, price, subtotal: itemSubtotal });
       }
     });
 
-    return { total, items };
+    const bookingFee = ticketPrices["Booking Fee"] || 0;
+
+    const totalBeforeTax = subtotal + bookingFee;
+    const tax = totalBeforeTax * 0.07; // 7% sales tax
+    const total = totalBeforeTax + tax;
+
+    return { total, items, subtotal, tax, bookingFee };
   };
 
   if (loading) return <div>Loading...</div>;
@@ -503,13 +514,17 @@ const CheckoutPage = () => {
   const computeTotalWithPromo = () => {
     if (!ticketPrices) return total;
     if (!appliedPromo) return total;
+
+    // Note: Promotions typically apply to subtotal, not including fees/taxes.
+    // We will apply discount to the ticket subtotal only.
+    const { subtotal, tax, bookingFee: feeFromDetails } = getOrderDetails();
+    const bookingFee = ticketPrices["Booking Fee"] || 0;
+
     const raw = (appliedPromo.promoValue || "").toString().trim();
     if (!raw) return total;
 
     const numeric = parseFloat(raw);
-    if (Number.isFinite(numeric)) {
-      return Math.max(0, total - total * (numeric / 100));
-    }
+    if (Number.isFinite(numeric)) return subtotal * (1 - numeric / 100) + bookingFee + tax;
 
     return total;
   };
@@ -561,7 +576,6 @@ const CheckoutPage = () => {
 
       <Grid container spacing={20}>
         
-        {/* --- LEFT COLUMN: ADDRESSES --- */}
         <Grid item xs={12} md={8}>
           <Paper elevation={0} className="section-card">
             <h2 className="section-header">Billing & Shipping</h2>
@@ -732,7 +746,6 @@ const CheckoutPage = () => {
           </Paper>
         </Grid>
 
-        {/* --- RIGHT COLUMN: SUMMARY --- */}
         <Grid item xs={12} md={4}>
           <div className="right-column-stack">
             {/* ORDER SUMMARY */}
@@ -767,6 +780,23 @@ const CheckoutPage = () => {
                   ))
                 )}
 
+                {/* --- FEES & TAXES --- */}
+                <Divider style={{ margin: "15px 0", borderStyle: "dashed" }} />
+                <div className="receipt-row">
+                  <span>Booking Fee</span>
+                  <span>
+                    $
+                    {getOrderDetails().bookingFee.toFixed(2)}
+                  </span>
+                </div>
+                <div className="receipt-row">
+                  <span>Sales Tax (7%)</span>
+                  <span>
+                    $
+                    {getOrderDetails().tax.toFixed(2)}
+                  </span>
+                </div>
+
                 <div className="promo-box">
                   <TextField
                     placeholder="Promo Code"
@@ -785,6 +815,7 @@ const CheckoutPage = () => {
                     onChange={(e) => {
                       setPromoCode(e.target.value);
                       if (promoError) setPromoError("");
+                      if (appliedPromo) removePromotion();
                     }}
                     InputProps={{
                       endAdornment: (
@@ -813,11 +844,11 @@ const CheckoutPage = () => {
               {appliedPromo ? (
                 <>
                   <div className="receipt-row">
-                    <span>Subtotal</span>
+                    <span>Total Before Discount</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <div className="receipt-row">
-                    <span>Discount ({appliedPromo.promoCode})</span>
+                    <span>Promo Discount ({appliedPromo.promoCode})</span>
                     <span>-${(total - discountedTotal).toFixed(2)}</span>
                   </div>
                   <div className="receipt-total">
@@ -919,6 +950,17 @@ const CheckoutPage = () => {
                   style={{ marginTop: 12 }}
                 />
               )}
+              {paymentError && (
+                <div
+                  style={{
+                    color: "#d32f2f",
+                    fontWeight: 600,
+                    marginTop: 12,
+                  }}
+                >
+                  {paymentError}
+                </div>
+              )}
               {Object.keys(errors).length > 0 && (
                 <div
                   style={{ color: "#d32f2f", fontWeight: 600, marginTop: 12 }}
@@ -935,7 +977,7 @@ const CheckoutPage = () => {
                 onClick={handleConfirmPayment}
                 disabled={Object.keys(errors).length > 0}
               >
-                Pay ${discountedTotal.toFixed(2)}
+                Pay ${Math.max(0, discountedTotal).toFixed(2)}
               </Button>
             </Paper>
           </div>
