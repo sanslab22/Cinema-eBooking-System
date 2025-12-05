@@ -5,8 +5,8 @@ import withAuth from "../hoc/withAuth";
 import { useEffect, useState } from "react";
 import "./page.css";
 
-function ManageShowtimes() {
-
+function ManageShowtimes() { // All showtimes for all movies
+  const [allShowtimes, setAllShowtimes] = useState([]);
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [showrooms, setShowrooms] = useState([]);
@@ -32,21 +32,20 @@ function ManageShowtimes() {
   }, []);
 
   useEffect(() => {
-    if (!selectedMovie) return;
     async function fetchShowtimes() {
       try {
-        const response = await fetch(
-          "http://localhost:3002/api/admin/movies/" + selectedMovie.id + "/shows"
-        );
+        // Fetch all showtimes to check for conflicts across all movies.
+        const response = await fetch("http://localhost:3002/api/shows");
         const data = await response.json();
-        // adminShowController returns { movieId, count, shows }
-        setShowtimes(data.shows || []);
+        setAllShowtimes(data.shows || data || []);
       } catch (err) {
         console.error("Error fetching showtimes:", err);
       }
     }
     fetchShowtimes();
-  }, [selectedMovie]);
+    // We fetch all showtimes once on component mount.
+    // The list will be updated locally when a new showtime is added.
+  }, []);
 
   useEffect(() => {
     async function fetchShowrooms() {
@@ -68,6 +67,14 @@ function ManageShowtimes() {
     fetchShowrooms();
   }, []);
 
+  useEffect(() => {
+    if (selectedMovie) {
+      // When a movie is selected, filter the master list of showtimes
+      // to display only the ones relevant to that movie.
+      const filtered = allShowtimes.filter(s => s.movieID === selectedMovie.id);
+      setShowtimes(filtered);
+    }
+  }, [selectedMovie, allShowtimes]);
 
   const handleAddShowtime = async () => {
     setError("");
@@ -79,7 +86,6 @@ function ManageShowtimes() {
     }
 
     // 1. Create Local Date Object
-    // We split strings to force "Local Time" usage
     const [year, month, day] = date.split('-').map(Number);
     const [hours, minutes] = time.split(':').map(Number);
     // Note: Month is 0-indexed in JS
@@ -94,19 +100,34 @@ function ManageShowtimes() {
     // Conflict Check
     const newShowStart = showStart.getTime();
     // Duration is in minutes, convert to milliseconds
-    const newMovieDuration = selectedMovie.duration * 60 * 1000; 
+    const newMovieDuration = selectedMovie.duration * 60 * 1000;
     const newShowEnd = newShowStart + newMovieDuration;
 
-    const conflict = showtimes.some((s) => {
-            console.log(selectedMovie)
-
+    // 2. FIX: Check for conflicts with ANY movie duration in the same showroom
+    const conflict = allShowtimes.some((s) => {
+      // 🚨 Critical assumption: 's' object now includes 'movieId' for the movie it's showing.
       if (s.auditoriumID !== parseInt(showroom)) {
         return false; // Not in the same showroom, no conflict
       }
+      
       const existingShowStart = new Date(s.showStartTime).getTime();
-      // Assuming existing showtimes are for the same movie, use selectedMovie.duration
-      const existingShowDuration = selectedMovie.duration * 60 * 1000;
+
+      // Look up the actual duration of the movie associated with the existing show 's'
+      const existingMovie = movies.find(m => m.id === s.movieID);
+      
+      if (!existingMovie) {
+        // If movieId is missing or movie data is incomplete, we cannot check duration.
+        // In a real app, this should throw a severe error or be handled by the backend.
+        // For client-side safety, we skip the check for this specific show.
+        console.warn(`Could not find movie duration for existing show ID: ${s.id}. Skipping client-side conflict check for this show.`);
+        return false;
+      }
+
+      // Use the correct duration of the existing movie
+      const existingShowDuration = existingMovie.duration * 60 * 1000;
       const existingShowEnd = existingShowStart + existingShowDuration;
+
+      // Standard interval overlap check: (NewStart < ExistingEnd) AND (NewEnd > ExistingStart)
       return newShowStart < existingShowEnd && newShowEnd > existingShowStart;
     });
 
@@ -125,30 +146,27 @@ function ManageShowtimes() {
         body: JSON.stringify({
           auditoriumID: parseInt(showroom),
           // We send the ISO string. The DB will store this as the Timestamp.
-          showStartTime: showStart.toISOString(), 
+          showStartTime: showStart.toISOString(),
         }),
       });
 
       if (!response.ok) {
-
         const errData = await response.json();
         throw new Error(errData.error || "Failed to save showtime");
       }
 
       const savedShow = await response.json();
 
+      // Assuming the savedShow object contains a 'movieId' and the correct show details
+      // to display and be used in subsequent client-side conflict checks
+      setAllShowtimes((prev) => [...prev, savedShow]);
 
-      setShowtimes((prev) => [...prev, savedShow]);
-      
-
-      setNewShowtime({ ...newShowtime, time: "" }); 
-      
+      setNewShowtime({ ...newShowtime, time: "" });
 
     } catch (err) {
       console.error("Save error:", err);
       setError(err.message);
     }
-
   };
 
   return (
@@ -162,18 +180,17 @@ function ManageShowtimes() {
           id="movieSelect"
           value={selectedMovie?.id || ""}
           onChange={(e) => {
-              const movie = movies.find(
-                (m) => m.id === parseInt(e.target.value)
-              );
-              setSelectedMovie(movie || null);
-              // setShowtimes([]);
+            const movie = movies.find(
+              (m) => m.id === parseInt(e.target.value)
+            );
+            setSelectedMovie(movie || null);
           }}
         >
           <option value="">Choose a movie</option>
           {movies.map((movie) => (
-              <option key={movie.id} value={movie.id}>
-                {movie.movieTitle}
-              </option>
+            <option key={movie.id} value={movie.id}>
+              {movie.movieTitle}
+            </option>
           ))}
         </select>
       </div>

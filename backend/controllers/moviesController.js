@@ -108,3 +108,15 @@ export const getMovieReviews = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const getAllShowtimes = async (req, res, next) => {
+  try {
+    const shows = await prisma.movieShow.findMany({
+      orderBy: { showStartTime: 'asc' },
+    });
+
+    res.json({ shows });
+  } catch (e) {
+    next(e);
+  }
+};

@@ -1,7 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import cors from 'cors';
-import { getMovies, getMovieByID, getMovieShowtimes, getMovieReviews } from "../controllers/moviesController.js";
+import { getMovies, getMovieByID, getMovieShowtimes, getMovieReviews, getAllShowtimes } from "../controllers/moviesController.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -29,6 +29,8 @@ router.use((err, _req, res, _next) => {
 
 // Reviews
 router.get('/reviews', getMovieReviews);
+
+router.get('/shows', getAllShowtimes);
 
 
 export default router;
