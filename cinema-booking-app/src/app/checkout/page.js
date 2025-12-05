@@ -48,6 +48,7 @@ const CheckoutPage = () => {
     number: "",
     exp: "",
     name: "",
+    cvv: "",
   });
   const [savedCards, setSavedCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null); // number id or 'new'
@@ -127,6 +128,7 @@ const CheckoutPage = () => {
             name: `${userData.firstName || ""} ${
               userData.lastName || ""
             }`.trim(),
+            cvv: "***",
           });
 
           if (savedCard.billingAddress) {
@@ -202,8 +204,8 @@ const CheckoutPage = () => {
   const handleSavedCardChange = (value) => {
     if (!value || value === "new") {
       // Use new card
-      setSelectedCardId(null);
-      setCardDetails({ number: "", exp: "", name: userFullName || "" });
+      setSelectedCardId(null); // Use null for 'new'
+      setCardDetails({ number: "", exp: "", name: userFullName || "", cvv: "" });
       setPaymentAddress({ street: "", city: "", state: "", zip: "" });
       clearError("cardNumber");
       clearError("cardName");
@@ -220,6 +222,7 @@ const CheckoutPage = () => {
       number: c.cardNo || `•••• ${c.maskedCardNo}`,
       exp: c.expirationDate,
       name: c.nameOnCard || userFullName,
+      cvv: "***",
     });
     setErrors((prev) => {
       const copy = { ...prev };
@@ -903,23 +906,23 @@ const CheckoutPage = () => {
                 helperText={errors.cardNumber}
                 required
               />
+              <TextField
+                fullWidth
+                label="Name on Card"
+                placeholder="John Doe"
+                margin="dense"
+                size="small"
+                value={cardDetails.name}
+                onChange={(e) => {
+                  setCardDetails({ ...cardDetails, name: e.target.value });
+                  clearError("cardName");
+                }}
+                disabled={!!selectedCardId}
+                error={!!errors.cardName}
+                helperText={errors.cardName}
+                required
+              />
               <div style={{ display: "flex", gap: "10px" }}>
-                <TextField
-                  fullWidth
-                  label="Name"
-                  placeholder="John Doe"
-                  margin="dense"
-                  size="small"
-                  value={cardDetails.name}
-                  onChange={(e) => {
-                    setCardDetails({ ...cardDetails, name: e.target.value });
-                    clearError("cardName");
-                  }}
-                  disabled={!!selectedCardId}
-                  error={!!errors.cardName}
-                  helperText={errors.cardName}
-                  required
-                />
                 <TextField
                   fullWidth
                   label="Expiry"
@@ -934,6 +937,22 @@ const CheckoutPage = () => {
                   disabled={!!selectedCardId}
                   error={!!errors.cardExp}
                   helperText={errors.cardExp}
+                  required
+                />
+                <TextField
+                  fullWidth
+                  label="Security Code"
+                  placeholder="CVC"
+                  margin="dense"
+                  size="small"
+                  value={cardDetails.cvv}
+                  onChange={(e) => {
+                    setCardDetails({ ...cardDetails, cvv: e.target.value });
+                  }}
+                  disabled={!!selectedCardId}
+                  // No validation as requested
+                  error={false}
+                  helperText={""}
                   required
                 />
               </div>
