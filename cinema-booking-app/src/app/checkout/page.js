@@ -338,8 +338,7 @@ const CheckoutPage = () => {
       const result = await res.json();
       // Get all order details for the confirmation page
       const { subtotal, bookingFee, tax } = getOrderDetails();
-      // Get all order details for the confirmation page
-      const { subtotal, bookingFee, tax } = getOrderDetails();
+
       // Prepare confirmation payload
       const maskCard = (num) => {
         const s = (num || "").toString();
