@@ -13,6 +13,7 @@ function Home() {
   const [allMovies, setAllMovies] = useState([]);
   const [uniqueGenres, setUniqueGenres] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
+  const [moviesWithShowtimes, setMoviesWithShowtimes] = useState(new Set());
 
   const [genreSelected, setGenreSelected] = useState([]);
   // State to hold the current search query from the SearchBar
@@ -24,8 +25,24 @@ function Home() {
   useEffect(() => {
     fetch("http://localhost:3002/api/movies")
       .then((response) => response.json())
-      .then((data) => {
+      .then(async (data) => {
         setAllMovies(data.items);
+
+        // Check for any showtimes for active movies
+        const activeMovies = data.items.filter(m => m.isActive);
+        const moviesWithAnyShowtimes = new Set();
+        const today = new Date().toISOString().split('T')[0];
+
+        await Promise.all(activeMovies.map(async (movie) => {
+          const response = await fetch(`http://localhost:3002/api/movies/${movie.id}/showtimes?startDate=${today}`);
+          const showtimes = await response.json();
+          if (showtimes.showtimes && showtimes.showtimes.length > 0) {
+            moviesWithAnyShowtimes.add(movie.id);
+          }
+        }));
+        setMoviesWithShowtimes(moviesWithAnyShowtimes);
+
+
         setFilteredMovies(data.items);
 
         // Calculate unique genres from the fetched data
@@ -45,16 +62,51 @@ function Home() {
 
       // Date range filtering
       if (showDate) {
-        const moviesWithShowtimes = new Set();
-        await Promise.all(allMovies.map(async (movie) => {
-          console.log(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${showDate}`)
-          const response = await fetch(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${showDate}`);
-          const showtimes = await response.json();
-          if (showtimes.showtimes && showtimes.showtimes.length > 0) {
-            moviesWithShowtimes.add(movie.id);
-          }
-        }));
-        movies = movies.filter(movie => moviesWithShowtimes.has(movie.id));
+        const moviesWithDateShowtimes = new Set();        
+        const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // This logic determines which UTC dates need to be queried to cover the user's selected local date.
+        const date = new Date(`${showDate}T00:00:00`);
+        const utcOffset = date.getTimezoneOffset() / 60;
+        const offsetSign = utcOffset > 0 ? "-" : "+";
+        const offsetHours = Math.abs(Math.floor(utcOffset)).toString().padStart(2, '0');
+        const offsetMinutes = (Math.abs(utcOffset) % 1 * 60).toString().padStart(2, '0');
+        const offset = `${offsetSign}${offsetHours}:${offsetMinutes}`;
+
+        const startIso = `${showDate}T00:00:00${offset}`;
+        const endIso = `${showDate}T23:59:59${offset}`;
+  
+        const startUtcDate = new Date(startIso).toISOString().slice(0, 10);
+        const endUtcDate = new Date(endIso).toISOString().slice(0, 10);
+  
+        const datesToQuery = Array.from(new Set([startUtcDate, endUtcDate]));
+
+        await Promise.all(
+          allMovies.map(async (movie) => {
+            const responses = await Promise.all(
+              datesToQuery.map((d) =>
+                fetch(`http://localhost:3002/api/movies/${movie.id}/showtimes?showdate=${d}`)
+              )
+            );
+
+            const arrays = await Promise.all(responses.map((r) => r.json()));
+            const combined = arrays.flatMap((a) => a.showtimes || []);
+
+            const filtered = combined.filter((s) => {
+              try {
+                const localDate = new Date(s.showStartTime).toLocaleDateString("en-CA", { timeZone: TZ });
+                return localDate === showDate;
+              } catch (e) {
+                return false;
+              }
+            });
+
+            if (filtered.length > 0) {
+              moviesWithDateShowtimes.add(movie.id);
+            }
+          })
+        );
+        movies = movies.filter(movie => moviesWithDateShowtimes.has(movie.id));
       }
 
       // Genre filtering
@@ -82,8 +134,12 @@ function Home() {
 
 
   //  Derive "Playing Now" and "Coming Soon" from the live data
-  const moviesPlayingNow = filteredMovies.filter((movie) => movie.isActive);
-  const moviesComingSoon = filteredMovies.filter((movie) => !movie.isActive);
+  const moviesPlayingNow = filteredMovies.filter(
+    (movie) => movie.isActive && (showDate || moviesWithShowtimes.has(movie.id))
+  );
+  const moviesComingSoon = filteredMovies.filter(
+    (movie) => !movie.isActive
+  );
 
   return (
     <div className="page">

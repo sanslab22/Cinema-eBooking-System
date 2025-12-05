@@ -41,34 +41,47 @@ export const getMovieShowtimes = async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid movie id' });
     }
 
-    const showdate = req.query.showdate || req.query.date;
-    if (!showdate) {
-      return res.status(400).json({ error: 'Missing showdate query param (YYYY-MM-DD)' });
+    const { showdate, startDate, endDate } = req.query;
+
+    if (!showdate && !startDate) {
+      return res.status(400).json({ error: 'Missing query param: showdate or startDate is required.' });
     }
 
-    // showdate format validation
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(showdate)) {
-      return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
+    const whereClause = { movieID: movieId };
+    const dateFilter = {};
+
+    if (showdate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(showdate)) {
+        return res.status(400).json({ error: 'Invalid showdate format. Use YYYY-MM-DD' });
+      }
+      dateFilter.gte = new Date(`${showdate}T00:00:00.000Z`);
+      dateFilter.lte = new Date(`${showdate}T23:59:59.999Z`);
+    } else if (startDate) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+        return res.status(400).json({ error: 'Invalid startDate format. Use YYYY-MM-DD' });
+      }
+      dateFilter.gte = new Date(`${startDate}T00:00:00.000Z`);
+
+      if (endDate) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+          return res.status(400).json({ error: 'Invalid endDate format. Use YYYY-MM-DD' });
+        }
+        dateFilter.lte = new Date(`${endDate}T23:59:59.999Z`);
+      }
     }
 
-    const start = new Date(`${showdate}T00:00:00.000Z`);
-    const end = new Date(`${showdate}T23:59:59.999Z`);
+    if (Object.keys(dateFilter).length > 0) {
+      whereClause.showStartTime = dateFilter;
+    }
 
     // uses MovieShow, filters by movieID and showStartTime within the day's range
     const showtimes = await prisma.movieShow.findMany({
-      where: {
-        movieID: movieId,
-        showStartTime: {
-          gte: start,
-          lte: end
-        }
-      },
+      where: whereClause,
       orderBy: { showStartTime: 'asc' },
     });
 
     res.json({
       movieId,
-      showdate,
       count: showtimes.length,
       showtimes,
     });
