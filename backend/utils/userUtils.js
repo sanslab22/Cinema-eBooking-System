@@ -75,9 +75,9 @@ export async function replaceHomeAddressIfProvided(tx, userId, homeAddress) {
 export async function replaceCardsIfProvided(tx, userId, cards) {
   if (!cards) return;
 
-  if (cards.length > 3) {
-    throw new Error("User can have at most 3 payment cards");
-  }
+  // if (cards.length > 3) {
+  //   throw new Error("User can have at most 3 payment cards");
+  // }
 
   // 1. Identify existing cards to handle deletions
   const existingCards = await tx.paymentCard.findMany({

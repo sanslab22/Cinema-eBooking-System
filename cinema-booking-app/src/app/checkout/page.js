@@ -344,11 +344,13 @@ const CheckoutPage = () => {
         movieTitle: booking.movieTitle,
         showTime: booking.time || booking.showTime || "",
         seatsSelected: booking.seatsSelected || [],
-        items: items, // items computed in frontend
-        subtotal: total,
+        subtotal: getOrderDetails().subtotal,
+        bookingFee: getOrderDetails().bookingFee,
+        tax: getOrderDetails().tax,
         discountAmount: total - discountedTotal,
         total: discountedTotal,
         promoCode: appliedPromo?.promoCode || undefined,
+
         maskedCard: selectedCardId
           ? savedCards.find((c) => String(c.id) === String(selectedCardId))
               ?.cardNo || "Saved Card"

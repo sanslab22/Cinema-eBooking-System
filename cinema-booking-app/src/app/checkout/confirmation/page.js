@@ -22,7 +22,7 @@ const BookingConfirmation = () => {
 
   if (!data) return null;
 
-  const { bookingId, movieTitle, showTime, seatsSelected, items, subtotal, discountAmount, total, promoCode, maskedCard } = data;
+  const { bookingId, movieTitle, showTime, seatsSelected, items, subtotal, bookingFee, tax, discountAmount, total, promoCode, maskedCard } = data;
 
   return (
     <div className="checkout-page-wrapper">
@@ -55,6 +55,14 @@ const BookingConfirmation = () => {
         <div className="receipt-row">
           <span>Subtotal</span>
           <span>{formatCurrency(subtotal)}</span>
+        </div>
+        <div className="receipt-row">
+          <span>Booking Fee</span>
+          <span>{formatCurrency(bookingFee)}</span>
+        </div>
+        <div className="receipt-row">
+          <span>Sales Tax</span>
+          <span>{formatCurrency(tax)}</span>
         </div>
         {discountAmount ? (
           <div className="receipt-row">
