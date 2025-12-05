@@ -65,6 +65,9 @@ function Orders() {
                 <div style={{ flex: '1 1 300px' }}>
                     <h2 style={{ margin: '0 0 10px 0', color: '#333' }}>{order.movieTitle}</h2>
                     <div style={{ color: '#555', marginBottom: '5px' }}>
+                      <strong>Booking ID:</strong> {order.id}
+                    </div>
+                    <div style={{ color: '#555', marginBottom: '5px' }}>
                         <strong>Date:</strong> {order.showDate ? new Date(order.showDate).toLocaleDateString() : 'N/A'} at {order.showTime ? new Date(order.showTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
                     </div>
                     <div style={{ color: '#555' }}>
