@@ -63,22 +63,17 @@ function Page() {
     }
   };
 
-  // Cleanup seats
+  // Cleanup seats when user leaves the site or timer ends
   useEffect(() => {
     const handleBeforeUnload = () => cleanupTempSeats();
+    const handlePopState = () => cleanupTempSeats();  // Back button
+
     window.addEventListener("beforeunload", handleBeforeUnload);
-  
-    // Handle browser back button
-    const handlePopState = () => cleanupTempSeats();
     window.addEventListener("popstate", handlePopState);
-  
-    // Cleanup old temp seats on mount
-    cleanupTempSeats();
-  
+
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
-      cleanupTempSeats();
     };
   }, []);
 
