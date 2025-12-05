@@ -376,6 +376,9 @@ function ManagePromotions() {
               )}
             </div>
           </form>
+          <p style={{ textAlign: "center", marginTop: "15px", fontSize: "0.8rem", color: "#666" }}>
+            Note: All dates are in Central Time (CT).
+          </p>
         </div>
       </div>
 

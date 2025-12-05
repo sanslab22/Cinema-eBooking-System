@@ -498,6 +498,15 @@ const CheckoutPage = () => {
         return;
       }
 
+      // Check start date
+      const start = new Date(promo.startDate);
+      // Compare dates only, ignoring time
+      const today = new Date();
+      if (start.setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0)) {
+        setPromoError("This promotion has not started yet.");
+        return;
+      }
+
       // success
       setAppliedPromo(promo);
       setPromoError("");
@@ -940,7 +949,7 @@ const CheckoutPage = () => {
                 />
               </div>
               {/* Save card checkbox (only when using a new card) */}
-              {!selectedCardId && (
+              {!selectedCardId && savedCards.length < 3 && (
                 <FormControlLabel
                   control={
                     <Checkbox
