@@ -12,8 +12,8 @@ const ForgotPassword = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [step, setStep] = useState(1);
@@ -27,22 +27,22 @@ const ForgotPassword = () => {
     setCode(e.target.value);
   };
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
-
   const handleNewPasswordChange = (e) => {
     setNewPassword(e.target.value);
   };
 
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+  };
+
   const handlePasswordReset = () => {
-    if (!password) {
+    if (!newPassword) {
       setError(true);
       setErrorMessage("Please enter a password");
-    } else if (!newPassword) {
+    } else if (!confirmPassword) {
       setError(true);
       setErrorMessage("Please re-enter your password");
-    } else if (password == newPassword) {
+    } else if (newPassword == confirmPassword) {
       resetPassword();
     } else {
       setError(true);
@@ -109,7 +109,7 @@ const ForgotPassword = () => {
           },
           body: JSON.stringify({
             email,
-            newPassword: password, // Send the new password
+            newPassword: newPassword, // Send the new password
           }),
         }
       );
@@ -195,18 +195,20 @@ const ForgotPassword = () => {
               New Password
               <input
                 type="password"
-                name="password"
+                name="newPassword2"
                 required
-                onChange={handlePasswordChange}
+                value={newPassword}
+                onChange={handleNewPasswordChange}
               />
             </label>
             <label>
               Confirm Password
               <input
                 type="password"
-                name="newPassword"
+                name="confirmPassword"
                 required
-                onChange={handleNewPasswordChange}
+                autoComplete="off"
+                onChange={handleConfirmPasswordChange}
               />
             </label>
 

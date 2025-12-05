@@ -319,6 +319,7 @@ useEffect(() => {
             ) : (
               <div className="ticket-selection">
                 {ticketCategories.map((cat) => (
+                  cat.name != "Booking Fee" ?
                   <div key={cat.id}>
                     <label>{cat.name} – ${cat.price}</label>
                     <input
@@ -327,7 +328,7 @@ useEffect(() => {
                       value={ticketCounts[cat.name] || 0}
                       onChange={(e) => updateTicketCount(cat.name, e.target.value)}
                     />
-                  </div>
+                  </div> : ""
                 ))}
               </div>
             )}
