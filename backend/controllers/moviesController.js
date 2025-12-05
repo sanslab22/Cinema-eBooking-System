@@ -76,3 +76,22 @@ export const getMovieShowtimes = async (req, res, next) => {
     next(e);
   }
 };
+
+export const getMovieReviews = async (req, res) => {
+  const { movieTitle } = req.query;
+  try {
+    const whereClause = movieTitle
+      ? {
+          where: {
+            movieTitle: movieTitle,
+          },
+        }
+      : {};
+
+    const reviews = await prisma.review.findMany(whereClause);
+    res.json(reviews);
+  } catch (error) {
+    console.error("Failed to fetch reviews:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
