@@ -225,17 +225,28 @@ function EditProfile() {
       return;
     }
 
-    for (const card of user.paymentCards) {
-      // Only validate cards with a non-empty expiration date
-      if (card.expirationDate) {
-        if (!isCardNotExpired(card.expirationDate)) {
-          // Determine the last 4 digits for the error message
-          // Use maskedCardNo (from backend) if present, otherwise use the entered cardNo
-          const cardIdentifier = card.maskedCardNo || card.cardNo || '...';
-          const lastFour = cardIdentifier.slice(-4); 
+    // --- NEW: Enhanced Card Validation ---
+    for (const [index, card] of user.paymentCards.entries()) {
+      const isNewCard = card.cardNo && !card.cardNo.startsWith("••••");
+      const isPartiallyFilled = isNewCard || card.expirationDate || card.billingAddress?.street || card.billingAddress?.city || card.billingAddress?.state || card.billingAddress?.zipCode;
 
-          setValidationError(`Card ending in ${lastFour} is expired. Please update the card information.`);
-          // Stop save process and show error
+      // Only perform validation if the user has started filling out a *new* card's details.
+      if (isNewCard || isPartiallyFilled) {
+        // 1. Check if all fields are filled
+        if (!card.cardNo || !card.expirationDate || !card.billingAddress?.street || !card.billingAddress?.city || !card.billingAddress?.state || !card.billingAddress?.zipCode) {
+          setValidationError(`Please fill in all fields for Card #${index + 1}.`);
+          return;
+        }
+
+        // 2. Check card number length for new cards
+        if (isNewCard && card.cardNo.length !== 16) {
+          setValidationError(`The card number for Card #${index + 1} must be 8 characters long.`);
+          return;
+        }
+
+        // 3. Check if the card is expired
+        if (!isCardNotExpired(card.expirationDate)) {
+          setValidationError(`The expiration date for Card #${index + 1} is invalid or in the past.`);
           return;
         }
       }
@@ -270,13 +281,21 @@ function EditProfile() {
           state: user.billingAddress.state,
           zipCode: user.billingAddress.zipCode,
         },
-        paymentCards: user.paymentCards.map(card => {
+        paymentCards: user.paymentCards
+          .filter(card => 
+            // Filter out completely empty cards that were added but not filled
+            card.id || card.cardNo || card.expirationDate
+          ).map(card => {
             // Create a base object with fields that are always sent
             const cardData = {
-                id: card.id, 
                 expirationDate: card.expirationDate,
                 billingAddress: card.billingAddress || { street: "", city: "", state: "", zipCode: "" },
             };
+
+            // Only include the ID if it exists (for existing cards)
+            if (card.id) {
+                cardData.id = card.id;
+            }
 
             // CHECK: Does the cardNo look like "•••• 1234"?
             // If yes, the user hasn't changed it. Do not send cardNo.
@@ -332,7 +351,7 @@ function EditProfile() {
         billingAddress: homeAddress,
         paymentCards: (savedBackendData.paymentCards || []).map(card => ({
           ...card,
-          cardNo: "", // Clear hashed cardNo for editing
+          cardNo: card.maskedCardNo ? `•••• ${card.maskedCardNo}` : "",
         })),
       };
 
